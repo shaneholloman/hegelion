@@ -276,6 +276,14 @@ OPENAI_API_KEY=your-openai-api-key-here
 # OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
+**Google Gemini:**
+```bash
+HEGELION_PROVIDER=google
+HEGELION_MODEL=gemini-2.5-pro
+GOOGLE_API_KEY=your-google-api-key-here
+# GOOGLE_API_BASE_URL=https://generativelanguage.googleapis.com
+```
+
 **Custom HTTP backend (advanced):**
 ```bash
 HEGELION_PROVIDER=custom_http
@@ -302,8 +310,9 @@ HEGELION_MAX_TOKENS_PER_PHASE=10000
 
 1. **Anthropic**: Claude models via the official Anthropic API
 2. **OpenAI**: GPT models via OpenAI API or compatible endpoints
-3. **Custom HTTP**: Minimal JSON HTTP bridge for bespoke providers
-4. **Ollama**: Local models via the Ollama HTTP API
+3. **Google Gemini**: Gemini models via google-generativeai
+4. **Custom HTTP**: Minimal JSON HTTP bridge for bespoke providers
+5. **Ollama**: Local models via the Ollama HTTP API
 
 ## Research Applications
 
