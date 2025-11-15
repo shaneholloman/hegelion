@@ -9,6 +9,7 @@ from functools import lru_cache
 from .backends import (
     AnthropicLLMBackend,
     CustomHTTPLLMBackend,
+    GoogleLLMBackend,
     LLMBackend,
     OllamaLLMBackend,
     OpenAILLMBackend,
@@ -61,6 +62,8 @@ def get_backend_from_env() -> LLMBackend:
     openai_key = os.getenv("OPENAI_API_KEY")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
     anthropic_base_url = os.getenv("ANTHROPIC_BASE_URL", DEFAULT_ANTHROPIC_BASE_URL)
+    google_key = os.getenv("GOOGLE_API_KEY")
+    google_base_url = os.getenv("GOOGLE_API_BASE_URL")
     ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     custom_base_url = os.getenv("CUSTOM_API_BASE_URL")
     custom_api_key = os.getenv("CUSTOM_API_KEY")
@@ -82,6 +85,13 @@ def get_backend_from_env() -> LLMBackend:
             organization=os.getenv("OPENAI_ORG_ID"),
         )
 
+    if provider in {"google", "auto"} and google_key:
+        return GoogleLLMBackend(
+            model=model,
+            api_key=google_key,
+            base_url=google_base_url,
+        )
+
     if provider == "ollama":
         return OllamaLLMBackend(model=model, base_url=ollama_url)
 
@@ -99,7 +109,7 @@ def get_backend_from_env() -> LLMBackend:
 
     raise ConfigurationError(
         "Unable to configure LLM backend. Set HEGELION_PROVIDER to one of: anthropic, openai, "
-        "ollama, custom_http, or auto with the corresponding API keys."
+        "google, ollama, custom_http, or auto with the corresponding API keys."
     )
 
 

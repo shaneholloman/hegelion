@@ -17,6 +17,11 @@ try:
 except ImportError:  # pragma: no cover - optional dependency
     AsyncAnthropic = None  # type: ignore
 
+try:
+    import google.generativeai as genai
+except ImportError:  # pragma: no cover - optional dependency
+    genai = None  # type: ignore
+
 
 class BackendNotAvailableError(RuntimeError):
     """Raised when a backend cannot be initialized."""
@@ -239,6 +244,75 @@ class DummyLLMBackend:
         return "This is a deterministic dummy response for testing."
 
 
+@dataclass
+class GoogleLLMBackend:
+    """Backend targeting Google Gemini models via google-generativeai."""
+
+    model: str
+    api_key: str
+    base_url: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        if genai is None:  # pragma: no cover - import guard
+            raise BackendNotAvailableError(
+                "google-generativeai package is not installed but Google backend was requested."
+            )
+
+        client_options = {"api_endpoint": self.base_url} if self.base_url else None
+        configure_kwargs = {"api_key": self.api_key}
+        if client_options:
+            configure_kwargs["client_options"] = client_options
+
+        genai.configure(**configure_kwargs)
+
+        if not hasattr(genai, "AsyncGenerativeModel"):
+            raise BackendNotAvailableError(
+                "google-generativeai.AsyncGenerativeModel is unavailable; update the dependency."
+            )
+
+        self.client = genai.AsyncGenerativeModel(self.model)
+
+    async def generate(
+        self,
+        prompt: str,
+        max_tokens: int = 1_000,
+        temperature: float = 0.7,
+        system_prompt: Optional[str] = None,
+    ) -> str:
+        kwargs: Dict[str, Any] = {
+            "generation_config": {
+                "max_output_tokens": max_tokens,
+                "temperature": temperature,
+            }
+        }
+        if system_prompt:
+            kwargs["system_instruction"] = system_prompt
+
+        response = await self.client.generate_content(prompt, **kwargs)
+
+        text = getattr(response, "text", None)
+        if isinstance(text, str):
+            return text.strip()
+
+        candidates = getattr(response, "candidates", None)
+        if isinstance(candidates, list) and candidates:
+            candidate = candidates[0]
+            if hasattr(candidate, "content"):
+                content = getattr(candidate, "content")
+                parts = getattr(content, "parts", None)
+                if isinstance(parts, list):
+                    texts = [
+                        getattr(part, "text")
+                        for part in parts
+                        if hasattr(part, "text")
+                    ]
+                    joined = "\n".join(filter(None, (t for t in texts if isinstance(t, str))))
+                    if joined:
+                        return joined.strip()
+
+        return ""
+
+
 __all__ = [
     "LLMBackend",
     "OpenAILLMBackend",
@@ -246,5 +320,6 @@ __all__ = [
     "OllamaLLMBackend",
     "CustomHTTPLLMBackend",
     "DummyLLMBackend",
+    "GoogleLLMBackend",
     "BackendNotAvailableError",
 ]

@@ -61,6 +61,14 @@ Hegelion runs any LLM through Thesis → Antithesis → Synthesis and ships the 
    OPENAI_API_KEY=your-openai-api-key-here
    ```
 
+   For Google Gemini:
+   ```bash
+   HEGELION_PROVIDER=google
+   HEGELION_MODEL=gemini-2.5-pro
+   GOOGLE_API_KEY=your-google-api-key-here
+   # GOOGLE_API_BASE_URL=https://generativelanguage.googleapis.com
+   ```
+
    For Ollama (local):
    ```bash
    HEGELION_PROVIDER=ollama
