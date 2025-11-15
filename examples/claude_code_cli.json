@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Volumes/VIXinSSD/hegelion",
+        "run",
+        "hegelion-server"
+      ],
+      "env": {
+        "HEGELION_PROVIDER": "anthropic",
+        "HEGELION_MODEL": "glm-4.6",
+        "ANTHROPIC_API_KEY": "your-anthropic-api-key-here",
+        "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic"
+      }
+    }
+  },
+  "model": "glm-4.6"
+}

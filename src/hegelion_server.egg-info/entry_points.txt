@@ -1,0 +1,2 @@
+[console_scripts]
+hegelion-server = hegelion_server.server:main

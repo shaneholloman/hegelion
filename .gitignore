@@ -1,0 +1,33 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Build outputs
+dist/
+build/
+
+# Local data/logs
+logs/
+*.jsonl
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE/editor clutter
+.DS_Store
+.idea/
+.vscode/
+
+# Local paper drafts
+paper/
+*.pdf

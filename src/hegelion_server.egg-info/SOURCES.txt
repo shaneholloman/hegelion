@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+src/hegelion_server/__init__.py
+src/hegelion_server/config.py
+src/hegelion_server/dialectics.py
+src/hegelion_server/llm_backends.py
+src/hegelion_server/prompts.py
+src/hegelion_server/server.py
+src/hegelion_server.egg-info/PKG-INFO
+src/hegelion_server.egg-info/SOURCES.txt
+src/hegelion_server.egg-info/dependency_links.txt
+src/hegelion_server.egg-info/entry_points.txt
+src/hegelion_server.egg-info/requires.txt
+src/hegelion_server.egg-info/top_level.txt
+tests/test_dialectics.py
