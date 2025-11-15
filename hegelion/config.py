@@ -56,7 +56,7 @@ def get_backend_from_env() -> LLMBackend:
     """Instantiate the configured backend."""
 
     provider = os.getenv("HEGELION_PROVIDER", "auto").lower()
-    model = os.getenv("HEGELION_MODEL", "gpt-4.1-mini")
+    model = os.getenv("HEGELION_MODEL", "claude-4.5-sonnet-latest")
 
     openai_key = os.getenv("OPENAI_API_KEY")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
@@ -107,7 +107,7 @@ def get_engine_settings_from_env() -> EngineSettings:
     """Load engine configuration values from environment variables."""
 
     return EngineSettings(
-        model=os.getenv("HEGELION_MODEL", "gpt-4.1-mini"),
+        model=os.getenv("HEGELION_MODEL", "claude-4.5-sonnet-latest"),
         synthesis_threshold=_get_env_float("HEGELION_SYNTHESIS_THRESHOLD", 0.85),
         max_tokens_per_phase=_get_env_int("HEGELION_MAX_TOKENS_PER_PHASE", 10_000),
     )

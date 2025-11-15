@@ -118,15 +118,30 @@ asyncio.run(main())
 **Command Line:**
 ```bash
 # Single query
-python -m hegelion.scripts.hegelion_cli "Can AI be genuinely creative?" --format summary
+hegelion "Can AI be genuinely creative?" --format summary
 
 # Benchmark suite (JSONL file with one prompt per line)
-python -m hegelion.scripts.hegelion_bench hegelion/benchmarks/examples_basic.jsonl --summary
+hegelion-bench hegelion/benchmarks/examples_basic.jsonl --summary
 ```
 
 **MCP Server:**
 ```bash
 # Run MCP server for Claude Desktop, Cursor, etc.
+hegelion-server
+```
+
+**Advanced / Direct Invocation:**
+
+If the console scripts are not in your PATH, you can invoke the modules directly:
+
+```bash
+# Single query
+python -m hegelion.scripts.hegelion_cli "Can AI be genuinely creative?" --format summary
+
+# Benchmark suite
+python -m hegelion.scripts.hegelion_bench hegelion/benchmarks/examples_basic.jsonl --summary
+
+# MCP server
 python -m hegelion.mcp_server
 ```
 
@@ -338,6 +353,25 @@ Hegelion is designed for **AI reasoning and ethics research**:
 
 The package includes benchmark suites for factual, scientific, historical, philosophical, and ethical questions to enable systematic research evaluation.
 
+### For Model Builders & Evaluation Teams
+
+Hegelion is designed as a **glass-box reasoning harness** for systematic model evaluation:
+
+**Cross-Provider Benchmarking:**
+- Run the same JSONL benchmark prompts against different providers (Anthropic, OpenAI, local models) by changing environment variables
+- Example: `HEGELION_PROVIDER=anthropic hegelion-bench prompts.jsonl --output anthropic_results.jsonl`
+- Then: `HEGELION_PROVIDER=openai hegelion-bench prompts.jsonl --output openai_results.jsonl`
+
+**Structured Evaluation Dataset:**
+The JSON/JSONL outputs provide machine-readable evaluation targets:
+- **Thesis/Antithesis/Synthesis quality**: Compare dialectical sophistication across models
+- **Contradiction patterns**: Analyze how different models identify logical tensions
+- **Research proposal novelty**: Rate the creativity and testability of generated proposals
+- **Metadata analysis**: Compare timing, token usage, and backend performance
+
+**Key Distinction:**
+Hegelion is **not a replacement chatbot**. It's a structured reasoning protocol that makes model behavior inspectable and comparable. Use it to evaluate how models handle complex, contested reasoning tasks where there's no single "correct" answer.
+
 ---
 
 ## Design Philosophy
@@ -469,3 +503,13 @@ Alternatively, if using Python module:
 ```
 
 After setup, restart Claude Desktop and Hegelion will be available as an MCP tool for dialectical analysis: `run_dialectic` and `run_benchmark`.
+
+---
+
+## Running in Containers / Cloud
+
+Hegelion's MCP server is stateless and stdio-based, making it suitable for containerized and cloud deployments:
+
+- **Requirements**: A Python environment with Hegelion installed and LLM backend environment variables configured
+- **Deployment**: The MCP server can run in any container (Docker, Cloud Run, Fly.io, etc.) or VM as long as the host (Claude, Cursor, etc.) can start it via MCP stdio
+- **No persistence needed**: The server maintains no state between requests, simplifying deployment
