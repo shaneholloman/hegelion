@@ -1,6 +1,15 @@
 # Hegelion
 
+[![CI](https://github.com/Shannon-Labs/Hegelion/actions/workflows/ci.yml/badge.svg)](https://github.com/Shannon-Labs/Hegelion/actions/workflows/ci.yml)
+
 > A dialectical reasoning harness for LLMs: Thesis → Antithesis → Synthesis with structured contradictions, research proposals, and metadata you can trust.
+
+**TL;DR**
+
+- Runs a deterministic three-phase loop: Thesis → Antithesis → Synthesis
+- Emits contradictions and research proposals as structured JSON, not buried in text
+- Backend-agnostic: Anthropic, OpenAI, Ollama, or custom HTTP bridges
+- Ships with JSONL benchmarks + CLI (`hegelion`, `hegelion-bench`) and MCP server (`hegelion-server`)
 
 ## What Hegelion Is
 
@@ -18,6 +27,11 @@ The engine is backend-agnostic. It defaults to Anthropic Claude Sonnet (`HEGELIO
 
 ## Quick Start
 
+### Requirements
+
+- Python 3.10+ (regularly tested on 3.10 and 3.11)
+- `uv` recommended for dependency management (fallback: `pip install -e .`)
+
 1. **Clone + enter the repo**
    ```bash
    git clone https://github.com/Shannon-Labs/Hegelion.git
@@ -29,6 +43,11 @@ The engine is backend-agnostic. It defaults to Anthropic Claude Sonnet (`HEGELIO
    # Fallback:
    # pip install -e .
    ```
+   Local editable install (if you prefer plain pip):
+   ```bash
+   pip install -e .
+   ```
+   Hegelion is currently a Git-first research release; PyPI packaging will come later.
 3. **Configure your backend**
    ```bash
    cp .env.example .env
@@ -88,6 +107,8 @@ The star example is the recorded glm-4.6 run answering “Can AI be genuinely cr
 - **Synthesis** reframes creativity as an emergent property of a co-creative human–AI process and proposes the Co-Creative Trace Analysis.
 
 > Example output below was generated with a Claude-compatible `glm-4.6` backend via an Anthropic-style API. Your outputs will differ depending on your configured provider/model (docs assume Claude 4.5 Sonnet as the default).
+
+Example output (truncated for readability) from a glm-4.6 backend. Your wording will change by model, but the field structure stays the same.
 
 ```json
 {
@@ -192,4 +213,4 @@ uv run pre-commit install
 ## License & Status
 
 - **License:** MIT (see `LICENSE`).
-- **Status:** Actively maintained research infrastructure. Treat the dialectical protocol as stable; internal engine/backends are intentionally private.
+- **Status:** Actively maintained research infrastructure. The dialectical protocol and JSON schema are stable; internal engine/backends may evolve.
