@@ -1,41 +1,37 @@
 # Hegelion Examples
 
-This directory contains example outputs showcasing Hegelion's dialectical synthesis approach across different domains:
+This directory now houses real traces captured from a Claude-compatible `glm-4.6` backend along with the original narrative walk-throughs.
 
-## Example Files
+## Recorded JSONL Traces
 
-- **[consciousness_example.md](./consciousness_example.md)** - Philosophical inquiry into the nature of consciousness
-- **[gravity_example.md](./gravity_example.md)** - Scientific frontier question about the fundamental nature of gravity
-- **[ai_creativity_example.md](./ai_creativity_example.md)** - Analysis of AI creativity and co-creative systems
-- **[printing_press_example.md](./printing_press_example.md)** - Historical question about technological innovation
+- `glm4_6_examples.jsonl` — four canonical runs recorded during development:
+  - **Philosophical**: `"Can AI be genuinely creative?"`
+  - **Factual**: `"What is the capital of France?"`
+  - **Scientific**: `"Explain what photosynthesis does for a plant."`
+  - **Historical**: `"When was the first moon landing?"`
 
-## What These Examples Demonstrate
+Each line is a `HegelionResult` serialized via `to_dict()` and includes thesis/antithesis/synthesis, structured contradictions, research proposals, provenance metadata, and debug-only conflict scores tucked under `metadata.debug`.
 
-Each example illustrates Hegelion's unique capabilities:
+## Markdown Walk-Throughs
 
-1. **Thesis-Antithesis-Synthesis Structure** - Presents three distinct perspectives that build upon each other
-2. **Contradiction Identification** - Explicitly surfaces hidden assumptions and logical tensions
-3. **Research Proposals** - Generates testable hypotheses for empirical investigation
-4. **Metadata Tracking** - Provides timing and provenance information for reproducibility
+- **[ai_creativity_example.md](./ai_creativity_example.md)** — Hero example referenced in the README (philosophical)
+- **[consciousness_example.md](./consciousness_example.md)** — Dialectic on subjective experience (philosophical)
+- **[gravity_example.md](./gravity_example.md)** — Treats gravity as geometry vs force (scientific)
 
-## Running These Examples
-
-You can generate similar outputs using the CLI:
+## Reproducing an Example Run
 
 ```bash
-# Basic query
-hegelion "What is consciousness?"
+# Philosophical hero example
+hegelion "Can AI be genuinely creative?" --format summary --debug
 
-# With debug information
-hegelion "Is gravity a force or geometry?" --debug
+# Factual benchmark prompt
+hegelion "What is the capital of France?" --format summary
 
-# Summary format for readability
-hegelion "Can AI be genuinely creative?" --format summary
+# Scientific prompt with trace output
+hegelion "Explain what photosynthesis does for a plant." --debug
+
+# Historical context
+hegelion "When was the first moon landing?" --format summary
 ```
 
-## Backend Notes
-
-- Examples are backend-agnostic and will work with any configured provider
-- Metadata shows actual backend used for each example
-- Default configuration uses Anthropic's Claude models
-- See `.env.example` for configuration options
+Results will vary depending on your configured backend/model. The JSONL traces capture the provenance for the glm-4.6 runs; compare them with your own provider by writing your outputs to JSONL via `hegelion --output` or `hegelion-bench ... --output results.jsonl`.

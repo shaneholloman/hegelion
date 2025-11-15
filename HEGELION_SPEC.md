@@ -250,6 +250,15 @@ conflict_score = result.metadata["debug"]["internal_conflict_score"]
 
 ### Environment Variables
 
+Default `.env` configuration (and the library's code defaults) use Anthropic Claude Sonnet:
+
+```bash
+HEGELION_PROVIDER=anthropic
+HEGELION_MODEL=claude-4.5-sonnet-latest
+```
+
+Override the provider/model when evaluating other backends:
+
 **Anthropic / Claude (recommended default):**
 ```bash
 HEGELION_PROVIDER=anthropic

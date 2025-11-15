@@ -55,7 +55,7 @@ DEFAULT_ANTHROPIC_BASE_URL = "https://api.anthropic.com"
 def get_backend_from_env() -> LLMBackend:
     """Instantiate the configured backend."""
 
-    provider = os.getenv("HEGELION_PROVIDER", "auto").lower()
+    provider = os.getenv("HEGELION_PROVIDER", "anthropic").lower()
     model = os.getenv("HEGELION_MODEL", "claude-4.5-sonnet-latest")
 
     openai_key = os.getenv("OPENAI_API_KEY")
