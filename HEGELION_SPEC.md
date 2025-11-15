@@ -56,7 +56,7 @@ Hegelion implements a computational version of Hegelian dialectics:
 - **`engine.py`**: Core dialectical reasoning engine
 - **`backends.py`**: LLM provider abstractions
 - **`parsing.py`**: Contradiction and research proposal extraction
-- **`models.py`**: Data structures and Pydantic models
+- **`models.py`**: Dataclasses and serialization helpers
 - **`prompts.py`**: Prompt templates for each phase
 - **`config.py`**: Environment-driven configuration
 - **`mcp_server.py`**: Model Context Protocol server implementation
