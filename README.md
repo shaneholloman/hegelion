@@ -13,17 +13,14 @@
 
 ## What Hegelion Is
 
-Hegelion wraps any large language model in a deterministic three-phase reasoning loop. Every run produces a thesis, a rigorous antithesis, and an unavoidable synthesis that transcends both sides while emitting machine-readable contradictions and research proposals. Results come back as a `HegelionResult` dataclass (and MCP payload) with provenance metadata, timing, backend identifiers, and optional debug traces.
-
-The engine is backend-agnostic. It defaults to Anthropic Claude Sonnet (`HEGELION_PROVIDER=anthropic`, `HEGELION_MODEL=claude-4.5-sonnet-latest`) but also speaks OpenAI, custom HTTP bridges, and local Ollama.
+Hegelion runs any LLM through Thesis → Antithesis → Synthesis and ships the full result as structured JSON (`HegelionResult`). You always get the three passages plus contradictions, research proposals, and metadata (timings, backend info, optional debug trace). The default backend is Anthropic Claude Sonnet, but the same loop works with OpenAI, Ollama, or a custom HTTP endpoint.
 
 ## Why Hegelion?
 
-- **Always synthesizes** – no conflict gating; every query yields a dialectical resolution.
-- **Inspectable structure** – contradictions and research proposals are extracted into lists, not buried inside Markdown.
-- **Backend transparency** – provenance (provider, model, timings) is part of the result; conflict metrics live only under `metadata.debug` when `debug=True`.
-- **Research-grade outputs** – emit JSONL for benchmarking, evaluation, or data collection pipelines.
-- **MCP ready** – ships with `hegelion-server` exposing only the sanctioned `run_dialectic` and `run_benchmark` tools.
+- **Always synthesizes** – every query completes the full loop.
+- **Structured output** – contradictions and proposals arrive as lists, ready for scoring.
+- **Honest provenance** – backend/model/timings live in `metadata`, internal scores only appear under `metadata.debug` when requested.
+- **Tooling included** – CLI (`hegelion`, `hegelion-bench`) and MCP server (`hegelion-server`) come with the package.
 
 ## Quick Start
 
@@ -100,15 +97,9 @@ hegelion "Explain what photosynthesis does for a plant." --debug --format json
 
 ## Hero Example (AI Creativity)
 
-The star example is the recorded glm-4.6 run answering “Can AI be genuinely creative?”:
+Recorded glm-4.6 run for “Can AI be genuinely creative?” (full trace lives in `examples/glm4_6_examples.jsonl`).
 
-- **Thesis** argues a functional, computational definition of creativity and positions AI as a creative machine.
-- **Antithesis** highlights intent, experience, and domain-breaking novelty as criteria AI cannot meet.
-- **Synthesis** reframes creativity as an emergent property of a co-creative human–AI process and proposes the Co-Creative Trace Analysis.
-
-> Example output below was generated with a Claude-compatible `glm-4.6` backend via an Anthropic-style API. Your outputs will differ depending on your configured provider/model (docs assume Claude 4.5 Sonnet as the default).
-
-Example output (truncated for readability) from a glm-4.6 backend. Your wording will change by model, but the field structure stays the same.
+> Generated with a Claude-compatible `glm-4.6` backend via an Anthropic-style API. Your provider/model will change the wording, not the schema.
 
 ```json
 {
@@ -165,10 +156,9 @@ Generate your own dataset by adding `--output my_runs.jsonl` to either CLI or by
 
 ## For Model Builders & Evaluation Teams
 
-1. **Flip providers quickly** — change `HEGELION_PROVIDER` / `HEGELION_MODEL` in `.env` (e.g., `openai` + `gpt-4.1-mini`, `ollama` + `llama3.1`, or `custom_http`).
-2. **Run JSONL benchmarks** — `hegelion-bench prompts.jsonl --output anthropic.jsonl`, then swap env vars and rerun for OpenAI/Ollama.
-3. **Compare structured fields** — every line carries `thesis/antithesis/synthesis`, `contradictions`, `research_proposals`, `metadata.backend_*`, and optional `metadata.debug.internal_conflict_score` when `--debug` is passed.
-4. **Integrate with evaluation pipelines** — parse JSONL, rank contradictions, grade syntheses, or compute deltas across backends.
+1. Switch providers by editing `.env` (`HEGELION_PROVIDER` + `HEGELION_MODEL`).
+2. Run benchmarks via `hegelion-bench prompts.jsonl --output results.jsonl`, then rerun with other providers for apples-to-apples comparison.
+3. Parse the JSONL output—each line already includes thesis/antithesis/synthesis, contradictions, proposals, metadata, and (optionally) debug metrics.
 
 ## MCP Integration
 
@@ -191,7 +181,7 @@ Claude Desktop config example (`~/Library/Application Support/Claude/claude_desk
 }
 ```
 
-If the console scripts are unavailable in your PATH, use `"command": "python", "args": ["-m", "hegelion.mcp_server"]` instead. Only the `run_dialectic` and `run_benchmark` tools are exposed, mirroring the public Python API.
+If `hegelion-server` isn’t on PATH, swap the command for `python -m hegelion.mcp_server`. Only `run_dialectic` and `run_benchmark` are exposed.
 
 ## Development
 
