@@ -5,6 +5,8 @@
 
 ## Sample Result (`HegelionResult`)
 
+**Note:** This example output was generated using Claude Code connected to an Anthropic-compatible endpoint running `glm-4.6`. The default setup instructions in this repo use Anthropic's official API (`claude-4.5-sonnet-latest`), but Hegelion is backend-agnostic.
+
 ```json
 {
   "query": "What year was the printing press invented?",
@@ -42,7 +44,7 @@
     "synthesis_time_ms": 2100.0,
     "total_time_ms": 5150.0,
     "backend_provider": "AnthropicLLMBackend",
-    "backend_model": "claude-4.5-sonnet-latest"
+    "backend_model": "glm-4.6"
   }
 }
 ```

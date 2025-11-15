@@ -110,7 +110,7 @@ async def main():
     print(f"Mode: {result.mode}")
     print(f"Contradictions: {len(result.contradictions)}")
     print(f"Research proposals: {len(result.research_proposals)}")
-    print(f"\nSynthesis:\n{result.synthesis}")
+    print("\nSynthesis:\n", result.synthesis)
 
 asyncio.run(main())
 ```
@@ -118,10 +118,10 @@ asyncio.run(main())
 **Command Line:**
 ```bash
 # Single query
-hegelion "What year was the printing press invented?" --format summary
+python -m hegelion.scripts.hegelion_cli "Can AI be genuinely creative?" --format summary
 
 # Benchmark suite (JSONL file with one prompt per line)
-hegelion-bench hegelion/benchmarks/examples_basic.jsonl --summary
+python -m hegelion.scripts.hegelion_bench hegelion/benchmarks/examples_basic.jsonl --summary
 ```
 
 **MCP Server:**
@@ -157,37 +157,51 @@ The synthesis:
 
 ### 4. Returns Structured Results
 
+**Example Output: "Can AI be genuinely creative?"**
+
 ```json
 {
   "query": "Can AI be genuinely creative?",
   "mode": "synthesis",
-  "thesis": "AI can be considered creative because it generates novel combinations...",
-  "antithesis": "AI lacks subjective experience and intrinsic intention...",
-  "synthesis": "Both sides treat creativity as all-or-nothing. A more useful view is...",
+  "thesis": "AI demonstrates genuine creativity by generating novel combinations, learning from vast human knowledge bases, and producing outputs that are both original and valuable. Modern neural networks can synthesize disparate concepts, explore vast possibility spaces, and create original artwork, musical compositions, and scientific hypotheses. Systematic analysis shows that AI creativity isn't inferior to human creativity, just different in origin—it learns from patterns rather than lived experience, but this doesn't diminish its capacity to generate genuinely novel and useful outputs.",
+  "antithesis": "AI lacks genuine creativity because it operates without subjective experience, intrinsic motivation, or genuine understanding. Language models and image generators are sophisticated pattern-matchers that remix existing human knowledge without comprehending the meaning or value of what they produce. They cannot experience genuine surprise, struggle with creative blocks, or make intentional choices—they simply optimize for learned objectives by rearranging patterns from their training data. There is no genuine creativity in statistical extrapolation.",
+  "synthesis": "Both thesis and antithesis frame creativity in all-or-nothing terms that obscure the real issue. A more useful view treats creativity as existing on a spectrum of constraint-aware exploration. Humans excel at creativity that requires embodied experience and intuitive leaps across disparate knowledge domains. AIs excel at exploring combinatorial spaces at scales humans cannot match, discovering patterns humans would never find. The synthesis: genuine creativity emerges from the interaction of these two different modes. Rather than asking whether AI is "truly" creative, we should ask what forms of co-creative partnership arise when human intuition guides AI search, and when AI surprise sparks human insight.",
   "contradictions": [
     {
-      "description": "Thesis assumes creativity requires only novel outputs",
-      "evidence": "Overlooks the role of intent and subjective experience"
+      "description": "CONTRADICTION / EVIDENCE: Thesis assumes technology determines creativity",
+      "evidence": "AI creativity depends entirely on training data quality and human curation"
+    },
+    {
+      "description": "CONTRADICTION / EVIDENCE: Antithesis overstates human uniqueness",
+      "evidence": "Human creativity alsos recombines existing patterns from experience and culture"
+    },
+    {
+      "description": "CONTRADICTION / EVIDENCE: Neither side addresses intent vs autonomy",
+      "evidence": "Maximally creative humans often 'surrender' to process—AI may lack will but can discover what we didn't intend to find"
     }
   ],
   "research_proposals": [
     {
-      "description": "Compare human and AI-generated works under blind evaluation",
-      "testable_prediction": "Expert judges cannot reliably distinguish AI from human creative works"
+      "description": "Test human-AI creativity comparison in blind evaluation",
+      "testable_prediction": "Expert judges cannot reliably distinguish top-tier AI creative output from human creative work"
+    },
+    {
+      "description": "Measure co-creative productivity in hybrid teams",
+      "testable_prediction": "Teams with AI co-creative tools generate measurably more novel solutions than humans-only teams"
     }
   ],
   "metadata": {
-    "thesis_time_ms": 340,
-    "antithesis_time_ms": 510,
-    "synthesis_time_ms": 620,
-    "total_time_ms": 1470,
+    "thesis_time_ms": 1200.0,
+    "antithesis_time_ms": 1850.0,
+    "synthesis_time_ms": 2100.0,
+    "total_time_ms": 5150.0,
     "backend_provider": "AnthropicLLMBackend",
-    "backend_model": "claude-4.5-sonnet-latest"
+    "backend_model": "glm-4.6"
   }
 }
 ```
 
-**Note:** Internal conflict scoring is still computed for research purposes but is not exposed in the main API to avoid fetishizing scalar precision. Use `debug=True` to access internal metrics.
+**Note:** This example output was generated using Claude Code connected to an Anthropic-compatible endpoint running `glm-4.6`. The default setup instructions above use Anthropic's official API (`claude-4.5-sonnet-latest`), but Hegelion is backend-agnostic. Internal conflict scoring is still computed for research purposes but is not exposed in the main API to avoid fetishizing scalar precision. Use `debug=True` to access internal metrics.
 
 ---
 
@@ -231,21 +245,20 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 {
   "mcpServers": {
     "hegelion": {
-      "command": "python",
-      "args": [
-        "-m", "hegelion.mcp_server"
-      ],
+      "command": "hegelion-server",
+      "args": [],
       "cwd": "/path/to/hegelion",
       "env": {
         "HEGELION_PROVIDER": "anthropic",
         "HEGELION_MODEL": "claude-4.5-sonnet-latest",
-        "ANTHROPIC_API_KEY": "your-anthropic-api-key-here",
-        "ANTHROPIC_BASE_URL": "https://api.anthropic.com"
+        "ANTHROPIC_API_KEY": "your-anthropic-api-key-here"
       }
     }
   }
 }
 ```
+
+Note: You can also use `python -m hegelion.mcp_server` if `hegelion-server` is not in your PATH. The MCP server uses stdio for stdin/stdout communication and is fully stateless, making it compatible with cloud code platforms and containerized deployments.
 
 **Available MCP Tools:**
 
@@ -370,3 +383,89 @@ MIT License - see [LICENSE](LICENSE) file for details.
 Used in AI reasoning research and actively maintained.
 
 For questions, issues, or research collaborations, please open an issue on GitHub.
+
+---
+
+## Getting Started (End-to-End Setup)
+
+**Step 1: Clone and Install**
+```bash
+git clone https://github.com/Shannon-Labs/hegelion.git
+cd hegelion
+
+# Install with uv (recommended)
+uv sync
+source .venv/bin/activate
+
+# Or with pip
+pip install -e .
+```
+
+**Step 2: Configure with Anthropic (Default Provider)**
+```bash
+cp .env.example .env
+# Edit .env and add your Anthropic API key:
+HEGELION_PROVIDER=anthropic
+HEGELION_MODEL=claude-4.5-sonnet-latest
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+```
+
+**Step 3: Run Your First Dialectic**
+```bash
+# From the CLI
+hegelion "Is privacy more important than security?" --format summary
+
+# Or via Python API
+python -c "
+import asyncio
+from hegelion import run_dialectic
+
+async def main():
+    result = await run_dialectic('Is privacy more important than security?')
+    print(f'Contradictions found: {len(result.contradictions)}')
+    print(f'Research proposals: {len(result.research_proposals)}')
+    print(f'\\nSynthesis preview: {result.synthesis[:100]}...')
+
+asyncio.run(main())
+"
+```
+
+**Step 4: Set Up MCP Server for Claude Desktop**
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "hegelion-server",
+      "args": [],
+      "cwd": "/path/to/hegelion",
+      "env": {
+        "HEGELION_PROVIDER": "anthropic",
+        "HEGELION_MODEL": "claude-4.5-sonnet-latest",
+        "ANTHROPIC_API_KEY": "your-anthropic-api-key-here"
+      }
+    }
+  }
+}
+```
+
+Alternatively, if using Python module:
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "python",
+      "args": ["-m", "hegelion.mcp_server"],
+      "cwd": "/path/to/hegelion",
+      "env": {
+        "HEGELION_PROVIDER": "anthropic",
+        "HEGELION_MODEL": "claude-4.5-sonnet-latest",
+        "ANTHROPIC_API_KEY": "your-anthropic-api-key-here"
+      }
+    }
+  }
+}
+```
+
+After setup, restart Claude Desktop and Hegelion will be available as an MCP tool for dialectical analysis: `run_dialectic` and `run_benchmark`.

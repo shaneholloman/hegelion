@@ -66,19 +66,20 @@ def get_backend_from_env() -> LLMBackend:
     custom_api_key = os.getenv("CUSTOM_API_KEY")
     custom_timeout = _get_env_float("CUSTOM_API_TIMEOUT", 60.0)
 
+    # Default priority: Anthropic first (recommended), then OpenAI
+    if provider in {"anthropic", "auto"} and anthropic_key:
+        return AnthropicLLMBackend(
+            model=model,
+            api_key=anthropic_key,
+            base_url=anthropic_base_url,
+        )
+
     if provider in {"openai", "auto"} and openai_key:
         return OpenAILLMBackend(
             model=model,
             api_key=openai_key,
             base_url=os.getenv("OPENAI_BASE_URL"),
             organization=os.getenv("OPENAI_ORG_ID"),
-        )
-
-    if provider in {"anthropic", "auto"} and anthropic_key:
-        return AnthropicLLMBackend(
-            model=model,
-            api_key=anthropic_key,
-            base_url=anthropic_base_url,
         )
 
     if provider == "ollama":
