@@ -26,8 +26,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Sync dependencies
-        run: uv sync --dev
+      - name: Create virtualenv and install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          uv pip install -e .[dev]
 
       - name: Run tests
-        run: uv run pytest -v --tb=short
+        run: .venv/bin/pytest -v --tb=short
