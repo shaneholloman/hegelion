@@ -4,32 +4,98 @@ from __future__ import annotations
 
 import asyncio
 import json
+from os import PathLike
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
+from .backends import LLMBackend
 from .config import get_backend_from_env, get_engine_settings_from_env
 from .engine import HegelionEngine
 from .models import HegelionResult
 
+PromptEntry = Union[str, Mapping[str, Any]]
+PromptSource = Union[Path, str, PathLike[str], Iterable[PromptEntry]]
+
+
+def _extract_prompt_from_mapping(data: Mapping[str, Any]) -> Optional[str]:
+    for key in ("query", "prompt", "text"):
+        value = data.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def _normalize_prompt_entry(entry: PromptEntry) -> str:
+    if isinstance(entry, str):
+        text = entry.strip()
+        if not text:
+            raise ValueError("Prompt entries cannot be empty strings.")
+        return text
+    if isinstance(entry, Mapping):
+        extracted = _extract_prompt_from_mapping(entry)
+        if extracted:
+            return extracted
+        raise ValueError("Prompt dicts must include a 'query' or 'prompt' field.")
+    raise TypeError(f"Unsupported prompt entry type: {type(entry)!r}")
+
+
+def _coerce_prompts(prompts: Iterable[PromptEntry]) -> List[str]:
+    normalized: List[str] = []
+    for entry in prompts:
+        try:
+            normalized.append(_normalize_prompt_entry(entry))
+        except (TypeError, ValueError) as exc:  # pragma: no cover - defensive
+            raise ValueError(f"Invalid prompt entry {entry!r}: {exc}") from exc
+    return normalized
+
+
+def _load_prompts_from_path(path: Path) -> List[str]:
+    if not path.exists() or not path.is_file():
+        raise FileNotFoundError(f"Prompts file not found: {path}")
+
+    prompts: List[str] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line:
+                continue
+            try:
+                parsed = json.loads(line)
+            except json.JSONDecodeError:
+                prompts.append(line)
+                continue
+
+            if isinstance(parsed, Mapping):
+                extracted = _extract_prompt_from_mapping(parsed)
+                if extracted:
+                    prompts.append(extracted)
+                else:
+                    prompts.append(json.dumps(parsed, ensure_ascii=False))
+            elif isinstance(parsed, str):
+                if parsed.strip():
+                    prompts.append(parsed.strip())
+            else:
+                prompts.append(json.dumps(parsed, ensure_ascii=False))
+    return prompts
+
 
 async def run_dialectic(
     query: str,
-    backend: Optional[Any] = None,
-    model: Optional[str] = None,
-    synthesis_threshold: Optional[float] = None,
-    max_tokens_per_phase: Optional[int] = None,
+    *,
     debug: bool = False,
+    backend: Optional[LLMBackend] = None,
+    model: Optional[str] = None,
+    max_tokens_per_phase: Optional[int] = None,
 ) -> HegelionResult:
     """
     Run a single dialectical reasoning query.
 
     Args:
-        query: The question or prompt to analyze dialectically
-        backend: Optional LLM backend (uses environment configuration if not provided)
-        model: Optional model name (uses environment configuration if not provided)
-        synthesis_threshold: Internal threshold for synthesis (kept for backward compatibility)
-        max_tokens_per_phase: Maximum tokens per dialectical phase
-        debug: Whether to include debug information in output
+        query: The question or prompt to analyze dialectically.
+        debug: Whether to include debug information in output.
+        backend: Optional LLM backend (defaults to env-configured backend).
+        model: Optional model name override.
+        max_tokens_per_phase: Optional override for maximum tokens per phase.
 
     Returns:
         HegelionResult: Structured result with thesis, antithesis, synthesis, and analysis
@@ -44,35 +110,27 @@ async def run_dialectic(
         >>>
         >>> asyncio.run(main())
     """
-    # Load configuration from environment if not provided
-    if backend is None:
-        backend = get_backend_from_env()
+    settings = get_engine_settings_from_env()
+    resolved_backend = backend or get_backend_from_env()
+    resolved_model = model or settings.model
+    resolved_tokens = max_tokens_per_phase or settings.max_tokens_per_phase
 
-    if model is None:
-        settings = get_engine_settings_from_env()
-        model = settings.model
-        if synthesis_threshold is None:
-            synthesis_threshold = settings.synthesis_threshold
-        if max_tokens_per_phase is None:
-            max_tokens_per_phase = settings.max_tokens_per_phase
-
-    # Create and run engine
     engine = HegelionEngine(
-        backend=backend,
-        model=model or "gpt-4.1-mini",
-        synthesis_threshold=synthesis_threshold or 0.85,
-        max_tokens_per_phase=max_tokens_per_phase or 10_000,
+        backend=resolved_backend,
+        model=resolved_model,
+        synthesis_threshold=settings.synthesis_threshold,
+        max_tokens_per_phase=resolved_tokens,
     )
 
     return await engine.process_query(query, debug=debug)
 
 
 async def run_benchmark(
-    prompts: Iterable[str] | Path,
-    output_file: Optional[Path] = None,
-    backend: Optional[Any] = None,
+    prompts: PromptSource,
+    *,
+    output_file: Optional[Union[Path, str, PathLike[str]]] = None,
+    backend: Optional[LLMBackend] = None,
     model: Optional[str] = None,
-    synthesis_threshold: Optional[float] = None,
     max_tokens_per_phase: Optional[int] = None,
     debug: bool = False,
 ) -> List[HegelionResult]:
@@ -80,13 +138,12 @@ async def run_benchmark(
     Run Hegelion on multiple prompts for benchmarking.
 
     Args:
-        prompts: Either an iterable of prompt strings or a Path to a JSONL file with prompts
-        output_file: Optional Path to write results as JSONL
-        backend: Optional LLM backend (uses environment configuration if not provided)
-        model: Optional model name (uses environment configuration if not provided)
-        synthesis_threshold: Internal threshold for synthesis
-        max_tokens_per_phase: Maximum tokens per dialectical phase
-        debug: Whether to include debug information in output
+        prompts: Iterable of prompt strings/objects or a path to a JSONL file.
+        output_file: Optional path that receives JSONL output (one result per line).
+        backend: Optional LLM backend override.
+        model: Optional model override.
+        max_tokens_per_phase: Optional override for phase token limits.
+        debug: Whether to include debug information in each result.
 
     Returns:
         List[HegelionResult]: Results for all prompts
@@ -105,50 +162,25 @@ async def run_benchmark(
         >>>
         >>> asyncio.run(main())
     """
-    # Load prompts from file or use iterable
-    if isinstance(prompts, Path):
-        prompt_list = []
-        with open(prompts, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        data = json.loads(line)
-                        if isinstance(data, str):
-                            prompt_list.append(data)
-                        elif isinstance(data, dict) and 'prompt' in data:
-                            prompt_list.append(data['prompt'])
-                        elif isinstance(data, dict) and 'query' in data:
-                            prompt_list.append(data['query'])
-                        else:
-                            prompt_list.append(json.dumps(data))
-                    except json.JSONDecodeError:
-                        # Treat non-JSON lines as prompts directly
-                        prompt_list.append(line)
+    path_like = (str, Path, PathLike)
+    if isinstance(prompts, path_like):
+        prompt_list = _load_prompts_from_path(Path(prompts))
     else:
-        prompt_list = list(prompts)
+        prompt_list = _coerce_prompts(prompts)
 
     if not prompt_list:
         return []
 
-    # Load configuration
-    if backend is None:
-        backend = get_backend_from_env()
+    settings = get_engine_settings_from_env()
+    resolved_backend = backend or get_backend_from_env()
+    resolved_model = model or settings.model
+    resolved_tokens = max_tokens_per_phase or settings.max_tokens_per_phase
 
-    if model is None:
-        settings = get_engine_settings_from_env()
-        model = settings.model
-        if synthesis_threshold is None:
-            synthesis_threshold = settings.synthesis_threshold
-        if max_tokens_per_phase is None:
-            max_tokens_per_phase = settings.max_tokens_per_phase
-
-    # Create engine
     engine = HegelionEngine(
-        backend=backend,
-        model=model or "gpt-4.1-mini",
-        synthesis_threshold=synthesis_threshold or 0.85,
-        max_tokens_per_phase=max_tokens_per_phase or 10_000,
+        backend=resolved_backend,
+        model=resolved_model,
+        synthesis_threshold=settings.synthesis_threshold,
+        max_tokens_per_phase=resolved_tokens,
     )
 
     # Run all prompts
@@ -159,10 +191,11 @@ async def run_benchmark(
 
     # Write to output file if specified
     if output_file:
-        with open(output_file, 'w', encoding='utf-8') as f:
+        output_path = Path(output_file)
+        with output_path.open('w', encoding='utf-8') as handle:
             for result in results:
-                json.dump(result.to_dict(), f, ensure_ascii=False)
-                f.write('\n')
+                json.dump(result.to_dict(), handle, ensure_ascii=False)
+                handle.write('\n')
 
     return results
 

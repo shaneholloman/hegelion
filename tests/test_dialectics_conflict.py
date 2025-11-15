@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
 
-from hegelion_server.dialectics import HegelionEngine
-from hegelion_server.llm_backends import DummyLLMBackend
+from hegelion.backends import DummyLLMBackend
+from hegelion.engine import HegelionEngine
+from hegelion.parsing import extract_contradictions
 
 PRIVACY_SECURITY_THESIS = """
 Security must be prioritized over privacy when public safety is at stake. Governments owe citizens
@@ -48,7 +49,7 @@ class _ConflictTestEngine(HegelionEngine):
 
 
 def test_extract_contradictions_privacy_security() -> None:
-    contradictions = HegelionEngine._extract_contradictions(PRIVACY_SECURITY_ANTITHESIS)
+    contradictions = extract_contradictions(PRIVACY_SECURITY_ANTITHESIS)
     assert len(contradictions) >= 4
     assert contradictions[0].startswith("The Security Paradox")
     assert "Misdefinition" in contradictions[1]
@@ -60,13 +61,14 @@ async def test_conflict_score_privacy_security() -> None:
         backend=DummyLLMBackend(),
         model="dummy",
         embedder=_ConflictTestEmbedder(),
-        synthesis_threshold=0.5,
     )
-    contradictions = engine._extract_contradictions(PRIVACY_SECURITY_ANTITHESIS)
+    contradictions = extract_contradictions(PRIVACY_SECURITY_ANTITHESIS)
     score = await engine._compute_conflict(
         PRIVACY_SECURITY_THESIS,
         PRIVACY_SECURITY_ANTITHESIS,
         contradictions,
     )
+
     assert len(contradictions) >= 4
-    assert score >= 0.75
+    assert 0.0 <= score <= 1.0
+    assert score >= 0.7

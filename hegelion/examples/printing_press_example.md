@@ -3,43 +3,48 @@
 ## Query
 "What year was the printing press invented?"
 
-## Hegelion Dialectical Analysis
+## Sample Result (`HegelionResult`)
 
-### Thesis
-The printing press was invented around 1440 by Johannes Gutenberg in Mainz, Germany. This invention revolutionized the spread of information by making books more accessible and affordable, leading to increased literacy rates and the rapid dissemination of knowledge across Europe.
+```json
+{
+  "query": "What year was the printing press invented?",
+  "mode": "synthesis",
+  "thesis": "Johannes Gutenberg's metal movable-type press emerged around 1440 in Mainz, rapidly accelerating literacy and the spread of ideas across Europe.",
+  "antithesis": "Framing the printing press as a single 1440 breakthrough ignores centuries of Asian innovation, the financial collapse of Gutenberg's shop, and how social demand—not technology alone—made printing transformative.",
+  "synthesis": "Gutenberg's press marks a convergence rather than an origin. Asian woodblock and movable-type traditions, Renaissance humanism, and merchant-capital networks combined to create an information ecosystem that shifted power from royal courts to transnational publics.",
+  "contradictions": [
+    {
+      "description": "Treating the press as a single European invention erases Chinese and Korean precedents",
+      "evidence": "Movable type existed in Korea by the 1200s and produced state documents at scale"
+    },
+    {
+      "description": "Thesis implies instant success",
+      "evidence": "Gutenberg's venture failed financially and adoption took decades"
+    },
+    {
+      "description": "Technological determinism ignores the Renaissance demand-side story",
+      "evidence": "Merchant literacy and humanist curricula created the market that made printing durable"
+    }
+  ],
+  "research_proposals": [
+    {
+      "description": "Compare adoption speed in cities with different merchant densities",
+      "testable_prediction": "Ports with pre-existing merchant guilds achieved breakeven printing businesses within 15 years"
+    },
+    {
+      "description": "Map global knowledge flows between East Asian printing centers and Mainz",
+      "testable_prediction": "Loanwords and tooling evidence will show Korean influence on early European presses"
+    }
+  ],
+  "metadata": {
+    "thesis_time_ms": 1200.0,
+    "antithesis_time_ms": 1850.0,
+    "synthesis_time_ms": 2100.0,
+    "total_time_ms": 5150.0,
+    "backend_provider": "AnthropicLLMBackend",
+    "backend_model": "claude-4.5-sonnet-latest"
+  }
+}
+```
 
-### Antithesis
-CONTRADICTION: Thesis oversimplifies the invention as a single event by one person.
-EVIDENCE: Printing technologies existed in Asia centuries before Gutenberg, including woodblock printing in China (8th century) and movable type in Korea (13th century).
-
-CONTRADICTION: Thesis assumes Gutenberg's press was immediately successful.
-EVIDENCE: Gutenberg's business actually failed financially, and the full impact of printing took several decades to materialize.
-
-CONTRADICTION: Thesis focuses on technical invention rather than social context.
-EVIDENCE: The Renaissance humanist movement and rising merchant class created the demand that made printing successful.
-
-### Synthesis
-The invention of the printing press represents not a single moment but a convergence of technological and cultural forces. While Gutenberg's 1440 press was a breakthrough in European movable type, it was part of a global evolution of printing technologies. The true significance lies in how this convergence created a new information ecosystem that transformed society.
-
-RESEARCH_PROPOSAL: Compare the social impact of different printing technologies across cultures (woodblock vs. movable type)
-TESTABLE_PREDICTION: Societies with existing merchant networks showed faster adoption of printing than feudal societies
-
-### Structured Output
-
-**Contradictions Found:**
-1. Oversimplification of invention as singular event (Asian precedents existed)
-2. Misrepresentation of immediate success (Gutenberg's business failed)
-3. Technological determinism (ignoring cultural and economic factors)
-
-**Research Proposals:**
-1. Cross-cultural analysis of printing technology adoption patterns
-2. Economic study of early printing businesses and their success factors
-
-**Timing:**
-- Thesis generation: 1,200ms
-- Antithesis generation: 1,800ms
-- Synthesis generation: 2,100ms
-- Total time: 5,100ms
-
-**Mode:** synthesis
-**Backend:** anthropic-claude-3-sonnet
+The CLI `hegelion "What year was the printing press invented?" --format summary` renders the same content as a readable report while keeping the JSON contract intact.

@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import asyncio
-import json
 from dataclasses import dataclass
-from typing import Optional, Protocol
+from typing import Any, Dict, Optional, Protocol
 
 import httpx
 
@@ -85,13 +83,14 @@ class AnthropicLLMBackend:
 
     model: str
     api_key: str
+    base_url: Optional[str] = None
 
     def __post_init__(self) -> None:
         if AsyncAnthropic is None:  # pragma: no cover - import guard
             raise BackendNotAvailableError(
                 "anthropic package is not installed but Anthropic backend was requested."
             )
-        self.client = AsyncAnthropic(api_key=self.api_key)
+        self.client = AsyncAnthropic(api_key=self.api_key, base_url=self.base_url)
 
     async def generate(
         self,
@@ -147,6 +146,64 @@ class OllamaLLMBackend:
         return str(text).strip()
 
 
+@dataclass
+class CustomHTTPLLMBackend:
+    """Lightweight backend for generic JSON HTTP APIs."""
+
+    model: str
+    api_base_url: str
+    api_key: Optional[str] = None
+    timeout: float = 60.0
+
+    async def generate(
+        self,
+        prompt: str,
+        max_tokens: int = 1_000,
+        temperature: float = 0.7,
+        system_prompt: Optional[str] = None,
+    ) -> str:
+        payload: Dict[str, Any] = {
+            "model": self.model,
+            "prompt": prompt,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        if system_prompt:
+            payload["system_prompt"] = system_prompt
+
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+
+        url = self.api_base_url.rstrip("/")
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            data: Dict[str, Any] = response.json()
+
+        for key in ("text", "completion", "result", "output"):
+            value = data.get(key)
+            if isinstance(value, str):
+                return value.strip()
+
+        choices = data.get("choices")
+        if isinstance(choices, list) and choices:
+            first = choices[0]
+            if isinstance(first, dict):
+                for key in ("text", "content"):
+                    value = first.get(key)
+                    if isinstance(value, str):
+                        return value.strip()
+                message = first.get("message")
+                if isinstance(message, dict):
+                    content = message.get("content")
+                    if isinstance(content, str):
+                        return content.strip()
+
+        # Fallback: return the entire JSON payload as a string for inspection
+        return str(data)
+
+
 class DummyLLMBackend:
     """Deterministic backend for tests and demos."""
 
@@ -187,6 +244,7 @@ __all__ = [
     "OpenAILLMBackend",
     "AnthropicLLMBackend",
     "OllamaLLMBackend",
+    "CustomHTTPLLMBackend",
     "DummyLLMBackend",
     "BackendNotAvailableError",
 ]

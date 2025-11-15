@@ -1,11 +1,11 @@
 [project]
 name = "hegelion"
-version = "0.2.0"
+version = "0.1.0"
 description = "Dialectical reasoning harness for LLMs (thesis → antithesis → synthesis)"
 requires-python = ">=3.10"
 readme = "README.md"
 authors = [
-    { name = "Hegelion Contributors", email = "contributors@hegelion.ai" }
+    { name = "Hunter Bown", email = "hunter@shannonlabs.dev" }
 ]
 license = { text = "MIT" }
 keywords = ["ai", "llm", "reasoning", "dialectical", "hegelian", "mcp"]
@@ -44,18 +44,24 @@ dev = [
 ]
 
 [project.scripts]
+hegelion = "hegelion.scripts.hegelion_cli:main"
+hegelion-bench = "hegelion.scripts.hegelion_bench:main"
 hegelion-server = "hegelion.mcp_server:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/hegelion"
-Repository = "https://github.com/your-org/hegelion"
-Documentation = "https://github.com/your-org/hegelion/blob/main/HEGELION_SPEC.md"
-"Bug Tracker" = "https://github.com/your-org/hegelion/issues"
+Homepage = "https://github.com/Shannon-Labs/hegelion"
+Repository = "https://github.com/Shannon-Labs/hegelion"
+Documentation = "https://github.com/Shannon-Labs/hegelion/blob/main/HEGELION_SPEC.md"
+"Bug Tracker" = "https://github.com/Shannon-Labs/hegelion/issues"
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["."]
 asyncio_mode = "auto"
+filterwarnings = [
+    "ignore:coroutine 'run_dialectic' was never awaited",
+    "ignore:coroutine 'run_benchmark' was never awaited",
+]

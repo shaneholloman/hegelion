@@ -34,7 +34,7 @@ Hegelion turns dialectic into a **first-class, inspectable protocol**:
 - **Named phases**: `THESIS → ANTITHESIS → SYNTHESIS`
 - **Always synthesizes** – no arbitrary conflict gating
 - **Transparent**: full trace with structured contradictions and research proposals
-- **Backend-agnostic**: works with OpenAI, Anthropic, z.ai, or local models
+- **Backend-agnostic**: works with Anthropic, OpenAI, local runtimes, or custom HTTP endpoints
 - **Research-focused**: encourages falsifiable predictions and testable proposals
 
 ---
@@ -64,27 +64,38 @@ cp .env.example .env
 # Edit .env with your API keys
 ```
 
-Supported backends:
+Supported backends (set one section in your `.env`):
 
-**Anthropic/z.ai:**
+**Anthropic / Claude (recommended):**
 ```bash
 HEGELION_PROVIDER=anthropic
-HEGELION_MODEL=glm-4.6
-ANTHROPIC_API_KEY=your-key-here
-ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic  # for z.ai
+HEGELION_MODEL=claude-4.5-sonnet-latest
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+# Optional: only override when proxying the API
+# ANTHROPIC_BASE_URL=https://api.anthropic.com
 ```
 
 **OpenAI:**
 ```bash
 HEGELION_PROVIDER=openai
 HEGELION_MODEL=gpt-4.1-mini
-OPENAI_API_KEY=your-key-here
+OPENAI_API_KEY=your-openai-api-key-here
+# OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-**Ollama (local):**
+**Custom HTTP backend (advanced users):**
+```bash
+HEGELION_PROVIDER=custom_http
+HEGELION_MODEL=your-custom-model-id
+CUSTOM_API_BASE_URL=https://your-endpoint.example.com/v1/run
+CUSTOM_API_KEY=your-custom-api-key
+```
+
+**Ollama (local experiments):**
 ```bash
 HEGELION_PROVIDER=ollama
 HEGELION_MODEL=llama3.1
+OLLAMA_BASE_URL=http://localhost:11434
 ```
 
 ### Usage
@@ -107,10 +118,10 @@ asyncio.run(main())
 **Command Line:**
 ```bash
 # Single query
-hegelion/scripts/hegelion_cli.py "What year was the printing press invented?" --format summary
+hegelion "What year was the printing press invented?" --format summary
 
-# Benchmark suite
-hegelion/scripts/hegelion_bench.py hegelion/benchmarks/examples_basic.jsonl --summary
+# Benchmark suite (JSONL file with one prompt per line)
+hegelion-bench hegelion/benchmarks/examples_basic.jsonl --summary
 ```
 
 **MCP Server:**
@@ -171,7 +182,7 @@ The synthesis:
     "synthesis_time_ms": 620,
     "total_time_ms": 1470,
     "backend_provider": "AnthropicLLMBackend",
-    "backend_model": "glm-4.6"
+    "backend_model": "claude-4.5-sonnet-latest"
   }
 }
 ```
@@ -227,9 +238,9 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
       "cwd": "/path/to/hegelion",
       "env": {
         "HEGELION_PROVIDER": "anthropic",
-        "HEGELION_MODEL": "glm-4.6",
+        "HEGELION_MODEL": "claude-4.5-sonnet-latest",
         "ANTHROPIC_API_KEY": "your-anthropic-api-key-here",
-        "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic"
+        "ANTHROPIC_BASE_URL": "https://api.anthropic.com"
       }
     }
   }
@@ -294,10 +305,10 @@ pytest --cov=hegelion
 pre-commit install
 
 # Run single query for testing
-hegelion/scripts/hegelion_cli.py "What is consciousness?" --debug
+hegelion "What is consciousness?" --debug
 
 # Run benchmark examples
-hegelion/scripts/hegelion_bench.py hegelion/benchmarks/examples_basic.jsonl --summary
+hegelion-bench hegelion/benchmarks/examples_basic.jsonl --summary
 ```
 
 ---

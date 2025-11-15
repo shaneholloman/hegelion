@@ -1,13 +1,6 @@
 """Quick helper script to inspect contradiction parsing."""
 
-from pathlib import Path
-import sys
-
-ROOT = Path(__file__).resolve().parent
-if str(ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT / "src"))
-
-from hegelion_server.dialectics import HegelionEngine
+from hegelion.parsing import extract_contradictions
 
 SAMPLE_ANTITHESIS = """
 I will now dismantle the security-first position. Each contradiction shows why the thesis collapses in
@@ -28,7 +21,7 @@ EVIDENCE: A state intrusive enough to inspect every message cannot credibly self
 
 
 if __name__ == "__main__":
-    contradictions = HegelionEngine._extract_contradictions(SAMPLE_ANTITHESIS)
+    contradictions = extract_contradictions(SAMPLE_ANTITHESIS)
     print(f"Found {len(contradictions)} contradictions:")
     for idx, item in enumerate(contradictions, start=1):
         print(f"{idx}. {item}")

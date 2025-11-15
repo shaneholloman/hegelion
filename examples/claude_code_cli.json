@@ -1,20 +1,18 @@
 {
   "mcpServers": {
     "hegelion": {
-      "command": "uv",
+      "command": "python",
       "args": [
-        "--directory",
-        "/Volumes/VIXinSSD/hegelion",
-        "run",
-        "hegelion-server"
+        "-m",
+        "hegelion.mcp_server"
       ],
       "env": {
         "HEGELION_PROVIDER": "anthropic",
-        "HEGELION_MODEL": "glm-4.6",
+        "HEGELION_MODEL": "claude-4.5-sonnet-latest",
         "ANTHROPIC_API_KEY": "your-anthropic-api-key-here",
-        "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic"
+        "ANTHROPIC_BASE_URL": "https://api.anthropic.com"
       }
     }
   },
-  "model": "glm-4.6"
+  "model": "claude-4.5-sonnet-latest"
 }

@@ -12,7 +12,7 @@ def parse_contradiction_header(text: str) -> Optional[str]:
     colon_index = text.find(":")
     if colon_index == -1:
         return None
-    prefix = text[:colon_index].strip().upper()
+    prefix = strip_markdown_wrappers(text[:colon_index].strip()).upper()
     if not prefix.startswith("CONTRADICTION"):
         return None
     detail = text[colon_index + 1 :].strip() or "Unspecified contradiction"
@@ -35,7 +35,7 @@ def strip_markdown_wrappers(text: str) -> str:
     return trimmed
 
 
-def extract_contraditions(text: str) -> List[str]:
+def extract_contradictions(text: str) -> List[str]:
     """Extract structured contradictions from antithesis text.
 
     Expected format:
@@ -92,6 +92,8 @@ def extract_research_proposals(text: str) -> List[str]:
             continue
         upper = normalized.upper()
         if upper.startswith("RESEARCH_PROPOSAL:"):
+            if current:
+                proposals.append(current)
             current = normalized.split(":", 1)[1].strip()
         elif upper.startswith("TESTABLE_PREDICTION:"):
             prediction = normalized.split(":", 1)[1].strip()
@@ -113,9 +115,7 @@ def parse_conflict_value(response: str) -> float:
     if not response:
         return 0.0
     candidates = [response.strip()]
-    match = re.search(r"\{.*\}", response, flags=re.DOTALL)
-    if match:
-        candidates.append(match.group(0))
+    candidates.extend(re.findall(r"\{.*?\}", response, flags=re.DOTALL))
     for candidate in candidates:
         try:
             data = json.loads(candidate)

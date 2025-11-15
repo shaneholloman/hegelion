@@ -8,22 +8,22 @@ import asyncio
 import json
 import sys
 from pathlib import Path
+from typing import Optional, Sequence
 
-# Add the hegelion package to Python path for direct execution
-sys.path.insert(0, str(Path(__file__).parent.parent))
+if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
+    sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hegelion.core import run_benchmark
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse command line arguments."""
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run Hegelion dialectical reasoning on multiple prompts."
     )
     parser.add_argument(
         "prompts_file",
         type=Path,
-        help="Path to JSONL file containing prompts (one per line)",
+        help="Path to JSONL file containing prompts (one JSON object per line)",
     )
     parser.add_argument(
         "--output",
@@ -34,14 +34,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Include debug information and internal conflict scores",
+        help="Include debug information and internal diagnostics",
     )
     parser.add_argument(
         "--summary",
         action="store_true",
-        help="Print a summary of results to stdout",
+        help="Print aggregate statistics to stdout after the run",
     )
-    return parser.parse_args()
+    return parser
+
+
+def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+    return build_parser().parse_args(argv)
+
+
+def _safe_time(result, key: str) -> float:
+    metadata = result.metadata if isinstance(result.metadata, dict) else {}
+    value = metadata.get(key)
+    if isinstance(value, (int, float)):
+        return float(value)
+    return 0.0
 
 
 def print_summary(results: list) -> None:
@@ -51,49 +63,67 @@ def print_summary(results: list) -> None:
         return
 
     total = len(results)
-    synthesis_count = sum(1 for r in results if r.mode == "synthesis")
     total_contradictions = sum(len(r.contradictions) for r in results)
     total_proposals = sum(len(r.research_proposals) for r in results)
-    total_time = sum(r.metadata["total_time_ms"] for r in results)
+    total_time = sum(_safe_time(r, "total_time_ms") for r in results)
+    thesis_time = sum(_safe_time(r, "thesis_time_ms") for r in results)
+    antithesis_time = sum(_safe_time(r, "antithesis_time_ms") for r in results)
+    synthesis_time = sum(_safe_time(r, "synthesis_time_ms") for r in results)
 
-    print(f"=== HEGELION BENCHMARK SUMMARY ===")
+    def _avg(total_value: float) -> float:
+        return total_value / total if total else 0.0
+
+    print("=== HEGELION BENCHMARK SUMMARY ===")
     print(f"Total queries processed: {total}")
-    print(f"Synthesis mode: {synthesis_count}/{total} ({100*synthesis_count/total:.1f}%)")
-    print(f"Total contradictions found: {total_contradictions} (avg: {total_contradictions/total:.1f})")
-    print(f"Total research proposals: {total_proposals} (avg: {total_proposals/total:.1f})")
-    print(f"Total time: {total_time:.0f}ms (avg: {total_time/total:.0f}ms per query)")
+    print(
+        f"Contradictions: {total_contradictions} (avg: {_avg(total_contradictions):.1f})"
+    )
+    print(
+        f"Research proposals: {total_proposals} (avg: {_avg(total_proposals):.1f})"
+    )
+    print(
+        f"Total time: {total_time:.0f}ms (avg: {_avg(total_time):.0f}ms per query)"
+    )
+    print(
+        f"Thesis time total/avg: {thesis_time:.0f}ms / {_avg(thesis_time):.0f}ms"
+    )
+    print(
+        f"Antithesis time total/avg: {antithesis_time:.0f}ms / {_avg(antithesis_time):.0f}ms"
+    )
+    print(
+        f"Synthesis time total/avg: {synthesis_time:.0f}ms / {_avg(synthesis_time):.0f}ms"
+    )
     print("")
 
 
-async def main() -> None:
-    """Main CLI entry point."""
-    args = parse_args()
-
+async def _run(args: argparse.Namespace) -> None:
     if not args.prompts_file.exists():
-        print(f"Error: Prompts file not found: {args.prompts_file}", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"Prompts file not found: {args.prompts_file}")
 
+    results = await run_benchmark(
+        prompts=args.prompts_file,
+        output_file=args.output,
+        debug=args.debug,
+    )
+
+    if args.summary:
+        print_summary(results)
+
+    if not args.output:
+        for result in results:
+            print(json.dumps(result.to_dict(), ensure_ascii=False))
+
+    print(f"Processed {len(results)} queries", file=sys.stderr)
+
+
+def main(argv: Optional[Sequence[str]] = None) -> None:
+    args = parse_args(argv)
     try:
-        results = await run_benchmark(
-            prompts=args.prompts_file,
-            output_file=args.output,
-            debug=args.debug,
-        )
-
-        if args.summary:
-            print_summary(results)
-
-        if not args.output:
-            # Print results to stdout as JSONL
-            for result in results:
-                print(json.dumps(result.to_dict(), ensure_ascii=False))
-
-        print(f"Processed {len(results)} queries", file=sys.stderr)
-
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        asyncio.run(_run(args))
+    except Exception as exc:  # pragma: no cover - CLI error surface
+        print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+if __name__ == "__main__":  # pragma: no cover - CLI entrypoint
+    main()

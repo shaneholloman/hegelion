@@ -48,7 +48,8 @@ async def list_tools() -> list[Tool]:
             name="run_benchmark",
             description=(
                 "Run Hegelion on multiple prompts from a JSONL file. "
-                "Each line should contain a JSON object with a 'prompt' or 'query' field."
+                "Each line should contain a JSON object with a 'prompt' or 'query' field. "
+                "Returns newline-delimited JSON, one HegelionResult per line."
             ),
             inputSchema={
                 "type": "object",

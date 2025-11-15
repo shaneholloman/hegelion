@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 
-from hegelion_server.dialectics import HegelionEngine
-from hegelion_server.llm_backends import DummyLLMBackend
+from hegelion.backends import DummyLLMBackend
+from hegelion.engine import HegelionEngine
 
 
 class _TestEmbedder:
-    """Lightweight deterministic embedder for tests."""
+    """Deterministic embedder used for tests."""
 
     def encode(self, text: str) -> np.ndarray:
         arr = np.zeros(6, dtype=np.float32)
@@ -26,30 +26,36 @@ def engine() -> HegelionEngine:
         backend=DummyLLMBackend(),
         model="dummy",
         embedder=_TestEmbedder(),
-        synthesis_threshold=0.5,
     )
 
 
 @pytest.mark.asyncio
-async def test_simple_factual(engine: HegelionEngine) -> None:
+async def test_process_query_always_synthesizes(engine: HegelionEngine) -> None:
     result = await engine.process_query("What is the capital of France?")
-    assert result.mode in {"thesis_only", "synthesis"}
-    assert "Paris" in result.trace.thesis
-    assert result.conflict_score >= 0.0
-    assert result.trace.contradictions_found >= 0
+
+    assert result.mode == "synthesis"
+    assert "Paris" in result.thesis
+    assert result.synthesis
+    assert result.metadata["backend_model"] == "dummy"
+    assert "debug" not in result.metadata
 
 
 @pytest.mark.asyncio
-async def test_conflict_score_is_bounded(engine: HegelionEngine) -> None:
-    result = await engine.process_query("Is free will real?")
-    assert 0.0 <= result.conflict_score <= 1.0
-    assert isinstance(result.metadata.total_time_ms, float)
+async def test_process_query_with_debug(engine: HegelionEngine) -> None:
+    result = await engine.process_query("Is free will real?", debug=True)
+
+    assert "debug" in result.metadata
+    debug_info = result.metadata["debug"]
+    assert "internal_conflict_score" in debug_info
+    assert result.trace is not None
+    assert result.trace.get("internal_conflict_score") == debug_info["internal_conflict_score"]
 
 
 @pytest.mark.asyncio
-async def test_research_generation(engine: HegelionEngine) -> None:
-    result = await engine.process_query(
-        "How do proteins fold quickly despite vast configuration space?"
-    )
-    assert isinstance(result.trace.research_proposals, list)
-    assert all(isinstance(item, str) for item in result.trace.research_proposals)
+async def test_process_query_structures_contradictions(engine: HegelionEngine) -> None:
+    result = await engine.process_query("How do proteins fold quickly despite vast configuration space?")
+
+    assert isinstance(result.contradictions, list)
+    assert all("description" in item for item in result.contradictions)
+    assert isinstance(result.research_proposals, list)
+    assert "metadata" in result.to_dict()

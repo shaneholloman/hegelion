@@ -142,6 +142,30 @@ TESTABLE_PREDICTION: [falsifiable claim]
 }
 ```
 
+### Benchmark JSONL Format
+
+`run_benchmark` accepts either an in-memory sequence of prompt objects or a path to a JSONL file. Each line must contain either a string or a JSON object with a `query` or `prompt` field:
+
+```jsonl
+{"query": "How does climate change influence monsoon cycles?"}
+{"prompt": "What strategic lessons came from the Apollo program?"}
+"What was the lasting impact of the printing press?"
+```
+
+The function returns `list[HegelionResult]`. When an `output_file` is provided (CLI flag `--output` or API argument), results are also written as JSONL—one structured result per line that matches the primary output schema.
+
+### MCP Tools
+
+The MCP stdio server (`python -m hegelion.mcp_server`) publishes two tools:
+
+1. **`run_dialectic`**
+   - **Input schema**: `{ "query": string, "debug"?: boolean }`
+   - **Output**: A single JSON object following the `HegelionResult` schema (pretty-printed in MCP responses). When `debug=true`, `metadata.debug` includes internal metrics such as conflict scores.
+
+2. **`run_benchmark`**
+   - **Input schema**: `{ "prompts_file": string, "debug"?: boolean }`
+   - **Behavior**: Validates that the JSONL file exists, runs every prompt, and returns newline-delimited JSON (one result per line, identical to `HegelionResult.to_dict()`).
+
 ## Phase Specifications
 
 ### 1. Thesis Phase
@@ -226,32 +250,51 @@ conflict_score = result.metadata["debug"]["internal_conflict_score"]
 
 ### Environment Variables
 
+**Anthropic / Claude (recommended default):**
 ```bash
-# Backend selection
-HEGELION_PROVIDER=zai_anthropic  # or openai, anthropic, ollama
-HEGELION_MODEL=glm-4.6
+HEGELION_PROVIDER=anthropic
+HEGELION_MODEL=claude-4.5-sonnet-latest
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+# Override only if you proxy the API
+# ANTHROPIC_BASE_URL=https://api.anthropic.com
+```
 
-# Anthropic configuration
-ANTHROPIC_API_KEY=your-key-here
-ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic
+**OpenAI:**
+```bash
+HEGELION_PROVIDER=openai
+HEGELION_MODEL=gpt-4.1-mini
+OPENAI_API_KEY=your-openai-api-key-here
+# OPENAI_BASE_URL=https://api.openai.com/v1
+```
 
-# OpenAI configuration
-OPENAI_API_KEY=your-key-here
-OPENAI_BASE_URL=https://api.openai.com/v1
+**Custom HTTP backend (advanced):**
+```bash
+HEGELION_PROVIDER=custom_http
+HEGELION_MODEL=your-custom-model-id
+CUSTOM_API_BASE_URL=https://your-endpoint.example.com/v1/run
+CUSTOM_API_KEY=your-custom-api-key
+# CUSTOM_API_TIMEOUT=60.0
+```
 
-# Ollama configuration
+**Ollama (local experiments):**
+```bash
+HEGELION_PROVIDER=ollama
+HEGELION_MODEL=llama3.1
 OLLAMA_BASE_URL=http://localhost:11434
+```
 
-# Optional settings
+Optional engine settings:
+
+```bash
 HEGELION_MAX_TOKENS_PER_PHASE=10000
 ```
 
 ### Backend Support
 
-1. **Anthropic/z.ai**: Claude models via Anthropic API or z.ai proxy
+1. **Anthropic**: Claude models via the official Anthropic API
 2. **OpenAI**: GPT models via OpenAI API or compatible endpoints
-3. **Ollama**: Local models via HTTP API
-4. **Custom**: Extensible backend interface for additional providers
+3. **Custom HTTP**: Minimal JSON HTTP bridge for bespoke providers
+4. **Ollama**: Local models via the Ollama HTTP API
 
 ## Research Applications
 

@@ -8,6 +8,7 @@ from functools import lru_cache
 
 from .backends import (
     AnthropicLLMBackend,
+    CustomHTTPLLMBackend,
     LLMBackend,
     OllamaLLMBackend,
     OpenAILLMBackend,
@@ -47,6 +48,9 @@ def _get_env_int(name: str, default: int) -> int:
         raise ConfigurationError(f"Environment variable {name} must be an integer.") from exc
 
 
+DEFAULT_ANTHROPIC_BASE_URL = "https://api.anthropic.com"
+
+
 @lru_cache(maxsize=1)
 def get_backend_from_env() -> LLMBackend:
     """Instantiate the configured backend."""
@@ -56,7 +60,11 @@ def get_backend_from_env() -> LLMBackend:
 
     openai_key = os.getenv("OPENAI_API_KEY")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    anthropic_base_url = os.getenv("ANTHROPIC_BASE_URL", DEFAULT_ANTHROPIC_BASE_URL)
     ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    custom_base_url = os.getenv("CUSTOM_API_BASE_URL")
+    custom_api_key = os.getenv("CUSTOM_API_KEY")
+    custom_timeout = _get_env_float("CUSTOM_API_TIMEOUT", 60.0)
 
     if provider in {"openai", "auto"} and openai_key:
         return OpenAILLMBackend(
@@ -67,15 +75,30 @@ def get_backend_from_env() -> LLMBackend:
         )
 
     if provider in {"anthropic", "auto"} and anthropic_key:
-        return AnthropicLLMBackend(model=model, api_key=anthropic_key)
+        return AnthropicLLMBackend(
+            model=model,
+            api_key=anthropic_key,
+            base_url=anthropic_base_url,
+        )
 
     if provider == "ollama":
         return OllamaLLMBackend(model=model, base_url=ollama_url)
 
+    if provider == "custom_http":
+        if not custom_base_url:
+            raise ConfigurationError(
+                "CUSTOM_API_BASE_URL must be set when HEGELION_PROVIDER=custom_http"
+            )
+        return CustomHTTPLLMBackend(
+            model=model,
+            api_base_url=custom_base_url,
+            api_key=custom_api_key,
+            timeout=custom_timeout,
+        )
+
     raise ConfigurationError(
-        "Unable to configure LLM backend. "
-        "Provide HEGELION_PROVIDER and associated API keys (OPENAI_API_KEY, ANTHROPIC_API_KEY) "
-        "or set HEGELION_PROVIDER=ollama."
+        "Unable to configure LLM backend. Set HEGELION_PROVIDER to one of: anthropic, openai, "
+        "ollama, custom_http, or auto with the corresponding API keys."
     )
 
 
