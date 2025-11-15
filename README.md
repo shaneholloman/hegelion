@@ -121,7 +121,7 @@ asyncio.run(main())
 hegelion "Can AI be genuinely creative?" --format summary
 
 # Benchmark suite (JSONL file with one prompt per line)
-hegelion-bench hegelion/benchmarks/examples_basic.jsonl --summary
+hegelion-bench benchmarks/examples_basic.jsonl --summary
 ```
 
 **MCP Server:**
@@ -139,7 +139,7 @@ If the console scripts are not in your PATH, you can invoke the modules directly
 python -m hegelion.scripts.hegelion_cli "Can AI be genuinely creative?" --format summary
 
 # Benchmark suite
-python -m hegelion.scripts.hegelion_bench hegelion/benchmarks/examples_basic.jsonl --summary
+python -m hegelion.scripts.hegelion_bench benchmarks/examples_basic.jsonl --summary
 
 # MCP server
 python -m hegelion.mcp_server
@@ -220,6 +220,33 @@ The synthesis:
 
 ---
 
+## Examples
+
+Hegelion includes compelling examples that demonstrate its dialectical reasoning across different domains:
+
+### Available Examples
+
+- **[Consciousness](./examples/consciousness_example.md)** - Philosophical inquiry into the nature of consciousness and subjective experience
+- **[Gravity](./examples/gravity_example.md)** - Scientific frontier question about whether gravity is a force or geometry
+- **[AI Creativity](./examples/ai_creativity_example.md)** - Analysis of AI creativity and human-AI co-creative systems
+
+Each example showcases:
+- **Thesis-Antithesis-Synthesis** structure building nuanced understanding
+- **Contradiction identification** surfacing hidden assumptions
+- **Research proposals** with testable hypotheses
+- **Full metadata** for reproducibility and analysis
+
+### Running Examples
+
+```bash
+# Generate similar analyses
+hegelion "What is consciousness?" --format summary
+hegelion "Is gravity a force or geometry?" --debug
+hegelion "Can AI be genuinely creative?" --format summary
+```
+
+---
+
 ## Package Structure
 
 ```
@@ -237,15 +264,17 @@ hegelion/
 ├── scripts/
 │   ├── hegelion_cli.py          # Single query CLI
 │   └── hegelion_bench.py        # Benchmark CLI
-├── benchmarks/
+├── benchmarks/                  # Moved to root level
 │   └── examples_basic.jsonl     # Sample prompts for testing
-├── examples/
-│   ├── README.md                  # Examples index
-│   ├── consciousness_example.md   # Philosophical inquiry
-│   ├── gravity_example.md         # Scientific frontier
-│   ├── ai_creativity_example.md   # Co-creative systems
-│   └── claude_code_cli.json       # MCP configuration
-│   └── printing_press_example.md  # Legacy example (deprecated)
+├── examples/                    # New compelling examples
+│   ├── README.md                # Examples index
+│   ├── consciousness_example.md # Philosophical inquiry
+│   ├── gravity_example.md       # Scientific frontier
+│   ├── ai_creativity_example.md # Co-creative systems
+│   └── claude_code_cli.json     # MCP configuration
+├── docs/                        # Documentation moved here
+│   ├── STATUS_REPORT.md         # Project status
+│   └── DEV_NOTES.md             # Development notes
 ├── tests/                       # Test suite
 ├── .env.example                 # Environment variables template
 ├── README.md                    # This file
@@ -341,7 +370,7 @@ pre-commit install
 hegelion "What is consciousness?" --debug
 
 # Run benchmark examples
-hegelion-bench hegelion/benchmarks/examples_basic.jsonl --summary
+hegelion-bench benchmarks/examples_basic.jsonl --summary
 ```
 
 ---

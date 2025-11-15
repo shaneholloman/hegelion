@@ -1,35 +1,65 @@
-# Python artifacts
+# Python
 __pycache__/
-*.pyc
-*.pyo
-.pytest_cache/
-.ruff_cache/
-.mypy_cache/
-
-# Virtual environments
-.venv/
-venv/
-
-# Build outputs
-dist/
+*.py[cod]
+*$py.class
+*.so
+.Python
 build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
 *.egg-info/
+.installed.cfg
+pip-wheel-metadata/
+venv/
+ENV/
+env/
+.venv
 
-# Local data/logs
-logs/
-*.jsonl
+# Testing
+.pytest_cache/
+.coverage
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
 
 # Environment variables
 .env
 .env.local
-.env.*
-.env.*.local
 
-# IDE/editor clutter
-.DS_Store
-.idea/
-.vscode/
+# Logs
+logs/
+*.log
 
-# Local paper drafts
+# Development artifacts
+docs/internal/
+*.tmp
+*.bak
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Project-specific
 paper/
-*.pdf
+hegelion.egg-info/
+.cache/
+.temp/

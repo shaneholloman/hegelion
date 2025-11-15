@@ -125,10 +125,10 @@ python hegelion/scripts/hegelion_cli.py "What is consciousness?" --debug
 ### 4. Benchmark Testing
 ```bash
 # Run built-in benchmark suite
-python hegelion/scripts/hegelion_bench.py hegelion/benchmarks/examples_basic.jsonl --summary
+python hegelion/scripts/hegelion_bench.py benchmarks/examples_basic.jsonl --summary
 
 # Save results to file
-python hegelion/scripts/hegelion_bench.py hegelion/benchmarks/examples_basic.jsonl --output results.jsonl
+python hegelion/scripts/hegelion_bench.py benchmarks/examples_basic.jsonl --output results.jsonl
 ```
 
 ### 5. MCP Server

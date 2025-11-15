@@ -117,7 +117,7 @@ asyncio.run(analyze())
 python hegelion/scripts/hegelion_cli.py "What year was the printing press invented?" --format summary
 
 # Run benchmark suite
-python hegelion/scripts/hegelion_bench.py hegelion/benchmarks/examples_basic.jsonl --summary
+python hegelion/scripts/hegelion_bench.py benchmarks/examples_basic.jsonl --summary
 ```
 
 ### MCP Integration
