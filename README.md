@@ -240,7 +240,12 @@ hegelion/
 ├── benchmarks/
 │   └── examples_basic.jsonl     # Sample prompts for testing
 ├── examples/
-│   └── printing_press_example.md # Example output
+│   ├── README.md                  # Examples index
+│   ├── consciousness_example.md   # Philosophical inquiry
+│   ├── gravity_example.md         # Scientific frontier
+│   ├── ai_creativity_example.md   # Co-creative systems
+│   └── claude_code_cli.json       # MCP configuration
+│   └── printing_press_example.md  # Legacy example (deprecated)
 ├── tests/                       # Test suite
 ├── .env.example                 # Environment variables template
 ├── README.md                    # This file
