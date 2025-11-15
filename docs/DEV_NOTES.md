@@ -30,7 +30,7 @@ hegelion/
 │   ├── engine.py                # Core dialectical engine
 │   ├── backends.py              # LLM backend abstractions
 │   ├── parsing.py               # Contradiction & research proposal parsing
-│   ├── models.py                # Pydantic models & dataclasses
+│   ├── models.py                # Dataclasses for results and traces
 │   ├── prompts.py               # Prompt templates for each phase
 │   ├── config.py                # Environment-driven configuration
 │   └── mcp_server.py            # MCP server implementation
@@ -185,6 +185,10 @@ pytest tests/test_core.py
 - **Before**: General-purpose dialectical tool
 - **After**: Designed specifically for AI reasoning and ethics research
 - **Reasoning**: Focus on systematic evaluation and comparison
+
+### Dataclasses over Pydantic
+- **Decision**: Keep result/trace data structures as lightweight dataclasses instead of migrating to Pydantic.
+- **Rationale**: The models are simple containers with explicit `to_dict` helpers, so Pydantic's validation layer would add runtime cost and another required dependency without improving test coverage. If future features need schema validation or type coercion, prefer adding targeted validators around the dataclasses rather than reworking the core models.
 
 ## Open-Source Ready
 
