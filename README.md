@@ -9,7 +9,7 @@
 
 # Hegelion
 
-> A dialectical reasoning harness for LLMs: Thesis → Antithesis → Synthesis with structured contradictions, research proposals, and metadata you can trust.
+> **Structured reasoning that surfaces contradictions and generates novel insights through thesis-antithesis-synthesis.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -20,6 +20,8 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Why Hegelion?](#why-hegelion)
+- [Use Cases](#use-cases)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -30,12 +32,13 @@
 - [Examples](#examples)
 - [Hero Example](#hero-example)
 - [For Model Builders & Evaluation Teams](#for-model-builders--evaluation-teams)
+- [Limitations](#limitations)
 - [Development](#development)
 - [License & Status](#license--status)
 
 ### Quick Links
 
-- 🚀 [Quick Start](#quick-start) - Get running in 30 seconds
+- 🚀 [Quick Start](#quick-start) - Get running quickly
 - 📦 [Installation](#installation) - PyPI or from source
 - ⚙️ [Configuration](#configuration) - Set up your backend
 - 💻 [Python API](#python-api) - Use in your code
@@ -58,6 +61,35 @@ Hegelion runs any LLM through **Thesis → Antithesis → Synthesis** and ships 
 
 ---
 
+## Why Hegelion?
+
+Most LLM tools give you a single answer. Hegelion forces models to:
+- **Argue with themselves** - The antithesis phase finds contradictions in the initial thesis.
+- **Transcend the conflict** - Synthesis generates insights neither position alone would produce.
+- **Propose research** - Each synthesis includes testable predictions.
+
+This isn't just prompt chaining—it's structured reasoning that surfaces what single-pass responses miss.
+
+```
+   Query → Thesis → Antithesis → Synthesis
+            ↓         ↓            ↓
+         Position  Contradictions  Novel Insight
+```
+
+---
+
+## Use Cases
+
+Hegelion is a versatile tool for structured reasoning. Use it for:
+
+- **Research & Analysis:** Uncover hidden assumptions, analyze arguments, and identify gaps in reasoning.
+- **Decision-Making:** Systematically explore trade-offs and build a stronger case for a chosen path.
+- **Education:** Teach critical thinking by making the structure of argumentation explicit.
+- **Content Creation:** Generate balanced, multi-faceted content that explores a topic from multiple angles.
+- **Creative Ideation:** Break through creative blocks by forcing a confrontation between an idea and its opposite.
+
+---
+
 ## Quick Start
 
 ```bash
@@ -71,6 +103,8 @@ export ANTHROPIC_API_KEY=your-key-here
 hegelion "Can AI be genuinely creative?" --format summary
 ```
 
+> See contradictions, research proposals, and synthesis in one structured response.
+>
 > **Next Steps:** See [Installation](#installation) for source builds, [Configuration](#configuration) for backend setup, or [Usage](#usage) for Python API examples.
 
 ---
@@ -324,7 +358,8 @@ Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.examp
 
 ## Hero Example
 
-Example output for "Can AI be genuinely creative?" using glm-4.6 backend:
+Example output for "Can AI be genuinely creative?" using glm-4.6 backend.
+*Full example available in `examples/glm4_6_examples.jsonl`*
 
 ```json
 {
@@ -371,6 +406,14 @@ Example output for "Can AI be genuinely creative?" using glm-4.6 backend:
 1. Switch providers by editing `.env` (`HEGELION_PROVIDER` + `HEGELION_MODEL`)
 2. Run benchmarks via `hegelion-bench prompts.jsonl --output results.jsonl`, then rerun with other providers for apples-to-apples comparison
 3. Parse the JSONL output—each line already includes thesis/antithesis/synthesis, contradictions, proposals, metadata, and (optionally) debug metrics
+
+---
+
+## Limitations
+
+- **Cost & Latency:** Each query involves three separate LLM calls (Thesis, Antithesis, Synthesis), which can be slower and more expensive than a single-pass query.
+- **Model Dependency:** The quality of the output (especially the synthesis) is highly dependent on the capabilities of the backend LLM.
+- **Complexity Variance:** The effectiveness of the dialectical process can vary based on the complexity and nature of the query.
 
 ---
 

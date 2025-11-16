@@ -2,11 +2,11 @@
   "mcpServers": {
     "hegelion": {
       "command": "hegelion-server",
-      "cwd": "/absolute/path/to/Hegelion",
+      "cwd": ".",
       "env": {
         "HEGELION_PROVIDER": "anthropic",
         "HEGELION_MODEL": "claude-4.5-sonnet-latest",
-        "ANTHROPIC_API_KEY": "your-anthropic-api-key"
+        "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY_HERE"
       }
     }
   }

@@ -8,7 +8,7 @@ using Large Language Models, making reasoning patterns and contradictions explic
 from .core import run_dialectic, run_benchmark
 from .models import HegelionResult
 
-__version__ = "0.1.0"
+__version__ = "0.2.2"
 __author__ = "Hegelion Contributors"
 
 __all__ = [
