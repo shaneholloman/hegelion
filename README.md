@@ -1,14 +1,15 @@
 # Hegelion
 
 ```
-HEGELION :: Thesis → Antithesis → Synthesis
-
-↓ ↓ ↓
-
-Position Contradictions Insight
+[ Hegelion ]  thesis → antithesis → synthesis
 ```
 
-> **Structured reasoning that surfaces contradictions and generates insights through thesis-antithesis-synthesis.**
+> **Dialectical reasoning harness for LLMs (Thesis → Antithesis → Synthesis)**  
+> **Returns structured JSON with contradictions and research proposals**
+
+- Forces models to argue with themselves
+- Returns **structured JSON** (`HegelionResult`) with contradictions & research proposals
+- Ships **CLI**, **Python API**, and **MCP server** for Claude Desktop
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -354,10 +355,29 @@ Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.examp
 
 ---
 
-## Example Output
+## Hero Example
 
-Example output for "Can AI be genuinely creative?" using glm-4.6 backend.
-*Full example available in `examples/glm4_6_examples.jsonl`*
+**Input:**
+```bash
+hegelion "Can AI be genuinely creative?" --format summary
+```
+
+**Output (excerpt):**
+
+**Thesis:** *The Creative Machine* - AI can be genuinely creative, mirroring human creativity as a computational process of synthesis and pattern recognition.
+
+**Antithesis:** *The Sophisticated Mirror* - AI lacks genuine intent; it's stochastic interpolation that cannot break domains or embody creative will.
+
+**Synthesis:** *The Co-Creative Process* - Creativity emerges from human-AI collaboration where each contributes complementary strengths.
+
+**Contradictions:**
+- *The Redefinition Fallacy*: Narrowing "creativity" to computation ignores subjective urgency
+- *The Stochastic Parrot Illusion*: Interpolation cannot generate domain-breaking novelty
+
+**Research Proposal:**
+- *Co-Creative Trace Analysis*: Human-AI dialogues produce artifacts judged more creative than single-pass outputs
+
+*Full example in `examples/glm4_6_examples.jsonl` - one command → three positions + contradictions + testable prediction.*
 
 ```json
 {
