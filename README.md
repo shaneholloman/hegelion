@@ -1,6 +1,6 @@
 # Hegelion
 
-[![CI](https://github.com/hmbown/Hegelion/actions/workflows/ci.yml/badge.svg)](https://github.com/hmbown/Hegelion/actions/workflows/ci.yml)
+[![CI](https://github.com/Hmbown/Hegelion/actions/workflows/ci.yml/badge.svg)](https://github.com/Hmbown/Hegelion/actions/workflows/ci.yml)
 
 > A dialectical reasoning harness for LLMs: Thesis → Antithesis → Synthesis with structured contradictions, research proposals, and metadata you can trust.
 
@@ -30,7 +30,7 @@ pip install hegelion
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/hmbown/Hegelion.git
+   git clone https://github.com/Hmbown/Hegelion.git
    cd Hegelion
    ```
 
@@ -239,7 +239,7 @@ Example output for "Can AI be genuinely creative?" using glm-4.6 backend:
 If you'd like to have another AI assistant set up Hegelion for you, use this prompt:
 
 ```
-Please clone https://github.com/hmbown/Hegelion, run `uv sync`, copy `.env.example`, set Anthropic keys, and start `hegelion-server`. Confirm `hegelion --help` works.
+Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.example`, set Anthropic keys, and start `hegelion-server`. Confirm `hegelion --help` works.
 ```
 
 ## Examples & Benchmarks

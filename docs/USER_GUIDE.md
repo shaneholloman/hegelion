@@ -13,7 +13,7 @@ pip install hegelion
 ### From source
 
 ```bash
-git clone https://github.com/hmbown/Hegelion.git
+git clone https://github.com/Hmbown/Hegelion.git
 cd Hegelion
 uv sync  # or: pip install -e .
 ```

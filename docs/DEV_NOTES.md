@@ -93,7 +93,7 @@ results = await run_benchmark(prompts_file)
 ### 1. Installation
 ```bash
 # Clone and set up
-git clone https://github.com/hmbown/Hegelion.git
+git clone https://github.com/Hmbown/Hegelion.git
 cd Hegelion
 
 # Install with uv (recommended)
