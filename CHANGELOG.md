@@ -1,11 +1,13 @@
 # Changelog
 
-## 0.2.2 – Simplified publishing
+## 0.2.2 – MCP documentation and GLM backend verification
 
-- Removed GitHub Packages complexity and documentation
-- Added simple PyPI publishing script (`scripts/publish_pypi.sh`)
-- Created clean publishing guide (`docs/PUBLISHING.md`)
-- Streamlined release process documentation
+- Added comprehensive MCP reference guide (`docs/MCP.md`) with tool schemas, troubleshooting, and client integration notes
+- Added Claude Desktop configuration example (`examples/mcp/claude_desktop_config.json`)
+- Verified GLM 4.6 backend via OpenAI-compatible endpoint (Z.AI devpack)
+- Enhanced documentation with verified backends section and log-sharing guidance
+- Improved README with MCP quick start and backend verification details
+- Fixed package discovery in `pyproject.toml` to exclude `logs/` directory from builds
 
 ## 0.2.1 – License format fix
 
