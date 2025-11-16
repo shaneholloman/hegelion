@@ -267,37 +267,23 @@ pytest tests/test_core.py
    uv run twine upload dist/* --username __token__ --password <PYPI_TOKEN>
    ```
 
-### Publishing to GitHub Packages
+### Publishing with Script
 
-GitHub Packages offers free storage (2 GB included) and data transfer (10 GB included) for public repositories.
+Use the provided publishing script:
 
-1. **Create a GitHub Personal Access Token:**
-   - Go to https://github.com/settings/tokens
-   - Generate new token (classic)
-   - Select scope: `write:packages`
-   - Copy the token
+```bash
+# Get PyPI API token from https://pypi.org/manage/account/token/
+PYPI_TOKEN=<your-token> ./scripts/publish_pypi.sh
+```
 
-2. **Build and publish:**
-   ```bash
-   uv sync --dev
-   uv run python -m build
-   GITHUB_TOKEN=<your-token> ./scripts/publish_github_packages.sh
-   ```
+### Publishing with Script
 
-   Or manually:
-   ```bash
-   uv run twine upload \
-     --repository-url https://upload.pypi.org/legacy/ \
-     --username Hmbown \
-     --password "${GITHUB_TOKEN}" \
-     dist/*
-   ```
+Use the provided publishing script:
 
-3. **Users can install from GitHub Packages:**
-   ```bash
-   pip install hegelion \
-     --index-url https://<GITHUB_TOKEN>@pypi.pkg.github.com/Hmbown/simple
-   ```
+```bash
+# Get PyPI API token from https://pypi.org/manage/account/token/
+PYPI_TOKEN=<your-token> ./scripts/publish_pypi.sh
+```
 
 ## Conclusion
 

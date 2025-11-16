@@ -24,14 +24,6 @@ Hegelion runs any LLM through Thesis → Antithesis → Synthesis and ships the 
 pip install hegelion
 ```
 
-**From GitHub Packages:**
-
-```bash
-# Requires GitHub token with read:packages permission
-pip install hegelion \
-  --index-url https://<GITHUB_TOKEN>@pypi.pkg.github.com/Hmbown/simple
-```
-
 **From source:**
 
 1. Clone the repository
