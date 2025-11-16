@@ -1,6 +1,12 @@
 # Hegelion
 
-**THESIS → ANTITHESIS → SYNTHESIS**
+```
+HEGELION :: Thesis → Antithesis → Synthesis
+
+↓ ↓ ↓
+
+Position Contradictions Insight
+```
 
 > **Structured reasoning that surfaces contradictions and generates insights through thesis-antithesis-synthesis.**
 
