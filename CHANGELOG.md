@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 – License format fix
+
+- Fixed deprecated license format in `pyproject.toml` (changed from table to SPDX string format)
+- Removed deprecated license classifier
+
 ## 0.2.0 – First public release
 
 - Refactored into a clean `hegelion` Python package with clear module boundaries (core, engine, backends, parsing, models, prompts, config, MCP server).
