@@ -1,6 +1,15 @@
+```
+/\ \  _ \ \   /\  \   /\  == \   /\ \       /\  __ \   /\  == \   /\ \   /\  \ /\ "-./  \
+\ \ / ".\ \  \ \ _  \ \  <   \ \ _  \ \  __ \  \ \  __<   \ \ \  \ \  __\ \ \ -./\ \
+\ _/".~_\  \ _\  \ _\ _\  \ _\  \ _\ _\  \ _\ _\  \ _\  \ _\ \ _\ \ _\
+//   //   //   // //   //   ////   // //   //   /_**/  //  //
+
+                      T H E S I S  ->  A N T I T H E S I S  ->  S Y N T H E S I S
+```
+
 # Hegelion
 
-> **Structured reasoning that surfaces contradictions and generates novel insights through thesis-antithesis-synthesis.**
+> **Structured reasoning that surfaces contradictions and generates insights through thesis-antithesis-synthesis.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -29,55 +38,54 @@
 
 ### Quick Links
 
-- 🚀 [Quick Start](#quick-start) - Get running quickly
+- 🚀 [Quick Start](#quick-start) - Installation and basic usage
 - 📦 [Installation](#installation) - PyPI or from source
 - ⚙️ [Configuration](#configuration) - Set up your backend
 - 💻 [Python API](#python-api) - Use in your code
 - 🔌 [MCP Integration](#claude-desktop-integration) - Connect to Claude Desktop
-- 📚 [Examples](#examples) - See it in action
+- 📚 [Examples](#examples) - Example outputs and usage
 - 🧪 [Development](#development) - Contribute to the project
 
 ---
 
 ## Overview
 
-Hegelion runs any LLM through **Thesis → Antithesis → Synthesis** and ships the full result as structured JSON (`HegelionResult`). You always get the three passages plus contradictions, research proposals, and metadata (timings, backend info, optional debug trace). The default backend is Anthropic Claude Sonnet, but the same loop works with OpenAI, Ollama, or a custom HTTP endpoint.
+Hegelion runs any LLM through **Thesis → Antithesis → Synthesis** and returns structured JSON (`HegelionResult`). Each result includes the three passages plus contradictions, research proposals, and metadata (timings, backend info, optional debug trace). The default backend is Anthropic Claude Sonnet, but the same loop works with OpenAI, Ollama, or a custom HTTP endpoint.
 
 ### Key Features
 
-- **Always synthesizes** – every query completes the full loop
-- **Structured output** – contradictions and proposals arrive as lists, ready for scoring
-- **Honest provenance** – backend/model/timings live in `metadata`, internal scores only appear under `metadata.debug` when requested
+- **Synthesizes** – each query completes the full loop
+- **Structured output** – contradictions and proposals are returned as lists
+- **Metadata tracking** – backend/model/timings live in `metadata`, internal scores only appear under `metadata.debug` when requested
 - **Tooling included** – CLI (`hegelion`, `hegelion-bench`) and MCP server (`hegelion-server`) come with the package
 
 ---
 
 ## Why Hegelion?
 
-Most LLM tools give you a single answer. Hegelion forces models to:
-- **Argue with themselves** - The antithesis phase finds contradictions in the initial thesis.
-- **Transcend the conflict** - Synthesis generates insights neither position alone would produce.
-- **Propose research** - Each synthesis includes testable predictions.
+Most LLM tools return a single answer. Hegelion uses a three-phase process:
+- **Thesis** - The model presents an initial position.
+- **Antithesis** - The model identifies contradictions in the thesis.
+- **Synthesis** - The model generates insights that reconcile both positions.
+- **Research proposals** - Each synthesis includes testable predictions.
 
-This isn't just prompt chaining—it's structured reasoning that surfaces what single-pass responses miss.
+The structured reasoning process surfaces contradictions and insights that single-pass responses typically miss.
 
 ```
    Query → Thesis → Antithesis → Synthesis
             ↓         ↓            ↓
-         Position  Contradictions  Novel Insight
+         Position  Contradictions  Synthesis
 ```
 
 ---
 
 ## Use Cases
 
-Hegelion is a versatile tool for structured reasoning. Use it for:
-
-- **Research & Analysis:** Uncover hidden assumptions, analyze arguments, and identify gaps in reasoning.
-- **Decision-Making:** Systematically explore trade-offs and build a stronger case for a chosen path.
-- **Education:** Teach critical thinking by making the structure of argumentation explicit.
-- **Content Creation:** Generate balanced, multi-faceted content that explores a topic from multiple angles.
-- **Creative Ideation:** Break through creative blocks by forcing a confrontation between an idea and its opposite.
+- **Research & Analysis:** Identify assumptions, analyze arguments, and identify gaps in reasoning.
+- **Decision-Making:** Explore trade-offs and evaluate different positions.
+- **Education:** Demonstrate argumentation structure and critical thinking.
+- **Content Creation:** Generate content that explores topics from multiple perspectives.
+- **Creative Ideation:** Explore ideas by examining their contradictions and opposites.
 
 ---
 
@@ -206,7 +214,7 @@ jq 'del(.query, .thesis, .antithesis, .synthesis, .contradictions, .research_pro
   logs/glm_run.json > logs/glm_run.metadata.json
 ```
 
-We would love reports for other Anthropic or OpenAI-compatible endpoints (e.g., Azure OpenAI, custom base URLs). Open a GitHub issue with sanitized metadata plus which model/base URL you exercised.
+Reports for other Anthropic or OpenAI-compatible endpoints (e.g., Azure OpenAI, custom base URLs) are welcome. Open a GitHub issue with sanitized metadata plus which model/base URL you tested.
 
 ---
 
@@ -218,7 +226,7 @@ We would love reports for other Anthropic or OpenAI-compatible endpoints (e.g., 
 # Single query with readable summary
 hegelion "Can AI be genuinely creative?" --format summary
 
-# Raw JSON result (handy for scripting)
+# Raw JSON result (for scripting)
 hegelion "Explain what photosynthesis does for a plant." --debug --format json
 
 # JSONL benchmark (one prompt per line)
@@ -263,7 +271,7 @@ Add Hegelion as an MCP server in Claude Desktop by configuring your `claude_desk
 
 > **Note:** If `hegelion-server` isn't on PATH, use `python -m hegelion.mcp_server` as the command instead.
 
-> **Coming soon:** a visual walkthrough of the Claude Desktop integration. Until then, the `docs/MCP.md` guide contains step-by-step screenshots callouts.
+> **Note:** The `docs/MCP.md` guide contains step-by-step instructions and screenshots for the Claude Desktop integration.
 
 #### MCP Tools
 
@@ -271,7 +279,7 @@ Hegelion MCP server exposes the following tools:
 
 ##### `run_dialectic`
 
-Process a query using Hegelian dialectical reasoning (thesis → antithesis → synthesis). Always performs synthesis to generate comprehensive reasoning. Returns structured contradictions and research proposals.
+Process a query using Hegelian dialectical reasoning (thesis → antithesis → synthesis). Performs synthesis to generate reasoning. Returns structured contradictions and research proposals.
 
 **Input Schema:**
 
@@ -337,9 +345,9 @@ Run Hegelion on multiple prompts from a JSONL file. Each line should contain a J
 
 Add `--output my_runs.jsonl` to the CLI or call `run_benchmark(..., output_file="file.jsonl")` from Python. See [For Model Builders & Evaluation Teams](#for-model-builders--evaluation-teams) for benchmarking workflows.
 
-**Quick Start with Another AI:**
+**Setup with AI Assistant:**
 
-If you'd like to have another AI assistant set up Hegelion for you, use this prompt:
+To have an AI assistant set up Hegelion, use this prompt:
 
 ```text
 Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.example`, set Anthropic keys, and start `hegelion-server`. Confirm `hegelion --help` works.
@@ -347,7 +355,7 @@ Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.examp
 
 ---
 
-## Hero Example
+## Example Output
 
 Example output for "Can AI be genuinely creative?" using glm-4.6 backend.
 *Full example available in `examples/glm4_6_examples.jsonl`*
