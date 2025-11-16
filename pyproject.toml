@@ -8,7 +8,7 @@ authors = [
     { name = "Hunter Bown", email = "hunter@shannonlabs.dev" }
 ]
 license = "MIT"
-keywords = ["ai", "llm", "reasoning", "dialectical", "hegelian", "mcp"]
+keywords = ["ai", "llm", "reasoning", "dialectical", "hegelian", "mcp", "anthropic", "openai", "claude", "gpt", "ollama", "gemini"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",

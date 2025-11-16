@@ -411,20 +411,7 @@ Example output for "Can AI be genuinely creative?" using glm-4.6 backend.
 
 ## Development
 
-```bash
-# Install dev extras
-uv sync --dev
-
-# Lint / tests
-uv run pytest -v
-
-# Optional: run CLI smoke tests
-uv run hegelion --help
-uv run hegelion-bench --help
-
-# (Optional) install pre-commit hooks
-uv run pre-commit install
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and contribution guidelines.
 
 ---
 
