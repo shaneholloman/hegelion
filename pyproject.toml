@@ -50,10 +50,10 @@ hegelion-bench = "hegelion.scripts.hegelion_bench:main"
 hegelion-server = "hegelion.mcp_server:main"
 
 [project.urls]
-Homepage = "https://github.com/Shannon-Labs/Hegelion"
-Repository = "https://github.com/Shannon-Labs/Hegelion"
-Documentation = "https://github.com/Shannon-Labs/Hegelion/blob/main/HEGELION_SPEC.md"
-"Bug Tracker" = "https://github.com/Shannon-Labs/Hegelion/issues"
+Homepage = "https://github.com/hmbown/Hegelion"
+Repository = "https://github.com/hmbown/Hegelion"
+Documentation = "https://github.com/hmbown/Hegelion/blob/main/HEGELION_SPEC.md"
+"Bug Tracker" = "https://github.com/hmbown/Hegelion/issues"
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]
