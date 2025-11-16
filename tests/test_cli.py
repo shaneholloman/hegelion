@@ -55,6 +55,19 @@ def test_cli_json_output(monkeypatch: pytest.MonkeyPatch, capsys, sample_result:
     mock_runner.assert_awaited_once()
 
 
+def test_cli_demo_mode(monkeypatch: pytest.MonkeyPatch, capsys) -> None:
+    # Demo mode should not call the live runner and should print some JSON.
+    mock_runner = AsyncMock()
+    monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)
+
+    hegelion_cli.main(["--demo"])
+
+    captured = capsys.readouterr()
+    assert captured.out.strip()  # some output
+    assert "Result saved" not in captured.err
+    mock_runner.assert_not_awaited()
+
+
 def test_cli_summary_output(monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult) -> None:
     mock_runner = AsyncMock(return_value=sample_result)
     monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)

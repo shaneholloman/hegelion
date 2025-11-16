@@ -60,6 +60,10 @@ Attach the sanitized file (or paste its contents) when reporting provider succes
 Single query with a readable summary:
 
 ```bash
+# Demo mode (no API key needed)
+hegelion --demo
+
+# Single query with a readable summary
 hegelion "Can AI be genuinely creative?" --format summary
 ```
 
@@ -75,17 +79,23 @@ Benchmark on a JSONL file:
 hegelion-bench benchmarks/examples_basic.jsonl --output runs.jsonl --summary
 ```
 
+Traces are written as **JSONL** – one `HegelionResult` per line – so you can post-process them with tools like `jq` or `pandas.read_json(..., lines=True)`.
+
 ## Python API
 
 ```python
 import asyncio
-from hegelion import run_dialectic, run_benchmark
+from hegelion import quickstart, dialectic, run_benchmark
+
 
 async def main():
-    result = await run_dialectic("Is privacy more important than security?", debug=True)
+    # Easiest path – uses env-configured backend/model
+    result = await quickstart("Is privacy more important than security?", debug=True)
     print(result.synthesis)
-    print(f"Contradictions: {len(result.contradictions)}")
-    print(f"Research proposals: {len(result.research_proposals)}")
+
+    # Explicit model with auto-detected backend (e.g., Anthropic/OpenAI/Gemini/local)
+    alt = await dialectic("Can AI be genuinely creative?", model="claude-4.5-sonnet")
+    print(f"Backend synthesis: {alt.synthesis[:120]}...")
 
 asyncio.run(main())
 ```

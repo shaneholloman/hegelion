@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from hegelion.core import run_dialectic, run_benchmark
+from hegelion.core import run_dialectic, run_benchmark, dialectic, quickstart
 from hegelion.models import HegelionResult
 
 
@@ -108,6 +108,7 @@ class TestRunDialectic:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
+            with patch('hegelion.core.resolve_backend_for_model', return_value=mock_backend):
                 result = await run_dialectic(
                     "Test query",
                     model="custom-model",
@@ -266,6 +267,35 @@ class TestRunBenchmark:
         assert [r.query for r in results] == ["Query 1", "Query 2"]
 
 
+@pytest.mark.asyncio
+class TestHighLevelAPIs:
+    """Tests for dialectic/quickstart helpers."""
+
+    async def test_dialectic_uses_model_autodetect(self):
+        mock_backend = MockBackend()
+
+        with patch('hegelion.core.resolve_backend_for_model', return_value=mock_backend):
+            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+                mock_settings.return_value = MockSettings()
+
+                result = await dialectic("Test query", model="claude-4.5-sonnet")
+
+        assert isinstance(result, HegelionResult)
+        assert result.query == "Test query"
+
+    async def test_quickstart_defaults_to_env(self):
+        mock_backend = MockBackend()
+
+        with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
+            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+                mock_settings.return_value = MockSettings()
+
+                result = await quickstart("Test query")
+
+        assert isinstance(result, HegelionResult)
+        assert result.query == "Test query"
+
+
 class TestSynchronousWrappers:
     """Test synchronous wrapper functions."""
 
@@ -289,4 +319,26 @@ class TestSynchronousWrappers:
         result = run_benchmark_sync(["test query"])
 
         assert result == "test_results"
+        mock_run.assert_called_once()
+
+    @patch('hegelion.core.asyncio.run')
+    def test_dialectic_sync(self, mock_run):
+        """Test synchronous dialectic wrapper."""
+        mock_run.return_value = "test_result"
+
+        from hegelion.core import dialectic_sync
+        result = dialectic_sync("test query")
+
+        assert result == "test_result"
+        mock_run.assert_called_once()
+
+    @patch('hegelion.core.asyncio.run')
+    def test_quickstart_sync(self, mock_run):
+        """Test synchronous quickstart wrapper."""
+        mock_run.return_value = "test_result"
+
+        from hegelion.core import quickstart_sync
+        result = quickstart_sync("test query")
+
+        assert result == "test_result"
         mock_run.assert_called_once()

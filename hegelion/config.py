@@ -52,59 +52,134 @@ def _get_env_int(name: str, default: int) -> int:
 DEFAULT_ANTHROPIC_BASE_URL = "https://api.anthropic.com"
 
 
+def _get_common_env() -> dict:
+    """Collect common backend-related environment variables."""
+    return {
+        "model": os.getenv("HEGELION_MODEL", "claude-4.5-sonnet-latest"),
+        "openai_key": os.getenv("OPENAI_API_KEY"),
+        "openai_base_url": os.getenv("OPENAI_BASE_URL"),
+        "openai_org": os.getenv("OPENAI_ORG_ID"),
+        "anthropic_key": os.getenv("ANTHROPIC_API_KEY"),
+        "anthropic_base_url": os.getenv("ANTHROPIC_BASE_URL", DEFAULT_ANTHROPIC_BASE_URL),
+        "google_key": os.getenv("GOOGLE_API_KEY"),
+        "google_base_url": os.getenv("GOOGLE_API_BASE_URL"),
+        "ollama_url": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+        "custom_base_url": os.getenv("CUSTOM_API_BASE_URL"),
+        "custom_api_key": os.getenv("CUSTOM_API_KEY"),
+        "custom_timeout": _get_env_float("CUSTOM_API_TIMEOUT", 60.0),
+    }
+
+
+def resolve_backend_for_model(model: str) -> LLMBackend:
+    """Resolve an LLM backend based on the model name.
+
+    Heuristics:
+    - Models containing \"claude\" → Anthropic
+    - Models starting with \"gpt-\" or \"o1-\" or containing \"glm\" → OpenAI-compatible
+    - Models containing \"gemini\" or starting with \"g-\" → Google Generative AI
+    - Models starting with \"local-\" → Ollama (model name after prefix)
+
+    Raises:
+        ConfigurationError: if the required API keys or base URLs are not set.
+    """
+    lowered = model.lower()
+    env = _get_common_env()
+
+    # Anthropic
+    if "claude" in lowered:
+        if not env["anthropic_key"]:
+            raise ConfigurationError(
+                "ANTHROPIC_API_KEY must be set to use Anthropic models like 'claude-*'."
+            )
+        return AnthropicLLMBackend(
+            model=model,
+            api_key=env["anthropic_key"],
+            base_url=env["anthropic_base_url"],
+        )
+
+    # OpenAI-compatible (including GLM-style)
+    if lowered.startswith(("gpt-", "o1-")) or "glm" in lowered:
+        if not env["openai_key"]:
+            raise ConfigurationError(
+                "OPENAI_API_KEY must be set to use OpenAI-compatible models like 'gpt-*', 'o1-*', or 'GLM-*'."
+            )
+        return OpenAILLMBackend(
+            model=model,
+            api_key=env["openai_key"],
+            base_url=env["openai_base_url"],
+            organization=env["openai_org"],
+        )
+
+    # Google Gemini
+    if "gemini" in lowered or lowered.startswith("g-"):
+        if not env["google_key"]:
+            raise ConfigurationError(
+                "GOOGLE_API_KEY must be set to use Gemini models like 'gemini-*' or 'g-*'."
+            )
+        return GoogleLLMBackend(
+            model=model,
+            api_key=env["google_key"],
+            base_url=env["google_base_url"],
+        )
+
+    # Local Ollama
+    if lowered.startswith("local-"):
+        actual_model = model.split("local-", 1)[1] or "llama3.3"
+        return OllamaLLMBackend(model=actual_model, base_url=env["ollama_url"])
+
+    # Fallback: treat as env-configured provider using HEGELION_PROVIDER
+    raise ConfigurationError(
+        f"Cannot infer backend for model '{model}'. "
+        "Either set HEGELION_PROVIDER/HEGELION_MODEL and use the default API, "
+        "or choose a model name that clearly indicates its provider "
+        "(e.g., 'claude-*', 'gpt-*', 'gemini-*', 'local-llama3.3')."
+    )
+
+
 @lru_cache(maxsize=1)
 def get_backend_from_env() -> LLMBackend:
     """Instantiate the configured backend."""
 
     provider = os.getenv("HEGELION_PROVIDER", "anthropic").lower()
-    model = os.getenv("HEGELION_MODEL", "claude-4.5-sonnet-latest")
-
-    openai_key = os.getenv("OPENAI_API_KEY")
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-    anthropic_base_url = os.getenv("ANTHROPIC_BASE_URL", DEFAULT_ANTHROPIC_BASE_URL)
-    google_key = os.getenv("GOOGLE_API_KEY")
-    google_base_url = os.getenv("GOOGLE_API_BASE_URL")
-    ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    custom_base_url = os.getenv("CUSTOM_API_BASE_URL")
-    custom_api_key = os.getenv("CUSTOM_API_KEY")
-    custom_timeout = _get_env_float("CUSTOM_API_TIMEOUT", 60.0)
+    env = _get_common_env()
+    model = env["model"]
 
     # Default priority: Anthropic first (recommended), then OpenAI
-    if provider in {"anthropic", "auto"} and anthropic_key:
+    if provider in {"anthropic", "auto"} and env["anthropic_key"]:
         return AnthropicLLMBackend(
             model=model,
-            api_key=anthropic_key,
-            base_url=anthropic_base_url,
+            api_key=env["anthropic_key"],
+            base_url=env["anthropic_base_url"],
         )
 
-    if provider in {"openai", "auto"} and openai_key:
+    if provider in {"openai", "auto"} and env["openai_key"]:
         return OpenAILLMBackend(
             model=model,
-            api_key=openai_key,
-            base_url=os.getenv("OPENAI_BASE_URL"),
-            organization=os.getenv("OPENAI_ORG_ID"),
+            api_key=env["openai_key"],
+            base_url=env["openai_base_url"],
+            organization=env["openai_org"],
         )
 
-    if provider in {"google", "auto"} and google_key:
+    if provider in {"google", "auto"} and env["google_key"]:
         return GoogleLLMBackend(
             model=model,
-            api_key=google_key,
-            base_url=google_base_url,
+            api_key=env["google_key"],
+            base_url=env["google_base_url"],
         )
 
     if provider == "ollama":
-        return OllamaLLMBackend(model=model, base_url=ollama_url)
+        return OllamaLLMBackend(model=model, base_url=env["ollama_url"])
 
     if provider == "custom_http":
-        if not custom_base_url:
+        if not env["custom_base_url"]:
             raise ConfigurationError(
                 "CUSTOM_API_BASE_URL must be set when HEGELION_PROVIDER=custom_http"
             )
         return CustomHTTPLLMBackend(
             model=model,
-            api_base_url=custom_base_url,
-            api_key=custom_api_key,
-            timeout=custom_timeout,
+            api_base_url=env["custom_base_url"],
+            api_key=env["custom_api_key"],
+            timeout=env["custom_timeout"],
         )
 
     raise ConfigurationError(
@@ -128,4 +203,5 @@ __all__ = [
     "ConfigurationError",
     "get_backend_from_env",
     "get_engine_settings_from_env",
+    "resolve_backend_for_model",
 ]

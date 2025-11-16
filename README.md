@@ -1,7 +1,8 @@
 # Hegelion
 
-```
-[ Hegelion ]  thesis → antithesis → synthesis
+```bash
+pip install hegelion
+hegelion "Can AI be genuinely creative?"
 ```
 
 > **Dialectical reasoning harness for LLMs (Thesis → Antithesis → Synthesis)**  
@@ -23,6 +24,8 @@
 - [Why Hegelion?](#why-hegelion)
 - [Use Cases](#use-cases)
 - [Quick Start](#quick-start)
+- [What You Get](#what-you-get)
+- [Your Traces, Your Data](#your-traces-your-data)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
@@ -92,19 +95,59 @@ The structured reasoning process surfaces contradictions and insights that singl
 ## Quick Start
 
 ```bash
-# Install from PyPI
+# Install
 pip install hegelion
 
-# Set your API key
-export ANTHROPIC_API_KEY=your-key-here
+# Demo mode (no API key needed)
+hegelion --demo
 
-# Run your first dialectic
-hegelion "Can AI be genuinely creative?" --format summary
+# With your API key
+export ANTHROPIC_API_KEY="sk-ant-..."
+hegelion "Your question" --format summary
+
+# Batch processing
+hegelion-bench benchmarks/examples_basic.jsonl --output results.jsonl
 ```
 
 > See contradictions, research proposals, and synthesis in one structured response.
 >
-> **Next Steps:** See [Installation](#installation) for source builds, [Configuration](#configuration) for backend setup, or [Usage](#usage) for Python API examples.
+> **Next Steps:** Keep reading for structure and traces, or jump to [Installation](#installation) for backend configuration.
+
+---
+
+## What You Get
+
+Each run returns structured data:
+
+```json
+{
+  "thesis": "Initial position...",
+  "antithesis": "Contradictions...",
+  "synthesis": "Reconciled insights...",
+  "contradictions": [
+    {"description": "...", "evidence": "..."}
+  ],
+  "research_proposals": [...],
+  "metadata": {"provider": "...", "model": "...", "timing": {...}}
+}
+```
+
+Use cases: [Eval pipelines](#for-model-builders--evaluation-teams), [Safety analysis](#use-cases), [Research questions](#use-cases).
+
+---
+
+## Your Traces, Your Data
+
+```bash
+# Output is plain JSONL
+hegelion "question" --output trace.jsonl
+
+# Analyze with standard tools
+jq '.contradictions | length' trace.jsonl
+python -c "import pandas as pd; print(pd.read_json('trace.jsonl', lines=True).head())"
+```
+
+No proprietary formats. No vendor lock-in.
 
 ---
 
@@ -155,21 +198,21 @@ pip install hegelion
    **Anthropic Claude (default):**
    ```bash
    HEGELION_PROVIDER=anthropic
-   HEGELION_MODEL=claude-4.5-sonnet-latest
+   HEGELION_MODEL=claude-4.5-sonnet-latest  # Latest Claude model
    ANTHROPIC_API_KEY=your-anthropic-api-key-here
    ```
 
    **OpenAI:**
    ```bash
    HEGELION_PROVIDER=openai
-   HEGELION_MODEL=gpt-4o
+   HEGELION_MODEL=gpt-5.1  # Latest GPT model
    OPENAI_API_KEY=your-openai-api-key-here
    ```
 
    **Google Gemini:**
    ```bash
    HEGELION_PROVIDER=google
-   HEGELION_MODEL=gemini-2.5-pro
+   HEGELION_MODEL=gemini-2.5-pro  # Highest reasoning capability
    GOOGLE_API_KEY=your-google-api-key-here
    # GOOGLE_API_BASE_URL=https://generativelanguage.googleapis.com
    ```
@@ -177,7 +220,7 @@ pip install hegelion
    **Ollama (local):**
    ```bash
    HEGELION_PROVIDER=ollama
-   HEGELION_MODEL=llama3.1
+   HEGELION_MODEL=llama3.3  # Choose your model - 8B, 70B, or 405B
    OLLAMA_BASE_URL=http://localhost:11434
    ```
 
@@ -246,6 +289,46 @@ async def main():
     print(f"Research proposals: {len(result.research_proposals)}")
 
 asyncio.run(main())
+```
+
+#### High-level Python API
+
+Hegelion also exposes two convenience entrypoints on top of the lower-level `run_dialectic` / `run_benchmark` functions:
+
+- `quickstart(query, model=None, debug=False)` – one-call helper for the common case.  
+  - If `model` is provided, Hegelion auto-detects the right backend from the model string.  
+  - Otherwise it uses your environment configuration (`HEGELION_PROVIDER`, `HEGELION_MODEL`, API keys).
+- `dialectic(query, *, model=None, backend=None, max_tokens_per_phase=None, debug=False)` – universal, explicit entrypoint.  
+  - If `backend` is passed, it is used as-is.  
+  - Else if `model` is passed, Hegelion resolves the backend from the model name.  
+  - Else it falls back to the env-configured backend.
+
+Basic usage:
+
+```python
+import asyncio
+from hegelion import quickstart, dialectic
+
+async def main():
+    # Use whatever backend/model your environment is configured for
+    base = await quickstart("Is privacy more important than security?")
+    print(base.synthesis)
+
+    # Pin a specific model; backend is auto-detected from the model name
+    anth = await dialectic("Can AI be genuinely creative?", model="claude-4.5-sonnet")
+    gpt = await dialectic("Can AI be genuinely creative?", model="gpt-5.1")
+    local = await dialectic("Can AI be genuinely creative?", model="local-llama3.3")
+
+asyncio.run(main())
+```
+
+Synchronous wrappers are also available if you prefer not to use `asyncio`:
+
+```python
+from hegelion import quickstart_sync, dialectic_sync
+
+result = quickstart_sync("Your question here")
+alt = dialectic_sync("Your question here", model="gpt-5.1")
 ```
 
 ### Claude Desktop Integration
@@ -424,6 +507,87 @@ hegelion "Can AI be genuinely creative?" --format summary
 1. Switch providers by editing `.env` (`HEGELION_PROVIDER` + `HEGELION_MODEL`)
 2. Run benchmarks via `hegelion-bench prompts.jsonl --output results.jsonl`, then rerun with other providers for apples-to-apples comparison
 3. Parse the JSONL output—each line already includes thesis/antithesis/synthesis, contradictions, proposals, metadata, and (optionally) debug metrics
+
+### Eval harness: JSONL → quick metrics
+
+You can treat Hegelion output as plain JSONL and build a tiny eval harness around it.
+
+**1. Generate traces with the CLI**
+
+```bash
+# From a prompts file (one JSON or plain line per prompt)
+hegelion-bench prompts.jsonl --output results.jsonl --summary
+
+# Or accumulate single-query runs into one file
+hegelion "Can AI be genuinely creative?" --format json --output trace.jsonl
+hegelion "What is the capital of France?" --format json --output trace.jsonl  # append mode via shell redirect
+```
+
+**2. Minimal Python eval script (e.g. `examples/eval_harness.py`)**
+
+```python
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+
+def load_results(path: Path):
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            yield json.loads(line)
+
+def main(path_str: str):
+    path = Path(path_str)
+    if not path.exists():
+        raise SystemExit(f"File not found: {path}")
+
+    total = 0
+    total_contradictions = 0
+    conflict_scores = []
+    by_model = Counter()
+
+    for obj in load_results(path):
+        total += 1
+        total_contradictions += len(obj.get("contradictions", []))
+
+        meta = obj.get("metadata", {}) or {}
+        model = meta.get("backend_model") or "unknown"
+        by_model[model] += 1
+
+        debug = meta.get("debug") or {}
+        if isinstance(debug, dict) and "internal_conflict_score" in debug:
+            conflict_scores.append(float(debug["internal_conflict_score"]))
+
+    print(f"Total queries: {total}")
+    print(f"Total contradictions: {total_contradictions}")
+    if total:
+        print(f"Avg contradictions per query: {total_contradictions / total:.2f}")
+
+    if conflict_scores:
+        avg_conflict = sum(conflict_scores) / len(conflict_scores)
+        print(f"Avg internal_conflict_score: {avg_conflict:.3f}")
+
+    print("\nQueries per model:")
+    for model, count in by_model.most_common():
+        print(f"  {model}: {count}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python eval_harness.py results.jsonl", file=sys.stderr)
+        raise SystemExit(1)
+    main(sys.argv[1])
+```
+
+Run it like:
+
+```bash
+python examples/eval_harness.py results.jsonl
+```
+
+This gives you a simple, JSONL-native eval pipeline you can extend (e.g., stratify by prompt type, compute per-prompt contradiction rates, compare providers, etc.).
 
 ---
 

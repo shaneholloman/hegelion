@@ -60,7 +60,10 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["hegelion", "hegelion.scripts"]
+packages = ["hegelion", "hegelion.scripts", "hegelion.examples_data"]
+
+[tool.setuptools.package-data]
+"hegelion.examples_data" = ["*.jsonl"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -68,4 +71,6 @@ asyncio_mode = "auto"
 filterwarnings = [
     "ignore:coroutine 'run_dialectic' was never awaited",
     "ignore:coroutine 'run_benchmark' was never awaited",
+    "ignore:coroutine 'dialectic' was never awaited",
+    "ignore:coroutine 'quickstart' was never awaited",
 ]
