@@ -59,6 +59,9 @@ Documentation = "https://github.com/Hmbown/Hegelion/blob/main/HEGELION_SPEC.md"
 requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = ["hegelion", "hegelion.scripts"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 asyncio_mode = "auto"
