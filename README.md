@@ -89,6 +89,33 @@ pip install hegelion
    CUSTOM_API_KEY=your-custom-api-key
    ```
 
+### Verified Backends & Log Sharing
+
+We regularly exercise Hegelion with two backends:
+
+- **Anthropic Claude (default)** – daily dev target; no extra setup beyond `ANTHROPIC_API_KEY`.
+- **GLM 4.6 (OpenAI-compatible)** – configure `HEGELION_PROVIDER=openai`, `HEGELION_MODEL=GLM-4.6`, `OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4`, and an API key from the [Z.AI devpack](https://docs.z.ai/devpack/tool/others). Canonical traces ship in `examples/glm4_6_examples.jsonl`.
+
+To capture your own verification run, keep the output on disk (ignored by git) and reference it when filing an issue or PR:
+
+```bash
+mkdir -p logs
+HEGELION_PROVIDER=openai \
+HEGELION_MODEL=GLM-4.6 \
+OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4 \
+OPENAI_API_KEY=sk-... \
+uv run hegelion "Can AI be genuinely creative?" --format json > logs/glm_run.json
+```
+
+Before sharing logs publicly, redact sensitive fields while preserving metadata so we can confirm backend/model/timings:
+
+```bash
+jq 'del(.query, .thesis, .antithesis, .synthesis, .contradictions, .research_proposals)' \
+  logs/glm_run.json > logs/glm_run.metadata.json
+```
+
+We would love reports for other Anthropic or OpenAI-compatible endpoints (e.g., Azure OpenAI, custom base URLs). Open a GitHub issue with sanitized metadata plus which model/base URL you exercised.
+
 ## Run
 
 ### Command Line Interface
@@ -121,7 +148,7 @@ asyncio.run(main())
 
 ## Integrate with Claude Desktop
 
-Add Hegelion as an MCP server in Claude Desktop by configuring your `claude_desktop_config.json` file:
+Add Hegelion as an MCP server in Claude Desktop by configuring your `claude_desktop_config.json` file. A ready-to-copy example lives in `examples/mcp/claude_desktop_config.json`, and the full MCP reference (alternate clients, troubleshooting, and tool schemas) is documented in `docs/MCP.md`.
 
 ```json
 {
@@ -142,14 +169,19 @@ Add Hegelion as an MCP server in Claude Desktop by configuring your `claude_desk
 
 > **Note:** If `hegelion-server` isn't on PATH, use `python -m hegelion.mcp_server` as the command instead.
 
+> **Coming soon:** a visual walkthrough of the Claude Desktop integration. Until then, the `docs/MCP.md` guide contains step-by-step screenshots callouts.
+
 ### MCP Tools
 
 Hegelion MCP server exposes the following tools:
 
+ 
 #### `run_dialectic`
+
 Process a query using Hegelian dialectical reasoning (thesis → antithesis → synthesis). Always performs synthesis to generate comprehensive reasoning. Returns structured contradictions and research proposals.
 
 **Input Schema:**
+
 ```json
 {
   "type": "object",
@@ -168,10 +200,13 @@ Process a query using Hegelian dialectical reasoning (thesis → antithesis → 
 }
 ```
 
+ 
 #### `run_benchmark`
+
 Run Hegelion on multiple prompts from a JSONL file. Each line should contain a JSON object with a 'prompt' or 'query' field. Returns newline-delimited JSON, one HegelionResult per line.
 
 **Input Schema:**
+
 ```json
 {
   "type": "object",
@@ -236,7 +271,7 @@ Example output for "Can AI be genuinely creative?" using glm-4.6 backend:
 
 If you'd like to have another AI assistant set up Hegelion for you, use this prompt:
 
-```
+```text
 Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.example`, set Anthropic keys, and start `hegelion-server`. Confirm `hegelion --help` works.
 ```
 

@@ -218,18 +218,22 @@ pytest tests/test_core.py
 ## TODOs / Future Enhancements
 
 ### Immediate (Post-v0.2)
+
 1. **Add integration tests** with real LLM backends
 2. **Performance benchmarking** across different models
 3. **Edge case testing** (malformed inputs, network failures)
 4. **Documentation refinement** based on user feedback
+5. **Automated MCP smoke test** that boots `hegelion-server` and exercises both tools via a lightweight client harness
 
 ### Research Features (v0.3+)
+
 1. **Cross-model comparison tools**
 2. **Synthesis quality metrics**
 3. **Research proposal evaluation**
 4. **Temporal consistency analysis**
 
 ### Production Features (v1.0+)
+
 1. **Caching mechanisms** for repeated queries
 2. **Rate limiting and quotas**
 3. **Monitoring and observability**
@@ -254,22 +258,28 @@ pytest tests/test_core.py
 1. **Bump version** in `pyproject.toml`
 2. **Update CHANGELOG.md** with release notes
 3. **Commit and tag:**
+
    ```bash
    git add pyproject.toml CHANGELOG.md
    git commit -m "Release v0.2.X"
    git tag v0.2.X
    ```
+
 4. **Publish using the script:**
+
    ```bash
    # Get PyPI API token from https://pypi.org/manage/account/token/
    PYPI_TOKEN=<your-token> ./scripts/publish_pypi.sh
    ```
+
 5. **Push to GitHub:**
+
    ```bash
    git push origin main --tags
    ```
 
 **Alternative manual publishing:**
+
 ```bash
 uv sync --dev
 uv run python -m build
@@ -283,6 +293,7 @@ Hegelion has been successfully transformed from an experimental internal project
 The key innovation of always performing synthesis (rather than gating on conflict scores) encourages more comprehensive reasoning and avoids arbitrary thresholds that might mask interesting tensions in seemingly straightforward questions.
 
 The package is now ready for:
+
 - Academic research on AI reasoning and ethics
 - Integration into AI alignment workflows
 - Educational use for teaching dialectical reasoning
