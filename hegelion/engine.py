@@ -145,12 +145,15 @@ class HegelionEngine:
                 structured_proposals.append({"description": proposal})
 
         # Build metadata
+        backend_provider = getattr(self.backend, "__class__", None)
+        provider_name = backend_provider.__name__ if backend_provider else "Unknown"
+
         metadata = HegelionMetadata(
             thesis_time_ms=thesis_time_ms,
             antithesis_time_ms=antithesis_time_ms,
             synthesis_time_ms=synthesis_time_ms,
             total_time_ms=total_time_ms,
-            backend_provider=getattr(self.backend, '__class__.__name__', 'Unknown'),
+            backend_provider=provider_name,
             backend_model=self.model,
         )
 

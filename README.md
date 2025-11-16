@@ -267,6 +267,14 @@ Example output for "Can AI be genuinely creative?" using glm-4.6 backend:
 }
 ```
 
+### Terminal Demo
+
+Want to see the Python API in action? Run `examples/demo_glm_api.py` (or `examples/record_demo.sh`) and compare your output to the latest recording:
+
+![GLM API Demo](./examples/demo_glm_api.gif)
+
+The GIF is generated with the reproducible flow documented in `examples/README_DEMO.md`, which also explains how to spin up the optional local mock GLM server when you need an offline capture.
+
 ## Quick Start with Another AI
 
 If you'd like to have another AI assistant set up Hegelion for you, use this prompt:
