@@ -1,26 +1,19 @@
-# GLM API Demo with GIF Recording
+# GLM API Demo
 
-This directory contains a demonstration of using Hegelion's Python API directly with the GLM backend, and a script to record the terminal session as a GIF.
-
-## Demo GIF
-
-![GLM API Demo](./demo_glm_api.gif)
-
-The GIF above was generated with `record_demo.sh` against the deterministic `mock_glm_server.py`, so documentation stays consistent even when you are offline. Swap the base URL and API key back to the real GLM endpoint when you want to hit the live service.
+This directory contains a demonstration of using Hegelion's Python API directly with the GLM backend.
 
 ## Files
 
 - `demo_glm_api.py` - Python script demonstrating the Hegelion API with GLM backend
-- `record_demo.sh` - Shell script to record the demo as a GIF
+- `mock_glm_server.py` - Local mock server for offline testing
 - `README_DEMO.md` - This file
+
+> **Note:** The `record_demo.sh` script is available for generating GIF recordings but is not required for running the demo.
 
 ## Prerequisites
 
 1. **GLM API Key**: You need a GLM API key from [Z.AI devpack](https://docs.z.ai/devpack/tool/others)
-2. **GIF Recording Tool**: Install one of the following:
-   - **vhs** (recommended): `brew install vhs` or visit [charmbracelet/vhs](https://github.com/charmbracelet/vhs)
-   - **asciinema + agg**: `brew install asciinema agg` or visit [asciinema/asciinema](https://github.com/asciinema/asciinema) and [asciinema/agg](https://github.com/asciinema/agg)
-3. **Python 3.10+** with Hegelion installed (from source or PyPI)
+2. **Python 3.10+** with Hegelion installed (from source or PyPI)
 
 ## Quick Start
 
@@ -41,19 +34,6 @@ python3 demo_glm_api.py
 ```
 
 This will run the dialectical reasoning on "Can AI be genuinely creative?" and display the results.
-
-### 3. Record as GIF
-
-```bash
-cd examples
-./record_demo.sh
-```
-
-The script will:
-- Check for required tools (vhs or asciinema+agg)
-- Set up GLM environment variables
-- Record the demo execution
-- Output `demo_glm_api.gif` in the `examples/` directory
 
 ## What the Demo Shows
 
@@ -134,10 +114,6 @@ Make sure you've exported the `OPENAI_API_KEY` environment variable:
 export OPENAI_API_KEY='your-key-here'
 ```
 
-### Recording Tool Not Found
-
-The `record_demo.sh` script will check for available tools and provide installation instructions if none are found.
-
 ### Import Errors
 
 If you get import errors when running `demo_glm_api.py`, make sure:
@@ -157,10 +133,10 @@ python3 mock_glm_server.py
 # Terminal 2
 export OPENAI_BASE_URL=http://127.0.0.1:8000/v1
 export OPENAI_API_KEY=dummy-key
-./record_demo.sh
+python3 demo_glm_api.py
 ```
 
-The mock server replies with pre-baked thesis/antithesis/synthesis text, so recordings stay stable. Remove the overrides to exercise the real GLM backend.
+The mock server replies with pre-baked thesis/antithesis/synthesis text, so runs stay deterministic. Remove the overrides to exercise the real GLM backend.
 
 ## Customization
 
@@ -173,7 +149,6 @@ You can modify `demo_glm_api.py` to:
 ## Notes
 
 - The demo uses `debug=True` to show internal conflict scores
-- Recording times may vary based on API response times
-- The GIF recording script includes delays to ensure readable output
-- Make sure your terminal has good contrast for GIF recording
+- Response times may vary based on API response times
+- The mock server provides deterministic output for testing and documentation
 

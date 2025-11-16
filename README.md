@@ -1,15 +1,81 @@
+```
+  _   _                     _ _             
+ | | | | ___  __ _  ___ ___(_) |_ ___  _ __ 
+ | |_| |/ _ \/ _` |/ _/ __| | __/ _ \| '__|
+ |  _  |  __/ (_| | (_\__ \ | || (_) | |   
+ |_| |_|\___|\__, |\___|___/_|\__\___/|_|   
+            |___/                           
+```
+
 # Hegelion
 
 > A dialectical reasoning harness for LLMs: Thesis → Antithesis → Synthesis with structured contradictions, research proposals, and metadata you can trust.
 
-Hegelion runs any LLM through Thesis → Antithesis → Synthesis and ships the full result as structured JSON (`HegelionResult`). You always get the three passages plus contradictions, research proposals, and metadata (timings, backend info, optional debug trace). The default backend is Anthropic Claude Sonnet, but the same loop works with OpenAI, Ollama, or a custom HTTP endpoint.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
 
-- **Always synthesizes** – every query completes the full loop.
-- **Structured output** – contradictions and proposals arrive as lists, ready for scoring.
-- **Honest provenance** – backend/model/timings live in `metadata`, internal scores only appear under `metadata.debug` when requested.
-- **Tooling included** – CLI (`hegelion`, `hegelion-bench`) and MCP server (`hegelion-server`) come with the package.
+---
 
-## Install
+## Table of Contents
+
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+  - [Command Line Interface](#command-line-interface)
+  - [Python API](#python-api)
+  - [Claude Desktop Integration](#claude-desktop-integration)
+- [Examples](#examples)
+- [Hero Example](#hero-example)
+- [For Model Builders & Evaluation Teams](#for-model-builders--evaluation-teams)
+- [Development](#development)
+- [License & Status](#license--status)
+
+### Quick Links
+
+- 🚀 [Quick Start](#quick-start) - Get running in 30 seconds
+- 📦 [Installation](#installation) - PyPI or from source
+- ⚙️ [Configuration](#configuration) - Set up your backend
+- 💻 [Python API](#python-api) - Use in your code
+- 🔌 [MCP Integration](#claude-desktop-integration) - Connect to Claude Desktop
+- 📚 [Examples](#examples) - See it in action
+- 🧪 [Development](#development) - Contribute to the project
+
+---
+
+## Overview
+
+Hegelion runs any LLM through **Thesis → Antithesis → Synthesis** and ships the full result as structured JSON (`HegelionResult`). You always get the three passages plus contradictions, research proposals, and metadata (timings, backend info, optional debug trace). The default backend is Anthropic Claude Sonnet, but the same loop works with OpenAI, Ollama, or a custom HTTP endpoint.
+
+### Key Features
+
+- **Always synthesizes** – every query completes the full loop
+- **Structured output** – contradictions and proposals arrive as lists, ready for scoring
+- **Honest provenance** – backend/model/timings live in `metadata`, internal scores only appear under `metadata.debug` when requested
+- **Tooling included** – CLI (`hegelion`, `hegelion-bench`) and MCP server (`hegelion-server`) come with the package
+
+---
+
+## Quick Start
+
+```bash
+# Install from PyPI
+pip install hegelion
+
+# Set your API key
+export ANTHROPIC_API_KEY=your-key-here
+
+# Run your first dialectic
+hegelion "Can AI be genuinely creative?" --format summary
+```
+
+> **Next Steps:** See [Installation](#installation) for source builds, [Configuration](#configuration) for backend setup, or [Usage](#usage) for Python API examples.
+
+---
+
+## Installation
 
 ### Requirements
 
@@ -42,8 +108,9 @@ pip install hegelion
    pip install -e .
    ```
 
+---
 
-## Configure
+## Configuration
 
 1. **Copy the environment template**
    ```bash
@@ -52,21 +119,21 @@ pip install hegelion
 
 2. **Edit `.env` with your preferred backend**
 
-   For Anthropic Claude (default):
+   **Anthropic Claude (default):**
    ```bash
    HEGELION_PROVIDER=anthropic
    HEGELION_MODEL=claude-4.5-sonnet-latest
    ANTHROPIC_API_KEY=your-anthropic-api-key-here
    ```
 
-   For OpenAI:
+   **OpenAI:**
    ```bash
    HEGELION_PROVIDER=openai
    HEGELION_MODEL=gpt-4o
    OPENAI_API_KEY=your-openai-api-key-here
    ```
 
-   For Google Gemini:
+   **Google Gemini:**
    ```bash
    HEGELION_PROVIDER=google
    HEGELION_MODEL=gemini-2.5-pro
@@ -74,14 +141,14 @@ pip install hegelion
    # GOOGLE_API_BASE_URL=https://generativelanguage.googleapis.com
    ```
 
-   For Ollama (local):
+   **Ollama (local):**
    ```bash
    HEGELION_PROVIDER=ollama
    HEGELION_MODEL=llama3.1
    OLLAMA_BASE_URL=http://localhost:11434
    ```
 
-   For Custom HTTP backend:
+   **Custom HTTP backend:**
    ```bash
    HEGELION_PROVIDER=custom_http
    HEGELION_MODEL=your-model-id
@@ -93,8 +160,8 @@ pip install hegelion
 
 We regularly exercise Hegelion with two backends:
 
-- **Anthropic Claude (default)** – daily dev target; no extra setup beyond `ANTHROPIC_API_KEY`.
-- **GLM 4.6 (OpenAI-compatible)** – configure `HEGELION_PROVIDER=openai`, `HEGELION_MODEL=GLM-4.6`, `OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4`, and an API key from the [Z.AI devpack](https://docs.z.ai/devpack/tool/others). Canonical traces ship in `examples/glm4_6_examples.jsonl`.
+- **Anthropic Claude (default)** – daily dev target; no extra setup beyond `ANTHROPIC_API_KEY`
+- **GLM 4.6 (OpenAI-compatible)** – configure `HEGELION_PROVIDER=openai`, `HEGELION_MODEL=GLM-4.6`, `OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4`, and an API key from the [Z.AI devpack](https://docs.z.ai/devpack/tool/others). Canonical traces ship in `examples/glm4_6_examples.jsonl`
 
 To capture your own verification run, keep the output on disk (ignored by git) and reference it when filing an issue or PR:
 
@@ -116,7 +183,9 @@ jq 'del(.query, .thesis, .antithesis, .synthesis, .contradictions, .research_pro
 
 We would love reports for other Anthropic or OpenAI-compatible endpoints (e.g., Azure OpenAI, custom base URLs). Open a GitHub issue with sanitized metadata plus which model/base URL you exercised.
 
-## Run
+---
+
+## Usage
 
 ### Command Line Interface
 
@@ -146,7 +215,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## Integrate with Claude Desktop
+### Claude Desktop Integration
 
 Add Hegelion as an MCP server in Claude Desktop by configuring your `claude_desktop_config.json` file. A ready-to-copy example lives in `examples/mcp/claude_desktop_config.json`, and the full MCP reference (alternate clients, troubleshooting, and tool schemas) is documented in `docs/MCP.md`.
 
@@ -171,12 +240,11 @@ Add Hegelion as an MCP server in Claude Desktop by configuring your `claude_desk
 
 > **Coming soon:** a visual walkthrough of the Claude Desktop integration. Until then, the `docs/MCP.md` guide contains step-by-step screenshots callouts.
 
-### MCP Tools
+#### MCP Tools
 
 Hegelion MCP server exposes the following tools:
 
- 
-#### `run_dialectic`
+##### `run_dialectic`
 
 Process a query using Hegelian dialectical reasoning (thesis → antithesis → synthesis). Always performs synthesis to generate comprehensive reasoning. Returns structured contradictions and research proposals.
 
@@ -200,8 +268,7 @@ Process a query using Hegelian dialectical reasoning (thesis → antithesis → 
 }
 ```
 
- 
-#### `run_benchmark`
+##### `run_benchmark`
 
 Run Hegelion on multiple prompts from a JSONL file. Each line should contain a JSON object with a 'prompt' or 'query' field. Returns newline-delimited JSON, one HegelionResult per line.
 
@@ -224,6 +291,36 @@ Run Hegelion on multiple prompts from a JSONL file. Each line should contain a J
   "required": ["prompts_file"]
 }
 ```
+
+---
+
+## Examples
+
+**Example Files:**
+
+- `examples/glm4_6_examples.jsonl` — canonical glm-4.6 traces for:
+  - Philosophical: "Can AI be genuinely creative?"
+  - Factual: "What is the capital of France?"
+  - Scientific: "Explain what photosynthesis does for a plant."
+  - Historical: "When was the first moon landing?"
+- `examples/README.md` — index + CLI instructions for replaying each example
+- `examples/*.md` — narrative walk-throughs for creative reasoning prompts
+- `examples/demo_glm_api.py` — Python API demo script (see [examples/README_DEMO.md](examples/README_DEMO.md))
+- `benchmarks/examples_basic.jsonl` — starter JSONL for benchmarking harness behavior
+
+**Generate Your Own Dataset:**
+
+Add `--output my_runs.jsonl` to the CLI or call `run_benchmark(..., output_file="file.jsonl")` from Python. See [For Model Builders & Evaluation Teams](#for-model-builders--evaluation-teams) for benchmarking workflows.
+
+**Quick Start with Another AI:**
+
+If you'd like to have another AI assistant set up Hegelion for you, use this prompt:
+
+```text
+Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.example`, set Anthropic keys, and start `hegelion-server`. Confirm `hegelion --help` works.
+```
+
+---
 
 ## Hero Example
 
@@ -267,40 +364,15 @@ Example output for "Can AI be genuinely creative?" using glm-4.6 backend:
 }
 ```
 
-### Terminal Demo
-
-Want to see the Python API in action? Run `examples/demo_glm_api.py` (or `examples/record_demo.sh`) and compare your output to the latest recording:
-
-![GLM API Demo](./examples/demo_glm_api.gif)
-
-The GIF is generated with the reproducible flow documented in `examples/README_DEMO.md`, which also explains how to spin up the optional local mock GLM server when you need an offline capture.
-
-## Quick Start with Another AI
-
-If you'd like to have another AI assistant set up Hegelion for you, use this prompt:
-
-```text
-Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.example`, set Anthropic keys, and start `hegelion-server`. Confirm `hegelion --help` works.
-```
-
-## Examples & Benchmarks
-
-- `examples/glm4_6_examples.jsonl` — canonical glm-4.6 traces for:
-  - Philosophical: "Can AI be genuinely creative?"
-  - Factual: "What is the capital of France?"
-  - Scientific: "Explain what photosynthesis does for a plant."
-  - Historical: "When was the first moon landing?"
-- `examples/README.md` — index + CLI instructions for replaying each example.
-- `examples/*.md` — narrative walk-throughs for creative reasoning prompts.
-- `benchmarks/examples_basic.jsonl` — starter JSONL for benchmarking harness behavior.
-
-Generate your own dataset by adding `--output my_runs.jsonl` to either CLI or by calling `run_benchmark(..., output_file="file.jsonl")` from Python.
+---
 
 ## For Model Builders & Evaluation Teams
 
-1. Switch providers by editing `.env` (`HEGELION_PROVIDER` + `HEGELION_MODEL`).
-2. Run benchmarks via `hegelion-bench prompts.jsonl --output results.jsonl`, then rerun with other providers for apples-to-apples comparison.
-3. Parse the JSONL output—each line already includes thesis/antithesis/synthesis, contradictions, proposals, metadata, and (optionally) debug metrics.
+1. Switch providers by editing `.env` (`HEGELION_PROVIDER` + `HEGELION_MODEL`)
+2. Run benchmarks via `hegelion-bench prompts.jsonl --output results.jsonl`, then rerun with other providers for apples-to-apples comparison
+3. Parse the JSONL output—each line already includes thesis/antithesis/synthesis, contradictions, proposals, metadata, and (optionally) debug metrics
+
+---
 
 ## Development
 
@@ -319,7 +391,11 @@ uv run hegelion-bench --help
 uv run pre-commit install
 ```
 
+---
+
 ## License & Status
 
-- **License:** MIT (see `LICENSE`).
+- **License:** MIT (see `LICENSE`)
 - **Status:** Actively maintained research infrastructure. The dialectical protocol and JSON schema are stable; internal engine/backends may evolve.
+
+---
