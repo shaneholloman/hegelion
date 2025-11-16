@@ -247,6 +247,58 @@ pytest tests/test_core.py
 - [x] Packaging: PyPI-ready structure
 - [x] License: MIT license included
 
+## Release Process
+
+### Publishing to PyPI
+
+1. **Bump version** in `pyproject.toml`
+2. **Update CHANGELOG.md** with release notes
+3. **Commit and tag:**
+   ```bash
+   git add pyproject.toml CHANGELOG.md
+   git commit -m "Release v0.2.X"
+   git tag v0.2.X
+   git push origin main --tags
+   ```
+4. **Build and publish:**
+   ```bash
+   uv sync --dev
+   uv run python -m build
+   uv run twine upload dist/* --username __token__ --password <PYPI_TOKEN>
+   ```
+
+### Publishing to GitHub Packages
+
+GitHub Packages offers free storage (2 GB included) and data transfer (10 GB included) for public repositories.
+
+1. **Create a GitHub Personal Access Token:**
+   - Go to https://github.com/settings/tokens
+   - Generate new token (classic)
+   - Select scope: `write:packages`
+   - Copy the token
+
+2. **Build and publish:**
+   ```bash
+   uv sync --dev
+   uv run python -m build
+   GITHUB_TOKEN=<your-token> ./scripts/publish_github_packages.sh
+   ```
+
+   Or manually:
+   ```bash
+   uv run twine upload \
+     --repository-url https://upload.pypi.org/legacy/ \
+     --username Hmbown \
+     --password "${GITHUB_TOKEN}" \
+     dist/*
+   ```
+
+3. **Users can install from GitHub Packages:**
+   ```bash
+   pip install hegelion \
+     --index-url https://<GITHUB_TOKEN>@pypi.pkg.github.com/Hmbown/simple
+   ```
+
 ## Conclusion
 
 Hegelion has been successfully transformed from an experimental internal project into a production-ready, open-source Python package. The refactoring maintains all the sophisticated dialectical reasoning capabilities while making the system more secure, configurable, and research-oriented.
