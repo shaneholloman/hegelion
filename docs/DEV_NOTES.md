@@ -258,31 +258,22 @@ pytest tests/test_core.py
    git add pyproject.toml CHANGELOG.md
    git commit -m "Release v0.2.X"
    git tag v0.2.X
+   ```
+4. **Publish using the script:**
+   ```bash
+   # Get PyPI API token from https://pypi.org/manage/account/token/
+   PYPI_TOKEN=<your-token> ./scripts/publish_pypi.sh
+   ```
+5. **Push to GitHub:**
+   ```bash
    git push origin main --tags
    ```
-4. **Build and publish:**
-   ```bash
-   uv sync --dev
-   uv run python -m build
-   uv run twine upload dist/* --username __token__ --password <PYPI_TOKEN>
-   ```
 
-### Publishing with Script
-
-Use the provided publishing script:
-
+**Alternative manual publishing:**
 ```bash
-# Get PyPI API token from https://pypi.org/manage/account/token/
-PYPI_TOKEN=<your-token> ./scripts/publish_pypi.sh
-```
-
-### Publishing with Script
-
-Use the provided publishing script:
-
-```bash
-# Get PyPI API token from https://pypi.org/manage/account/token/
-PYPI_TOKEN=<your-token> ./scripts/publish_pypi.sh
+uv sync --dev
+uv run python -m build
+uv run twine upload dist/* --username __token__ --password <PYPI_TOKEN>
 ```
 
 ## Conclusion
