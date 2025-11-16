@@ -16,17 +16,25 @@ Hegelion runs any LLM through Thesis → Antithesis → Synthesis and ships the 
 ### Requirements
 
 - Python 3.10+ (regularly tested on 3.10 and 3.11)
-- `uv` recommended for dependency management (fallback: `pip install -e .`)
+- `uv` recommended for dependency management (fallback: standard `pip`)
 
-### Installation Steps
+### Installation Options
 
-1. **Clone the repository**
+**From PyPI (recommended):**
+
+```bash
+pip install hegelion
+```
+
+**From source:**
+
+1. Clone the repository
    ```bash
    git clone https://github.com/Shannon-Labs/Hegelion.git
    cd Hegelion
    ```
 
-2. **Install dependencies** (prefer `uv`)
+2. Install dependencies (prefer `uv`)
    ```bash
    uv sync              # creates .venv and installs runtime deps
    ```
@@ -36,7 +44,6 @@ Hegelion runs any LLM through Thesis → Antithesis → Synthesis and ships the 
    pip install -e .
    ```
 
-   > **Note:** Hegelion is currently a Git-first research release; PyPI packaging will come later.
 
 ## Configure
 
