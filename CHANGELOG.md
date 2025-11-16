@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2 – Simplified publishing
+
+- Removed GitHub Packages complexity and documentation
+- Added simple PyPI publishing script (`scripts/publish_pypi.sh`)
+- Created clean publishing guide (`docs/PUBLISHING.md`)
+- Streamlined release process documentation
+
 ## 0.2.1 – License format fix
 
 - Fixed deprecated license format in `pyproject.toml` (changed from table to SPDX string format)
