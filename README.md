@@ -1,7 +1,5 @@
 # Hegelion
 
-[![CI](https://github.com/Hmbown/Hegelion/actions/workflows/ci.yml/badge.svg)](https://github.com/Hmbown/Hegelion/actions/workflows/ci.yml)
-
 > A dialectical reasoning harness for LLMs: Thesis → Antithesis → Synthesis with structured contradictions, research proposals, and metadata you can trust.
 
 Hegelion runs any LLM through Thesis → Antithesis → Synthesis and ships the full result as structured JSON (`HegelionResult`). You always get the three passages plus contradictions, research proposals, and metadata (timings, backend info, optional debug trace). The default backend is Anthropic Claude Sonnet, but the same loop works with OpenAI, Ollama, or a custom HTTP endpoint.
