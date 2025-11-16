@@ -1,13 +1,6 @@
-```
-/\ \  _ \ \   /\  \   /\  == \   /\ \       /\  __ \   /\  == \   /\ \   /\  \ /\ "-./  \
-\ \ / ".\ \  \ \ _  \ \  <   \ \ _  \ \  __ \  \ \  __<   \ \ \  \ \  __\ \ \ -./\ \
-\ _/".~_\  \ _\  \ _\ _\  \ _\  \ _\ _\  \ _\ _\  \ _\  \ _\ \ _\ \ _\
-//   //   //   // //   //   ////   // //   //   /_**/  //  //
-
-                      T H E S I S  ->  A N T I T H E S I S  ->  S Y N T H E S I S
-```
-
 # Hegelion
+
+**THESIS → ANTITHESIS → SYNTHESIS**
 
 > **Structured reasoning that surfaces contradictions and generates insights through thesis-antithesis-synthesis.**
 
