@@ -1,88 +1,86 @@
-# Claude Code MCP Configuration for Hegelion
+# Hegelion MCP Integration for Claude Code
 
-To integrate Hegelion with Claude Code, you need to configure the MCP server settings.
+This guide shows how to integrate Hegelion's dialectical reasoning capabilities with Claude Code via MCP (Model Context Protocol).
 
-## ✅ VERIFIED WORKING CONFIGURATION
+## Quick Setup
 
-## Method 1: Environment Variables (Recommended)
+1. **Install Hegelion with MCP support:**
+   ```bash
+   pip install hegelion
+   ```
 
-Set these environment variables before starting Claude Code:
+2. **Configure your LLM backend** by setting environment variables:
+   ```bash
+   # For Z.AI GLM-4.6 (recommended)
+   export HEGELION_PROVIDER="openai"
+   export HEGELION_MODEL="GLM-4.6"
+   export OPENAI_BASE_URL="https://api.z.ai/api/coding/paas/v4"
+   export OPENAI_API_KEY="your-zai-api-key-here"
 
-```bash
-export HEGELION_PROVIDER="openai"
-export HEGELION_MODEL="GLM-4.6"
-export OPENAI_BASE_URL="https://api.z.ai/api/coding/paas/v4"
-export OPENAI_API_KEY="22cf838afc5941f49987c7e9de48833d.SBHPEaBNlBs3EIaC"
-```
+   # Or for Anthropic Claude (default)
+   export HEGELION_PROVIDER="anthropic"
+   export HEGELION_MODEL="claude-4.5-sonnet-latest"
+   export ANTHROPIC_API_KEY="your-anthropic-api-key-here"
+   ```
 
-## Method 2: Claude Code Configuration File
+3. **Start the MCP server:**
+   ```bash
+   hegelion-server
+   ```
 
-Add the following to your Claude Code configuration:
+## MCP Tools Available
 
+Once connected, Hegelion provides these tools:
+
+### `run_dialectic`
+Analyze a single query using dialectical reasoning (thesis → antithesis → synthesis)
+
+**Input:**
 ```json
 {
-  "mcpServers": {
-    "hegelion": {
-      "command": "uv",
-      "args": ["run", "python", "-c", "import asyncio; from hegelion.mcp_server import main; asyncio.run(main())"],
-      "cwd": "/Volumes/VIXinSSD/hegelion",
-      "env": {
-        "HEGELION_PROVIDER": "openai",
-        "HEGELION_MODEL": "GLM-4.6",
-        "OPENAI_BASE_URL": "https://api.z.ai/api/coding/paas/v4",
-        "OPENAI_API_KEY": "22cf838afc5941f49987c7e9de48833d.SBHPEaBNlBs3EIaC"
-      }
-    }
-  }
+  "query": "Can AI be genuinely creative?",
+  "debug": false
 }
 ```
 
-## Testing the Integration
+**Output:** Structured HegelionResult with thesis, antithesis, synthesis, contradictions, and research proposals
 
-Once configured, you can test the integration by calling the available tools:
+### `run_benchmark`
+Run multiple queries from a JSONL file for batch analysis
 
-1. **run_dialectic**: Analyze a single query using dialectical reasoning
-2. **run_benchmark**: Run multiple prompts from a JSONL file
+**Input:**
+```json
+{
+  "prompts_file": "benchmarks/examples_basic.jsonl",
+  "debug": false
+}
+```
 
-### Example Usage:
-- Ask Claude to "Use Hegelion to analyze 'Can AI be genuinely creative?'"
-- The tool should return a structured result with thesis, antithesis, synthesis, contradictions, and research proposals
+**Output:** Newline-delimited JSON with one HegelionResult per line
 
-## ✅ VERIFICATION TESTS COMPLETED
+## Example Usage
 
-**Z.AI Integration Testing Results:**
-- ✅ **Core Functionality**: `run_dialectic_sync` successfully completed with full thesis/antithesis/synthesis
-- ✅ **MCP Server**: `call_tool` function working correctly with proper response format
-- ✅ **API Connectivity**: Successfully made calls to Z.AI's GLM-4.6 model
-- ✅ **Full Workflow**: Complete dialectical reasoning process (3-phase) working end-to-end
+In Claude Code, you can now ask:
+- "Use Hegelion to analyze 'Is privacy more important than security?'"
+- "Run a Hegelion benchmark on this prompts file"
+- "What are the contradictions in the Hegelion analysis of climate change?"
 
-**Test Results Summary:**
-- Query: "What is the capital of France?"
-- Generated: 15,324+ characters of dialectical content
-- Contradictions: 5 identified
-- Research Proposals: 2 generated
-- Processing Time: ~3+ minutes (full thesis → antithesis → synthesis)
-- MCP Response: Proper `TextContent` list format
+## Configuration Options
 
-## Current Configuration Status
+The MCP server respects all Hegelion environment variables:
 
-✅ **Package Built**: Hegelion v0.2.3 built successfully
-✅ **Repository Updated**: Changes committed and tagged with v0.2.3
-✅ **Dependencies Installed**: uv sync completed
-✅ **Environment Configured**: .env file set up with Z.AI API
-✅ **CLI Tested**: hegelion --demo, hegelion --help, hegelion-bench --help all working
-✅ **MCP Server Tested**: Server starts correctly with proper async handling
-✅ **Z.AI Integration Verified**: Full end-to-end testing completed with real API calls
-✅ **Tool Interface Confirmed**: MCP server `call_tool` function working properly
+- `HEGELION_PROVIDER`: anthropic, openai, google, ollama, custom_http
+- `HEGELION_MODEL`: Specific model name (e.g., GLM-4.6, claude-4.5-sonnet-latest)
+- `HEGELION_LOG_LEVEL`: Logging verbosity (DEBUG, INFO, WARNING, ERROR)
 
-## 🎉 READY FOR PRODUCTION USE
+For a full list of backend configurations, see the main README.md.
 
-Your Hegelion MCP server is now **FULLY VERIFIED** and ready for integration with Claude Code! The server is confirmed to work with Z.AI's GLM-4.6 model for complete dialectical reasoning.
+## Installation from PyPI
 
-The system has been tested with real API calls and successfully generates:
-- Full thesis-antithesis-synthesis responses
-- Structured contradictions and research proposals
-- Proper MCP tool response formatting
-- End-to-end workflow from query to complete dialectical analysis
+Hegelion v0.2.3 is now available on PyPI:
 
-**To use**: Configure the MCP server in your Claude Code settings and start making dialectical reasoning requests with confidence that the integration is fully tested and working!
+```bash
+pip install hegelion
+```
+
+This includes the MCP server (`hegelion-server`) and all CLI tools.
