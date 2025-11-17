@@ -107,8 +107,14 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 async def main() -> None:
     """Run the MCP stdio server."""
 
-    async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
-        await app.run(read_stream, write_stream, app.create_initialization_options())
+    from mcp.server.stdio import stdio_server
+
+    async with stdio_server() as streams:
+        await app.run(
+            streams[0],
+            streams[1],
+            app.create_initialization_options(),
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover - CLI entrypoint

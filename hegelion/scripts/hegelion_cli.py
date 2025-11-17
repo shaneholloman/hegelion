@@ -69,15 +69,32 @@ def _load_demo_examples() -> list[dict]:
         return []
 
 
-def print_cached_example() -> None:
+def print_cached_example(format_type: str = "json") -> None:
     """Print a cached example result for demo mode."""
     examples = _load_demo_examples()
     if not examples:
         print("Demo data is not available in this installation.", file=sys.stderr)
         return
 
-    example = examples[0]
-    print(json.dumps(example, indent=2, ensure_ascii=False))
+    example_data = examples[0]
+    
+    if format_type == "summary":
+        # Create a HegelionResult from the example data and format it
+        from hegelion.models import HegelionResult
+        result = HegelionResult(
+            query=example_data["query"],
+            mode=example_data["mode"],
+            thesis=example_data["thesis"],
+            antithesis=example_data["antithesis"],
+            synthesis=example_data["synthesis"],
+            contradictions=example_data["contradictions"],
+            research_proposals=example_data["research_proposals"],
+            metadata=example_data["metadata"]
+        )
+        print(format_summary(result))
+    else:
+        # Default to JSON format
+        print(json.dumps(example_data, indent=2, ensure_ascii=False))
 
 
 def format_summary(result) -> str:
@@ -160,7 +177,7 @@ def format_summary(result) -> str:
 async def _run(args: argparse.Namespace) -> None:
     if args.demo:
         # In demo mode we ignore live backends and just show a cached trace.
-        print_cached_example()
+        print_cached_example(format_type=args.format)
         return
 
     if not args.query:

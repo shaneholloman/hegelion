@@ -549,7 +549,7 @@ Explore Hegelion's core capability with this compelling example, showcasing how 
 hegelion "Can AI be genuinely creative?" --format summary
 ```
 
-**Output (excerpt):
+**Output (excerpt):**
 
 **Thesis:** *The Creative Machine* - AI can be genuinely creative, mirroring human creativity as a computational process of synthesis and pattern recognition.
 
@@ -565,7 +565,7 @@ hegelion "Can AI be genuinely creative?" --format summary
 - *Co-Creative Trace Analysis*: Human-AI dialogues produce artifacts judged more creative than single-pass outputs
 
 *Full example in `examples/glm4_6_examples.jsonl` - one command → three positions + contradictions + testable prediction.*
-```
+
 ```json
 {
   "query": "Can AI be genuinely creative?",
