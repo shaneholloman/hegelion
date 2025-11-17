@@ -89,26 +89,26 @@ Query    → Thesis      → Antithesis      → Synthesis
 
 ## Quick Start: Get Started in Minutes!
 
-Ready to dive into dialectical reasoning? Follow these simple steps to get Hegelion up and running:
+Ready to dive into dialectical reasoning? Follow these simple steps to get Hegelion v0.2.3 up and running:
 
 ```bash
-# Install
+# Install from PyPI (recommended)
 pip install hegelion
 
-# Demo mode (no API key needed)
+# Quick test with demo mode (no API key needed)
 hegelion --demo
 
-# With your API key
-export ANTHROPIC_API_KEY="sk-ant-..."
-hegelion "Your question" --format summary
+# Configure your backend and run
+export ANTHROPIC_API_KEY="sk-ant-..."  # Or configure any supported backend
+hegelion "Can AI be genuinely creative?" --format summary
 
 # Batch processing
 hegelion-bench benchmarks/examples_basic.jsonl --output results.jsonl
 ```
 
-> See contradictions, research proposals, and synthesis in one structured response.
->
-> **Next Steps:** Keep reading for structure and traces, or jump to [Installation](#installation) for backend configuration.
+**What you get:** Structured JSON with thesis, antithesis, synthesis, contradictions, and research proposals.
+
+**Next Steps:** See [Configuration](#configuration) for backend setup or [Examples](#examples) for detailed walkthroughs.
 
 
 ## What You Get: Actionable, Structured Insights
@@ -594,7 +594,7 @@ hegelion "Can AI be genuinely creative?" --format summary
     }
   ],
   "metadata": {
-    "backend_provider": "AnthropicLLMBackend",
+    "backend_provider": "OpenAILLMBackend",
     "backend_model": "glm-4.6",
     "total_time_ms": 37564.40,
     "debug": {
