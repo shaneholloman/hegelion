@@ -8,15 +8,29 @@ from typing import List, Optional
 
 
 def parse_contradiction_header(text: str) -> Optional[str]:
-    """Parse a contradiction header line and extract the description."""
+    """Parse a contradiction header line and extract the description.
+
+    Supports variations:
+    - CONTRADICTION: description
+    - **CONTRADICTION**: description
+    - Contradiction 1: description
+    - contradiction: description (case insensitive)
+    """
     colon_index = text.find(":")
     if colon_index == -1:
         return None
+
+    # Strip markdown and normalize
     prefix = strip_markdown_wrappers(text[:colon_index].strip()).upper()
-    if not prefix.startswith("CONTRADICTION"):
-        return None
-    detail = text[colon_index + 1 :].strip() or "Unspecified contradiction"
-    return detail
+
+    # Remove numbering (e.g., "CONTRADICTION 1" -> "CONTRADICTION")
+    prefix_parts = prefix.split()
+    if prefix_parts and prefix_parts[0] == "CONTRADICTION":
+        # Valid contradiction header
+        detail = text[colon_index + 1 :].strip() or "Unspecified contradiction"
+        return detail
+
+    return None
 
 
 def strip_markdown_wrappers(text: str) -> str:
@@ -38,75 +52,158 @@ def strip_markdown_wrappers(text: str) -> str:
 def extract_contradictions(text: str) -> List[str]:
     """Extract structured contradictions from antithesis text.
 
-    Expected format:
+    Supports formats:
     CONTRADICTION: [description]
     EVIDENCE: [supporting evidence]
+    **CONTRADICTION**: [description]  (markdown)
+    Contradiction 1: [description]    (numbered)
+
+    Handles multiline evidence by accumulating lines until next CONTRADICTION.
     """
     contradictions: List[str] = []
     pending: Optional[str] = None
+    evidence_buffer: List[str] = []
 
     for raw_line in text.splitlines():
         stripped = raw_line.strip()
         if not stripped:
             continue
+
         cleaned = strip_markdown_wrappers(stripped)
         if not cleaned:
             continue
+
+        # Check if this is a new contradiction header
         header = parse_contradiction_header(cleaned)
         if header:
+            # Save previous contradiction with accumulated evidence
             if pending:
-                contradictions.append(pending)
+                if evidence_buffer:
+                    combined_evidence = " ".join(evidence_buffer).strip()
+                    contradictions.append(f"{pending} — {combined_evidence}")
+                else:
+                    contradictions.append(pending)
+                evidence_buffer = []
             pending = header
             continue
 
         if not pending:
             continue
 
+        # Check if this is evidence
         normalized = cleaned.upper()
         if normalized.startswith("EVIDENCE"):
-            evidence = cleaned.split(":", 1)[1].strip() if ":" in cleaned else ""
-            if evidence:
-                contradictions.append(f"{pending} — {evidence}")
-            else:
-                contradictions.append(pending)
-            pending = None
+            # Extract evidence text after colon
+            evidence_line = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned
+            if evidence_line:
+                evidence_buffer.append(evidence_line)
+        elif evidence_buffer:
+            # Continuation of evidence (multiline)
+            evidence_buffer.append(cleaned)
 
+    # Save final pending contradiction
     if pending:
-        contradictions.append(pending)
+        if evidence_buffer:
+            combined_evidence = " ".join(evidence_buffer).strip()
+            contradictions.append(f"{pending} — {combined_evidence}")
+        else:
+            contradictions.append(pending)
+
     return contradictions
 
 
 def extract_research_proposals(text: str) -> List[str]:
     """Extract research proposals from synthesis text.
 
-    Expected format:
-    RESEARCH_PROPOSAL: [description]
-    TESTABLE_PREDICTION: [falsifiable claim]
+    Supports formats:
+    - RESEARCH_PROPOSAL: [description]
+    - TESTABLE_PREDICTION: [falsifiable claim]
+    - PREDICTION 1: [claim]  (numbered)
+    - TEST_PREDICTION: [claim]  (variations)
+
+    Handles multiline predictions by accumulating until next header.
     """
     proposals: List[str] = []
     current = None
+    prediction_buffer: List[str] = []
+
+    def _is_research_header(upper_line: str) -> bool:
+        """Check if line is a research proposal header."""
+        return upper_line.startswith("RESEARCH_PROPOSAL:") or upper_line.startswith(
+            "RESEARCH PROPOSAL:"
+        )
+
+    def _is_prediction_header(upper_line: str) -> bool:
+        """Check if line is a prediction header (with variations)."""
+        # Match: TESTABLE_PREDICTION, TESTABLE PREDICTION, TEST_PREDICTION,
+        # PREDICTION 1, PREDICTION:, etc.
+        if upper_line.startswith("TESTABLE") and "PREDICTION" in upper_line:
+            return True
+        if upper_line.startswith("TEST") and "PREDICTION" in upper_line:
+            return True
+        # Handle numbered predictions: "PREDICTION 1:", "PREDICTION 2:", etc.
+        if re.match(r"PREDICTION\s*\d*\s*:", upper_line):
+            return True
+        return False
 
     for line in text.splitlines():
         normalized = line.strip()
         if not normalized:
             continue
-        upper = normalized.upper()
-        if upper.startswith("RESEARCH_PROPOSAL:"):
-            if current:
+
+        cleaned = strip_markdown_wrappers(normalized)
+        upper = cleaned.upper()
+
+        # Check for research proposal header
+        if _is_research_header(upper):
+            # Save previous prediction if exists
+            if prediction_buffer:
+                combined_pred = " ".join(prediction_buffer).strip()
+                if current:
+                    proposals.append(f"{current} | Prediction: {combined_pred}")
+                    current = None
+                else:
+                    proposals.append(f"Prediction: {combined_pred}")
+                prediction_buffer = []
+            elif current:
                 proposals.append(current)
-            current = normalized.split(":", 1)[1].strip()
-        elif upper.startswith("TESTABLE_PREDICTION:"):
-            prediction = normalized.split(":", 1)[1].strip()
+
+            # Extract new research proposal
+            current = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned
+
+        # Check for prediction header
+        elif _is_prediction_header(upper):
+            # Save previous item
             if current:
-                combined = (
-                    f"{current} | Prediction: {prediction}" if prediction else current
-                )
-                proposals.append(combined)
+                if prediction_buffer:
+                    combined_pred = " ".join(prediction_buffer).strip()
+                    proposals.append(f"{current} | Prediction: {combined_pred}")
+                else:
+                    proposals.append(current)
                 current = None
-            elif prediction:
-                proposals.append(f"Prediction: {prediction}")
+            elif prediction_buffer:
+                combined_pred = " ".join(prediction_buffer).strip()
+                proposals.append(f"Prediction: {combined_pred}")
+
+            # Start new prediction
+            prediction_text = cleaned.split(":", 1)[1].strip() if ":" in cleaned else ""
+            prediction_buffer = [prediction_text] if prediction_text else []
+
+        # Continuation line (multiline predictions)
+        elif prediction_buffer and cleaned:
+            prediction_buffer.append(cleaned)
+
+    # Save final items
     if current:
-        proposals.append(current)
+        if prediction_buffer:
+            combined_pred = " ".join(prediction_buffer).strip()
+            proposals.append(f"{current} | Prediction: {combined_pred}")
+        else:
+            proposals.append(current)
+    elif prediction_buffer:
+        combined_pred = " ".join(prediction_buffer).strip()
+        proposals.append(f"Prediction: {combined_pred}")
+
     return proposals
 
 
