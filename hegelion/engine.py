@@ -6,7 +6,6 @@ import hashlib
 import json
 import re
 import time
-import warnings
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -18,8 +17,39 @@ except ImportError:  # pragma: no cover - fallback handled below
     SentenceTransformer = None  # type: ignore
 
 from .backends import LLMBackend
+from .logging_utils import log_error, log_metric, log_phase, logger
 from .models import HegelionMetadata, HegelionResult, HegelionTrace, ResearchProposal
 from .parsing import extract_contradictions, extract_research_proposals, parse_conflict_value, conclusion_excerpt
+
+
+class HegelionPhaseError(Exception):
+    """Base class for phase-specific errors."""
+
+    def __init__(self, phase: str, message: str, original_error: Optional[Exception] = None):
+        self.phase = phase
+        self.original_error = original_error
+        super().__init__(f"{phase} phase failed: {message}")
+
+
+class ThesisPhaseError(HegelionPhaseError):
+    """Error during thesis generation."""
+
+    def __init__(self, message: str, original_error: Optional[Exception] = None):
+        super().__init__("thesis", message, original_error)
+
+
+class AntithesisPhaseError(HegelionPhaseError):
+    """Error during antithesis generation."""
+
+    def __init__(self, message: str, original_error: Optional[Exception] = None):
+        super().__init__("antithesis", message, original_error)
+
+
+class SynthesisPhaseError(HegelionPhaseError):
+    """Error during synthesis generation."""
+
+    def __init__(self, message: str, original_error: Optional[Exception] = None):
+        super().__init__("synthesis", message, original_error)
 
 
 class _EmbeddingModel:
@@ -69,20 +99,22 @@ class HegelionEngine:
         self.embedder: _EmbeddingModel = embedder or self._load_embedder()
 
     def _load_embedder(self) -> _EmbeddingModel:
-        """Load sentence transformer or fallback embedder."""
+        """Load sentence transformer or fallback embedder (lazy-loaded)."""
         if SentenceTransformer is None:
-            warnings.warn(
-                "sentence-transformers is not installed. "
-                "Falling back to a hash-based embedder."
+            logger.warning(
+                "sentence-transformers not installed, using fallback hash-based embedder"
             )
+            log_metric("embedder_type", "fallback_hash")
             return _FallbackEmbedder()
         try:
-            return SentenceTransformer("all-MiniLM-L6-v2")
+            embedder = SentenceTransformer("all-MiniLM-L6-v2")
+            log_metric("embedder_type", "sentence_transformer")
+            return embedder
         except Exception as exc:  # pragma: no cover - depends on runtime environment
-            warnings.warn(
-                f"Falling back to hash-based embeddings because SentenceTransformer "
-                f"could not load: {exc}"
+            logger.warning(
+                f"Failed to load SentenceTransformer, falling back to hash-based embedder: {exc}"
             )
+            log_metric("embedder_type", "fallback_hash")
             return _FallbackEmbedder()
 
     async def process_query(
@@ -96,36 +128,105 @@ class HegelionEngine:
 
         Design change: Always performs synthesis to encourage full dialectical reasoning.
         Conflict scoring is kept internally for analysis but not exposed by default.
+
+        Graceful degradation: Returns partial results if phases fail, with errors tracked
+        in metadata.errors list.
         """
         start_time = time.perf_counter()
+        errors: List[Dict[str, str]] = []
+
+        log_phase("query_start", query=query[:100], debug=debug)
 
         # Generate thesis
-        thesis_start = time.perf_counter()
-        thesis = await self._generate_thesis(query)
-        thesis_time_ms = (time.perf_counter() - thesis_start) * 1000.0
+        thesis = ""
+        thesis_time_ms = 0.0
+        try:
+            thesis_start = time.perf_counter()
+            log_phase("thesis_start")
+            thesis = await self._generate_thesis(query)
+            thesis_time_ms = (time.perf_counter() - thesis_start) * 1000.0
+            log_phase("thesis_complete", time_ms=thesis_time_ms, length=len(thesis))
+        except Exception as exc:
+            thesis_time_ms = (time.perf_counter() - thesis_start) * 1000.0
+            error_msg = f"Thesis generation failed: {exc}"
+            log_error("thesis_failed", error_msg, exception=str(exc))
+            errors.append({
+                "phase": "thesis",
+                "error": type(exc).__name__,
+                "message": str(exc)
+            })
+            # Cannot continue without thesis
+            raise ThesisPhaseError(str(exc), exc) from exc
 
         # Generate antithesis
-        antithesis_start = time.perf_counter()
-        antithesis_output = await self._generate_antithesis(query, thesis)
-        antithesis_time_ms = (time.perf_counter() - antithesis_start) * 1000.0
+        antithesis_text = ""
+        contradictions: List[str] = []
+        antithesis_time_ms = 0.0
+        try:
+            antithesis_start = time.perf_counter()
+            log_phase("antithesis_start")
+            antithesis_output = await self._generate_antithesis(query, thesis)
+            antithesis_text = antithesis_output.text
+            contradictions = antithesis_output.contradictions
+            antithesis_time_ms = (time.perf_counter() - antithesis_start) * 1000.0
+            log_phase("antithesis_complete", time_ms=antithesis_time_ms,
+                     contradictions_count=len(contradictions))
+        except Exception as exc:
+            antithesis_time_ms = (time.perf_counter() - antithesis_start) * 1000.0
+            error_msg = f"Antithesis generation failed: {exc}"
+            log_error("antithesis_failed", error_msg, exception=str(exc))
+            errors.append({
+                "phase": "antithesis",
+                "error": type(exc).__name__,
+                "message": str(exc)
+            })
+            # Can return partial result with just thesis
+            antithesis_text = f"[Antithesis generation failed: {exc}]"
 
         # Compute conflict score (internal use only)
-        internal_conflict_score = await self._compute_conflict(
-            thesis, antithesis_output.text, antithesis_output.contradictions
-        )
+        internal_conflict_score = 0.0
+        if antithesis_text and not errors:
+            try:
+                internal_conflict_score = await self._compute_conflict(
+                    thesis, antithesis_text, contradictions
+                )
+                log_metric("conflict_score", internal_conflict_score)
+            except Exception as exc:
+                log_error("conflict_score_failed", str(exc), exception=str(exc))
+                # Non-critical, continue
 
-        # Always generate synthesis (design change: no gating based on conflict score)
-        synthesis_start = time.perf_counter()
-        synthesis_output = await self._generate_synthesis(
-            query, thesis, antithesis_output.text, antithesis_output.contradictions
-        )
-        synthesis_time_ms = (time.perf_counter() - synthesis_start) * 1000.0
+        # Always attempt synthesis (even if antithesis failed)
+        synthesis_text = ""
+        research_proposals: List[str] = []
+        synthesis_time_ms = 0.0
+        try:
+            synthesis_start = time.perf_counter()
+            log_phase("synthesis_start")
+            synthesis_output = await self._generate_synthesis(
+                query, thesis, antithesis_text, contradictions
+            )
+            synthesis_text = synthesis_output.text or ""
+            research_proposals = synthesis_output.research_proposals
+            synthesis_time_ms = (time.perf_counter() - synthesis_start) * 1000.0
+            log_phase("synthesis_complete", time_ms=synthesis_time_ms,
+                     proposals_count=len(research_proposals))
+        except Exception as exc:
+            synthesis_time_ms = (time.perf_counter() - synthesis_start) * 1000.0
+            error_msg = f"Synthesis generation failed: {exc}"
+            log_error("synthesis_failed", error_msg, exception=str(exc))
+            errors.append({
+                "phase": "synthesis",
+                "error": type(exc).__name__,
+                "message": str(exc)
+            })
+            synthesis_text = f"[Synthesis generation failed: {exc}]"
 
         total_time_ms = (time.perf_counter() - start_time) * 1000.0
+        log_metric("total_time_ms", total_time_ms)
 
         # Parse structured contradictions
         structured_contradictions = []
-        for contr in antithesis_output.contradictions:
+        for contr in contradictions:
             if " — " in contr:
                 desc, evidence = contr.split(" — ", 1)
                 structured_contradictions.append({"description": desc, "evidence": evidence})
@@ -134,7 +235,7 @@ class HegelionEngine:
 
         # Parse structured research proposals
         structured_proposals = []
-        for proposal in synthesis_output.research_proposals:
+        for proposal in research_proposals:
             if " | Prediction: " in proposal:
                 desc, prediction = proposal.split(" | Prediction: ", 1)
                 structured_proposals.append({
@@ -157,37 +258,46 @@ class HegelionEngine:
             backend_model=self.model,
         )
 
+        # Build metadata dict
+        metadata_dict = metadata.to_dict()
+
+        # Add errors to metadata if any occurred
+        if errors:
+            metadata_dict["errors"] = errors
+            log_metric("error_count", len(errors))
+
         # Add debug information if requested
-        debug_info = None
         if debug:
-            debug_info = {
+            metadata_dict["debug"] = {
                 "internal_conflict_score": internal_conflict_score,
                 "synthesis_threshold": self.synthesis_threshold,
-                "contradictions_found": len(antithesis_output.contradictions),
+                "contradictions_found": len(contradictions),
             }
 
         # Build trace for detailed analysis
         trace = HegelionTrace(
             thesis=thesis,
-            antithesis=antithesis_output.text,
-            synthesis=synthesis_output.text,
-            contradictions_found=len(antithesis_output.contradictions),
-            research_proposals=synthesis_output.research_proposals,
+            antithesis=antithesis_text,
+            synthesis=synthesis_text,
+            contradictions_found=len(contradictions),
+            research_proposals=research_proposals,
             internal_conflict_score=internal_conflict_score if debug else None,
         )
 
-        # Build metadata dict
-        metadata_dict = metadata.to_dict()
-        if debug_info:
-            metadata_dict["debug"] = debug_info
+        # Determine mode based on what completed successfully
+        mode = "synthesis" if not any(e["phase"] == "synthesis" for e in errors) else "antithesis"
+        if any(e["phase"] == "antithesis" for e in errors):
+            mode = "thesis_only"
 
-        # Always return mode="synthesis" since we always perform synthesis
+        log_phase("query_complete", mode=mode, errors=len(errors))
+
+        # Return result (potentially partial if errors occurred)
         return HegelionResult(
             query=query,
-            mode="synthesis",
+            mode=mode,
             thesis=thesis,
-            antithesis=antithesis_output.text,
-            synthesis=synthesis_output.text or "",
+            antithesis=antithesis_text,
+            synthesis=synthesis_text,
             contradictions=structured_contradictions,
             research_proposals=structured_proposals,
             metadata=metadata_dict,
@@ -317,7 +427,8 @@ class HegelionEngine:
                 system_prompt=self.DEFAULT_SYSTEM_PROMPT,
             )
         except Exception as exc:  # pragma: no cover - backend/network failures
-            warnings.warn(f"Normative conflict estimation failed: {exc}")
+            logger.warning(f"Normative conflict estimation failed: {exc}")
+            log_error("conflict_estimation_failed", str(exc), exception=str(exc))
             return 0.0
         return parse_conflict_value(response)
 
@@ -332,4 +443,8 @@ class HegelionEngine:
 
 __all__ = [
     "HegelionEngine",
+    "HegelionPhaseError",
+    "ThesisPhaseError",
+    "AntithesisPhaseError",
+    "SynthesisPhaseError",
 ]

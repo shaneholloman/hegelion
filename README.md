@@ -55,6 +55,7 @@ Hegelion runs any LLM through **Thesis → Antithesis → Synthesis** and return
 - **Structured output** – contradictions and proposals are returned as lists
 - **Metadata tracking** – backend/model/timings live in `metadata`, internal scores only appear under `metadata.debug` when requested
 - **Tooling included** – CLI (`hegelion`, `hegelion-bench`) and MCP server (`hegelion-server`) come with the package
+- **Production-ready** – Robust parsing handles real LLM output variations; graceful degradation returns partial results on backend failures; structured JSON logging for observability (`HEGELION_LOG_LEVEL`)
 
 ---
 
