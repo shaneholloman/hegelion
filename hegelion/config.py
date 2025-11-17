@@ -27,6 +27,10 @@ class EngineSettings:
     model: str
     synthesis_threshold: float
     max_tokens_per_phase: int
+    validate_results: bool
+    cache_enabled: bool
+    cache_ttl_seconds: int
+    cache_dir: str
 
 
 def _get_env_float(name: str, default: float) -> float:
@@ -47,6 +51,13 @@ def _get_env_int(name: str, default: int) -> int:
         return int(raw)
     except ValueError as exc:  # pragma: no cover - defensive
         raise ConfigurationError(f"Environment variable {name} must be an integer.") from exc
+
+
+def _get_env_bool(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() not in {"0", "false", "no"}
 
 
 DEFAULT_ANTHROPIC_BASE_URL = "https://api.anthropic.com"
@@ -195,6 +206,10 @@ def get_engine_settings_from_env() -> EngineSettings:
         model=os.getenv("HEGELION_MODEL", "claude-4.5-sonnet-latest"),
         synthesis_threshold=_get_env_float("HEGELION_SYNTHESIS_THRESHOLD", 0.85),
         max_tokens_per_phase=_get_env_int("HEGELION_MAX_TOKENS_PER_PHASE", 10_000),
+        validate_results=_get_env_bool("HEGELION_VALIDATE_RESULTS", True),
+        cache_enabled=_get_env_bool("HEGELION_CACHE", True),
+        cache_ttl_seconds=_get_env_int("HEGELION_CACHE_TTL_SECONDS", 86_400),
+        cache_dir=os.getenv("HEGELION_CACHE_DIR", os.path.expanduser("~/.cache/hegelion")),
     )
 
 

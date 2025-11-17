@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Protocol
 
+import json
+
 import httpx
 
 try:
@@ -81,6 +83,34 @@ class OpenAILLMBackend:
         content = response.choices[0].message.content
         return content.strip() if content else ""
 
+    async def stream_generate(
+        self,
+        prompt: str,
+        max_tokens: int = 1_000,
+        temperature: float = 0.7,
+        system_prompt: Optional[str] = None,
+    ):
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        stream = await self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stream=True,
+        )
+        async for chunk in stream:
+            choices = getattr(chunk, "choices", None)
+            if not choices:
+                continue
+            delta = choices[0].delta
+            content = getattr(delta, "content", None)
+            if content:
+                yield content
+
 
 @dataclass
 class AnthropicLLMBackend:
@@ -116,6 +146,31 @@ class AnthropicLLMBackend:
         ]
         return "\n".join(text_chunks).strip()
 
+    async def stream_generate(
+        self,
+        prompt: str,
+        max_tokens: int = 1_000,
+        temperature: float = 0.7,
+        system_prompt: Optional[str] = None,
+    ):
+        stream = await self.client.messages.create(
+            model=self.model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system_prompt,
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+        )
+        async for event in stream:
+            if getattr(event, "type", None) == "content_block_delta":
+                delta = getattr(event, "delta", None)
+                if delta and getattr(delta, "text", None):
+                    yield delta.text
+            elif getattr(event, "type", None) == "content_block_start":
+                block = getattr(event, "content_block", None)
+                if block and getattr(block, "text", None):
+                    yield block.text
+
 
 @dataclass
 class OllamaLLMBackend:
@@ -149,6 +204,38 @@ class OllamaLLMBackend:
             data = response.json()
         text = data.get("response") or data.get("data") or ""
         return str(text).strip()
+
+    async def stream_generate(
+        self,
+        prompt: str,
+        max_tokens: int = 1_000,
+        temperature: float = 0.7,
+        system_prompt: Optional[str] = None,
+    ):
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "system": system_prompt,
+            "options": {
+                "temperature": temperature,
+                "num_predict": max_tokens,
+            },
+            "stream": True,
+        }
+        url = f"{self.base_url.rstrip('/')}/api/generate"
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with client.stream("POST", url, json=payload) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if not line:
+                        continue
+                    try:
+                        data = json.loads(line)
+                    except Exception:
+                        continue
+                    chunk = data.get("response") or data.get("data")
+                    if chunk:
+                        yield str(chunk)
 
 
 @dataclass

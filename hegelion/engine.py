@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -121,7 +122,9 @@ class HegelionEngine:
         self,
         query: str,
         debug: bool = False,
-        max_iterations: int = 1
+        max_iterations: int = 1,
+        stream_callback: Optional[Callable[[str, str], Awaitable[None] | None]] = None,
+        progress_callback: Optional[Callable[[str, Dict[str, Any]], Awaitable[None] | None]] = None,
     ) -> HegelionResult:
         """
         Run the dialectical pipeline for a single query.
@@ -142,10 +145,16 @@ class HegelionEngine:
         thesis_time_ms = 0.0
         try:
             thesis_start = time.perf_counter()
+            await self._emit_progress(progress_callback, "phase_started", {"phase": "thesis"})
             log_phase("thesis_start")
-            thesis = await self._generate_thesis(query)
+            thesis = await self._generate_thesis(query, stream_callback)
             thesis_time_ms = (time.perf_counter() - thesis_start) * 1000.0
             log_phase("thesis_complete", time_ms=thesis_time_ms, length=len(thesis))
+            await self._emit_progress(
+                progress_callback,
+                "phase_completed",
+                {"phase": "thesis", "time_ms": thesis_time_ms},
+            )
         except Exception as exc:
             thesis_time_ms = (time.perf_counter() - thesis_start) * 1000.0
             error_msg = f"Thesis generation failed: {exc}"
@@ -164,13 +173,23 @@ class HegelionEngine:
         antithesis_time_ms = 0.0
         try:
             antithesis_start = time.perf_counter()
+            await self._emit_progress(progress_callback, "phase_started", {"phase": "antithesis"})
             log_phase("antithesis_start")
-            antithesis_output = await self._generate_antithesis(query, thesis)
+            antithesis_output = await self._generate_antithesis(query, thesis, stream_callback)
             antithesis_text = antithesis_output.text
             contradictions = antithesis_output.contradictions
             antithesis_time_ms = (time.perf_counter() - antithesis_start) * 1000.0
             log_phase("antithesis_complete", time_ms=antithesis_time_ms,
                      contradictions_count=len(contradictions))
+            await self._emit_progress(
+                progress_callback,
+                "phase_completed",
+                {
+                    "phase": "antithesis",
+                    "time_ms": antithesis_time_ms,
+                    "contradictions": len(contradictions),
+                },
+            )
         except Exception as exc:
             antithesis_time_ms = (time.perf_counter() - antithesis_start) * 1000.0
             error_msg = f"Antithesis generation failed: {exc}"
@@ -201,15 +220,25 @@ class HegelionEngine:
         synthesis_time_ms = 0.0
         try:
             synthesis_start = time.perf_counter()
+            await self._emit_progress(progress_callback, "phase_started", {"phase": "synthesis"})
             log_phase("synthesis_start")
             synthesis_output = await self._generate_synthesis(
-                query, thesis, antithesis_text, contradictions
+                query, thesis, antithesis_text, contradictions, stream_callback
             )
             synthesis_text = synthesis_output.text or ""
             research_proposals = synthesis_output.research_proposals
             synthesis_time_ms = (time.perf_counter() - synthesis_start) * 1000.0
             log_phase("synthesis_complete", time_ms=synthesis_time_ms,
                      proposals_count=len(research_proposals))
+            await self._emit_progress(
+                progress_callback,
+                "phase_completed",
+                {
+                    "phase": "synthesis",
+                    "time_ms": synthesis_time_ms,
+                    "research_proposals": len(research_proposals),
+                },
+            )
         except Exception as exc:
             synthesis_time_ms = (time.perf_counter() - synthesis_start) * 1000.0
             error_msg = f"Synthesis generation failed: {exc}"
@@ -304,29 +333,27 @@ class HegelionEngine:
             trace=trace.to_dict() if debug else None,
         )
 
-    async def _generate_thesis(self, query: str) -> str:
+    async def _generate_thesis(
+        self, query: str, stream_callback: Optional[Callable[[str, str], Awaitable[None] | None]]
+    ) -> str:
         """Generate the thesis phase."""
         from .prompts import THESIS_PROMPT
 
         prompt = THESIS_PROMPT.format(query=query)
-        text = await self.backend.generate(
-            prompt,
-            max_tokens=self.max_tokens_per_phase,
-            system_prompt=self.DEFAULT_SYSTEM_PROMPT,
-        )
-        return text.strip()
+        return await self._call_backend(prompt, "thesis", stream_callback)
 
-    async def _generate_antithesis(self, query: str, thesis: str):
+    async def _generate_antithesis(
+        self,
+        query: str,
+        thesis: str,
+        stream_callback: Optional[Callable[[str, str], Awaitable[None] | None]],
+    ):
         """Generate the antithesis phase and extract contradictions."""
         from .prompts import ANTITHESIS_PROMPT
 
         prompt = ANTITHESIS_PROMPT.format(query=query, thesis=thesis)
         start = time.perf_counter()
-        text = await self.backend.generate(
-            prompt,
-            max_tokens=self.max_tokens_per_phase,
-            system_prompt=self.DEFAULT_SYSTEM_PROMPT,
-        )
+        text = await self._call_backend(prompt, "antithesis", stream_callback)
         elapsed_ms = (time.perf_counter() - start) * 1000.0
         contradictions = extract_contradictions(text)
 
@@ -341,6 +368,7 @@ class HegelionEngine:
         thesis: str,
         antithesis: str,
         contradictions: List[str],
+        stream_callback: Optional[Callable[[str, str], Awaitable[None] | None]],
     ):
         """Generate the synthesis phase and extract research proposals."""
         from .prompts import SYNTHESIS_PROMPT
@@ -353,11 +381,7 @@ class HegelionEngine:
             contradictions=formatted_contradictions,
         )
         start = time.perf_counter()
-        text = await self.backend.generate(
-            prompt,
-            max_tokens=self.max_tokens_per_phase,
-            system_prompt=self.DEFAULT_SYSTEM_PROMPT,
-        )
+        text = await self._call_backend(prompt, "synthesis", stream_callback)
         elapsed_ms = (time.perf_counter() - start) * 1000.0
         research_proposals = extract_research_proposals(text)
         cleaned_text = text.strip() if text else None
@@ -439,6 +463,58 @@ class HegelionEngine:
         if arr.ndim == 1:
             return arr
         return arr.squeeze()
+
+    async def _call_backend(
+        self,
+        prompt: str,
+        phase: str,
+        stream_callback: Optional[Callable[[str, str], Awaitable[None] | None]] = None,
+    ) -> str:
+        """Call backend with optional streaming callback support."""
+
+        async def _emit(chunk: str) -> None:
+            if not stream_callback:
+                return
+            maybe = stream_callback(phase, chunk)
+            if inspect.isawaitable(maybe):
+                await maybe
+
+        # Prefer native streaming if backend exposes stream_generate
+        if stream_callback and hasattr(self.backend, "stream_generate"):
+            chunks: List[str] = []
+            stream_method = getattr(self.backend, "stream_generate")
+            async for chunk in stream_method(
+                prompt,
+                max_tokens=self.max_tokens_per_phase,
+                temperature=0.7,
+                system_prompt=self.DEFAULT_SYSTEM_PROMPT,
+            ):
+                if not chunk:
+                    continue
+                chunks.append(chunk)
+                await _emit(chunk)
+            return "".join(chunks).strip()
+
+        text = await self.backend.generate(
+            prompt,
+            max_tokens=self.max_tokens_per_phase,
+            system_prompt=self.DEFAULT_SYSTEM_PROMPT,
+        )
+        if stream_callback and text:
+            await _emit(text)
+        return text.strip()
+
+    async def _emit_progress(
+        self,
+        progress_callback: Optional[Callable[[str, Dict[str, Any]], Awaitable[None] | None]],
+        event: str,
+        payload: Dict[str, Any],
+    ) -> None:
+        if not progress_callback:
+            return
+        maybe = progress_callback(event, payload)
+        if inspect.isawaitable(maybe):
+            await maybe
 
 
 __all__ = [

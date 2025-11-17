@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+from importlib.metadata import PackageNotFoundError, version as pkg_version
 from os import PathLike
 from pathlib import Path
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
+from .cache import CacheConfig, ResultCache, compute_cache_key
 from .backends import LLMBackend
 from .config import (
     get_backend_from_env,
@@ -16,6 +19,12 @@ from .config import (
 )
 from .engine import HegelionEngine
 from .models import HegelionResult
+from .validation import validate_hegelion_result
+
+try:
+    _PACKAGE_VERSION = pkg_version("hegelion")
+except PackageNotFoundError:
+    _PACKAGE_VERSION = os.getenv("HEGELION_VERSION", "dev")
 
 PromptEntry = Union[str, Mapping[str, Any]]
 PromptSource = Union[Path, str, PathLike[str], Iterable[PromptEntry]]
@@ -90,6 +99,11 @@ async def run_dialectic(
     backend: Optional[LLMBackend] = None,
     model: Optional[str] = None,
     max_tokens_per_phase: Optional[int] = None,
+    use_cache: Optional[bool] = None,
+    cache_ttl_seconds: Optional[int] = None,
+    validate: Optional[bool] = None,
+    stream_callback: Optional[Callable[[str, str], Any]] = None,
+    progress_callback: Optional[Callable[[str, dict], Any]] = None,
 ) -> HegelionResult:
     """
     Run a single dialectical reasoning query.
@@ -116,6 +130,9 @@ async def run_dialectic(
     """
     settings = get_engine_settings_from_env()
     resolved_tokens = max_tokens_per_phase or settings.max_tokens_per_phase
+    resolved_validate = settings.validate_results if validate is None else validate
+    resolved_cache_enabled = settings.cache_enabled if use_cache is None else use_cache
+    resolved_cache_ttl = cache_ttl_seconds if cache_ttl_seconds is not None else settings.cache_ttl_seconds
 
     # Backwards-compatible resolution: explicit backend wins, then model,
     # then the environment-configured default.
@@ -136,7 +153,39 @@ async def run_dialectic(
         max_tokens_per_phase=resolved_tokens,
     )
 
-    return await engine.process_query(query, debug=debug)
+    cache: Optional[ResultCache] = None
+    cache_key: Optional[str] = None
+    if resolved_cache_enabled:
+        cache = ResultCache(
+            CacheConfig.from_env(cache_dir=settings.cache_dir, ttl_seconds=resolved_cache_ttl)
+        )
+        backend_name = resolved_backend.__class__.__name__
+        cache_key = compute_cache_key(
+            query=query,
+            model=resolved_model,
+            backend_provider=backend_name,
+            version=_PACKAGE_VERSION,
+            max_tokens_per_phase=resolved_tokens,
+            debug=debug,
+        )
+        cached_payload = cache.load(cache_key)
+        if cached_payload:
+            return HegelionResult(**cached_payload)
+
+    result = await engine.process_query(
+        query,
+        debug=debug,
+        stream_callback=stream_callback,
+        progress_callback=progress_callback,
+    )
+
+    if resolved_validate:
+        validate_hegelion_result(result)
+
+    if cache and cache_key:
+        cache.save(cache_key, result)
+
+    return result
 
 
 async def run_benchmark(
@@ -147,6 +196,11 @@ async def run_benchmark(
     model: Optional[str] = None,
     max_tokens_per_phase: Optional[int] = None,
     debug: bool = False,
+    use_cache: Optional[bool] = None,
+    cache_ttl_seconds: Optional[int] = None,
+    validate: Optional[bool] = None,
+    stream_callback: Optional[Callable[[str, str], Any]] = None,
+    progress_callback: Optional[Callable[[str, dict], Any]] = None,
 ) -> List[HegelionResult]:
     """
     Run Hegelion on multiple prompts for benchmarking.
@@ -198,17 +252,21 @@ async def run_benchmark(
         resolved_backend = get_backend_from_env()
         resolved_model = settings.model
 
-    engine = HegelionEngine(
-        backend=resolved_backend,
-        model=resolved_model,
-        synthesis_threshold=settings.synthesis_threshold,
-        max_tokens_per_phase=resolved_tokens,
-    )
-
-    # Run all prompts
+    # Run all prompts with the same backend instance to maximize reuse and cache hits
     results = []
     for prompt in prompt_list:
-        result = await engine.process_query(prompt, debug=debug)
+        result = await run_dialectic(
+            prompt,
+            debug=debug,
+            backend=resolved_backend,
+            model=resolved_model,
+            max_tokens_per_phase=resolved_tokens,
+            use_cache=use_cache,
+            cache_ttl_seconds=cache_ttl_seconds,
+            validate=validate,
+            stream_callback=stream_callback,
+            progress_callback=progress_callback,
+        )
         results.append(result)
 
     # Write to output file if specified
@@ -239,6 +297,11 @@ async def dialectic(
     backend: Optional[LLMBackend] = None,
     max_tokens_per_phase: Optional[int] = None,
     debug: bool = False,
+    use_cache: Optional[bool] = None,
+    cache_ttl_seconds: Optional[int] = None,
+    validate: Optional[bool] = None,
+    stream_callback: Optional[Callable[[str, str], Any]] = None,
+    progress_callback: Optional[Callable[[str, dict], Any]] = None,
 ) -> HegelionResult:
     """Universal entrypoint for running a single dialectic query.
 
@@ -251,6 +314,11 @@ async def dialectic(
         backend=backend,
         model=model,
         max_tokens_per_phase=max_tokens_per_phase,
+        use_cache=use_cache,
+        cache_ttl_seconds=cache_ttl_seconds,
+        validate=validate,
+        stream_callback=stream_callback,
+        progress_callback=progress_callback,
     )
 
 
@@ -258,13 +326,27 @@ async def quickstart(
     query: str,
     model: Optional[str] = None,
     debug: bool = False,
+    use_cache: Optional[bool] = None,
+    cache_ttl_seconds: Optional[int] = None,
+    validate: Optional[bool] = None,
+    stream_callback: Optional[Callable[[str, str], Any]] = None,
+    progress_callback: Optional[Callable[[str, dict], Any]] = None,
 ) -> HegelionResult:
     """One-call helper for the common case.
 
     - If ``model`` is provided, it will be used with automatic backend detection.
     - Otherwise, the engine falls back to environment configuration.
     """
-    return await dialectic(query, model=model, debug=debug)
+    return await dialectic(
+        query,
+        model=model,
+        debug=debug,
+        use_cache=use_cache,
+        cache_ttl_seconds=cache_ttl_seconds,
+        validate=validate,
+        stream_callback=stream_callback,
+        progress_callback=progress_callback,
+    )
 
 
 def dialectic_sync(*args, **kwargs) -> HegelionResult:

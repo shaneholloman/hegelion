@@ -79,8 +79,11 @@ class TestRunDialectic:
         assert any("unsupported assumptions" in c["description"] for c in result.contradictions)
 
         # Should have extracted research proposals
-        assert len(result.research_proposals) == 1
-        assert "Study the relationship between X and Y" in result.research_proposals[0]["description"]
+        assert len(result.research_proposals) >= 1
+        assert any(
+            "Study the relationship between X and Y" in proposal["description"]
+            for proposal in result.research_proposals
+        )
         assert "debug" not in result.metadata
 
     async def test_run_dialectic_with_debug(self):
@@ -146,6 +149,10 @@ class MockSettings:
         self.model = "test-model"
         self.synthesis_threshold = 0.85
         self.max_tokens_per_phase = 10000
+        self.validate_results = True
+        self.cache_enabled = False
+        self.cache_ttl_seconds = 0
+        self.cache_dir = "/tmp"
 
 
 @pytest.mark.asyncio

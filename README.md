@@ -5,6 +5,7 @@ Hegelion runs large language models through a three-phase loop — **Thesis → 
 - **Self-critique:** Go beyond single-answer responses by making models explore opposing viewpoints.
 - **Structured output:** Get `HegelionResult` (JSON) with clear contradictions and testable research proposals.
 - **Multiple entrypoints:** Use a **CLI**, **Python API**, or **MCP server** for Claude Desktop.
+- **Now streaming + cached:** Stream thesis/antithesis/synthesis chunks to a callback while results are cached on disk to avoid re-running expensive calls.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -296,6 +297,37 @@ pip install hegelion
    CUSTOM_API_BASE_URL=https://your-endpoint.example.com/v1/run
    CUSTOM_API_KEY=your-custom-api-key
    ```
+
+### Streaming, caching, and validation
+
+The Python API exposes streaming and progress callbacks so UIs can update live while each phase completes. Example:
+
+```python
+import asyncio
+from hegelion import run_dialectic
+
+async def on_stream(phase, chunk):
+    print(f"[{phase}] {chunk}", end="", flush=True)
+
+async def on_progress(event, payload):
+    print("progress", event, payload)
+
+asyncio.run(
+    run_dialectic(
+        "Are humanoid robots useful?",
+        stream_callback=on_stream,
+        progress_callback=on_progress,
+    )
+)
+```
+
+Results are cached on disk by default to avoid re-running the same query/model combo. Tunables:
+
+- `HEGELION_CACHE` (default `1`)
+- `HEGELION_CACHE_DIR` (default `~/.cache/hegelion`)
+- `HEGELION_CACHE_TTL_SECONDS` (default `86400`)
+
+Outputs are validated against the public JSON Schema. Disable with `HEGELION_VALIDATE_RESULTS=0` if you need to tolerate experimental shapes.
 
 ### Verified Backends & Log Sharing
 
@@ -692,6 +724,19 @@ python examples/eval_harness.py results.jsonl
 ```
 
 This gives you a simple, JSONL-native eval pipeline you can extend (e.g., stratify by prompt type, compute per-prompt contradiction rates, compare providers, etc.).
+
+---
+
+## Docker
+
+Build and run the CLI without touching your host environment:
+
+```bash
+docker build -t hegelion .
+docker run --rm -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY hegelion "Is fusion energy commercially viable?"
+```
+
+The image sets `HEGELION_CACHE_DIR=/data/cache`; mount a volume there to persist caches across runs.
 
 ---
 
