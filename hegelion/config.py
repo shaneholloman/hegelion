@@ -209,7 +209,7 @@ def get_engine_settings_from_env() -> EngineSettings:
         validate_results=_get_env_bool("HEGELION_VALIDATE_RESULTS", True),
         cache_enabled=_get_env_bool("HEGELION_CACHE", True),
         cache_ttl_seconds=_get_env_int("HEGELION_CACHE_TTL_SECONDS", 86_400),
-        cache_dir=os.getenv("HEGELION_CACHE_DIR", os.path.expanduser("~/.cache/hegelion")),
+        cache_dir=os.path.expanduser(os.getenv("HEGELION_CACHE_DIR", "~/.cache/hegelion")),
     )
 
 

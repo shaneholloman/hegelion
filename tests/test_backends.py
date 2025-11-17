@@ -160,7 +160,7 @@ class TestOpenAILLMBackend:
         mock_response.choices = [MagicMock(message=MagicMock(content="Response"))]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncOpenAI") as mock_openai:
+        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client) as mock_openai:
             backend = OpenAILLMBackend(
                 model="gpt-4", api_key="test-key", organization="org-123"
             )
@@ -723,7 +723,7 @@ class TestDummyLLMBackend:
         """Test antithesis phase response."""
         backend = DummyLLMBackend()
 
-        result = await backend.generate("ANTITHESIS phase: Critique the thesis")
+        result = await backend.generate("You are in the ANTITHESIS phase of Hegelian dialectical reasoning.")
 
         assert "CONTRADICTION" in result
         assert "EVIDENCE" in result
@@ -733,7 +733,7 @@ class TestDummyLLMBackend:
         """Test synthesis phase response."""
         backend = DummyLLMBackend()
 
-        result = await backend.generate("SYNTHESIS phase: Synthesize")
+        result = await backend.generate("You are in the SYNTHESIS phase of Hegelian dialectical reasoning.")
 
         assert "RESEARCH_PROPOSAL" in result
         assert "TESTABLE_PREDICTION" in result

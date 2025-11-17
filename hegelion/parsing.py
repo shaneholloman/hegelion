@@ -124,7 +124,7 @@ def extract_research_proposals(text: str) -> List[str]:
     Handles multiline predictions by accumulating until next header.
     """
     proposals: List[str] = []
-    current = None
+    current: Optional[str] = None
     prediction_buffer: List[str] = []
 
     def _is_research_header(upper_line: str) -> bool:
@@ -154,46 +154,47 @@ def extract_research_proposals(text: str) -> List[str]:
         cleaned = strip_markdown_wrappers(normalized)
         upper = cleaned.upper()
 
-        # Check for research proposal header
+        # New research proposal header: flush previous
         if _is_research_header(upper):
-            # Save previous prediction if exists
-            if prediction_buffer:
-                combined_pred = " ".join(prediction_buffer).strip()
-                if current:
-                    proposals.append(f"{current} | Prediction: {combined_pred}")
-                    current = None
-                else:
-                    proposals.append(f"Prediction: {combined_pred}")
-                prediction_buffer = []
-            elif current:
-                proposals.append(current)
-
-            # Extract new research proposal
-            current = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned
-
-        # Check for prediction header
-        elif _is_prediction_header(upper):
-            # Save previous item
+            # Flush any existing current proposal
             if current:
                 if prediction_buffer:
                     combined_pred = " ".join(prediction_buffer).strip()
                     proposals.append(f"{current} | Prediction: {combined_pred}")
                 else:
                     proposals.append(current)
-                current = None
             elif prediction_buffer:
+                # Standalone prediction before a new proposal
                 combined_pred = " ".join(prediction_buffer).strip()
                 proposals.append(f"Prediction: {combined_pred}")
 
-            # Start new prediction
-            prediction_text = cleaned.split(":", 1)[1].strip() if ":" in cleaned else ""
-            prediction_buffer = [prediction_text] if prediction_text else []
+            # Start new proposal
+            current = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned
+            prediction_buffer = []
+            continue
 
-        # Continuation line (multiline predictions)
-        elif prediction_buffer and cleaned:
+        # Prediction header: start/replace prediction buffer
+        if _is_prediction_header(upper):
+            # If we have a current proposal, attach the prediction to it (don't flush yet)
+            # If we have a standalone prediction buffer, flush it first
+            if current is None and prediction_buffer:
+                # Flush standalone prediction before starting new one
+                combined_prev = " ".join(prediction_buffer).strip()
+                if combined_prev:
+                    proposals.append(f"Prediction: {combined_prev}")
+                prediction_buffer = []
+            
+            # Start new prediction (will be attached to current proposal if exists)
+            prediction_text = cleaned.split(":", 1)[1].strip() if ":" in cleaned else ""
+            if prediction_text:
+                prediction_buffer = [prediction_text]
+            continue
+
+        # Continuation for multiline prediction
+        if prediction_buffer and cleaned:
             prediction_buffer.append(cleaned)
 
-    # Save final items
+    # Flush tail
     if current:
         if prediction_buffer:
             combined_pred = " ".join(prediction_buffer).strip()

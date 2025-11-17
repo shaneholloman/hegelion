@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Protocol
 
 import json
+import inspect
 
 import httpx
 
@@ -73,13 +74,13 @@ class OpenAILLMBackend:
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
-
-        response = await self.client.chat.completions.create(
+        maybe_response = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
         )
+        response = await maybe_response if inspect.isawaitable(maybe_response) else maybe_response
         content = response.choices[0].message.content
         return content.strip() if content else ""
 
@@ -95,13 +96,14 @@ class OpenAILLMBackend:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        stream = await self.client.chat.completions.create(
+        maybe_stream = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
             stream=True,
         )
+        stream = await maybe_stream if inspect.isawaitable(maybe_stream) else maybe_stream
         async for chunk in stream:
             choices = getattr(chunk, "choices", None)
             if not choices:
@@ -153,7 +155,7 @@ class AnthropicLLMBackend:
         temperature: float = 0.7,
         system_prompt: Optional[str] = None,
     ):
-        stream = await self.client.messages.create(
+        maybe_stream = self.client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
             temperature=temperature,
@@ -161,6 +163,7 @@ class AnthropicLLMBackend:
             messages=[{"role": "user", "content": prompt}],
             stream=True,
         )
+        stream = await maybe_stream if inspect.isawaitable(maybe_stream) else maybe_stream
         async for event in stream:
             if getattr(event, "type", None) == "content_block_delta":
                 delta = getattr(event, "delta", None)
@@ -224,9 +227,13 @@ class OllamaLLMBackend:
         }
         url = f"{self.base_url.rstrip('/')}/api/generate"
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            async with client.stream("POST", url, json=payload) as response:
+            stream_ctx = client.stream("POST", url, json=payload)
+            stream_ctx = await stream_ctx if inspect.isawaitable(stream_ctx) else stream_ctx
+            async with stream_ctx as response:
                 response.raise_for_status()
-                async for line in response.aiter_lines():
+                lines_iter = response.aiter_lines()
+                lines_iter = await lines_iter if inspect.isawaitable(lines_iter) else lines_iter
+                async for line in lines_iter:
                     if not line:
                         continue
                     try:
@@ -267,7 +274,7 @@ class CustomHTTPLLMBackend:
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
 
-        url = self.api_base_url.rstrip("/")
+        url = self.api_base_url
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(url, headers=headers, json=payload)
             response.raise_for_status()
@@ -308,10 +315,13 @@ class DummyLLMBackend:
     ) -> str:
         del max_tokens, temperature, system_prompt  # unused
         lower_prompt = prompt.lower()
-        if "thesis phase" in lower_prompt:
+        # Order matters: 'synthesis' and 'antithesis' contain 'thesis'
+        if "synthesis phase" in lower_prompt:
             return (
-                "Paris is the capital of France. It has been the capital since 508 CE; "
-                "the city functions as France's cultural and political hub."
+                "Paris' symbolic capital status coexists with distributed governance realities. "
+                "Treat the capital as a network of institutions rather than a single geography.\n"
+                "RESEARCH_PROPOSAL: Compare civic outcomes between centralized and distributed capitals.\n"
+                "TESTABLE_PREDICTION: Nations with distributed campuses show higher bureaucratic resilience."
             )
         if "antithesis phase" in lower_prompt:
             return (
@@ -320,12 +330,10 @@ class DummyLLMBackend:
                 "CONTRADICTION: Thesis presumes a monocentric governance model.\n"
                 "EVIDENCE: The European Union dilutes exclusive national control of capital cities."
             )
-        if "synthesis phase" in lower_prompt:
+        if "thesis phase" in lower_prompt:
             return (
-                "Paris' symbolic capital status coexists with distributed governance realities. "
-                "Treat the capital as a network of institutions rather than a single geography.\n"
-                "RESEARCH_PROPOSAL: Compare civic outcomes between centralized and distributed capitals.\n"
-                "TESTABLE_PREDICTION: Nations with distributed campuses show higher bureaucratic resilience."
+                "Paris is the capital of France. It has been the capital since 508 CE; "
+                "the city functions as France's cultural and political hub."
             )
         # fallback
         return "This is a deterministic dummy response for testing."

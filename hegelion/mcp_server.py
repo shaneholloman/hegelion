@@ -10,7 +10,7 @@ from mcp.types import TextContent, Tool
 
 import mcp.server.stdio
 
-from .core import run_dialectic
+from .core import run_dialectic, run_benchmark
 
 app = Server("hegelion-server")
 
@@ -84,7 +84,6 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 
     elif name == "run_benchmark":
         from pathlib import Path
-        from .core import run_benchmark
 
         prompts_file = Path(arguments["prompts_file"])
         debug = arguments.get("debug", False)
@@ -119,3 +118,9 @@ async def main() -> None:
 
 if __name__ == "__main__":  # pragma: no cover - CLI entrypoint
     asyncio.run(main())
+
+# Expose decorated handlers on the app instance for test convenience
+# These wrappers allow awaiting app.list_tools() and app.call_tool(name=..., arguments=...)
+# in a way that is independent of the underlying MCP server implementation details.
+app.list_tools = list_tools  # type: ignore[attr-defined]
+app.call_tool = call_tool  # type: ignore[attr-defined]
