@@ -1,4 +1,4 @@
-"""Comprehensive tests for all LLM backends."""
+"""Comprehensive tests for all LLM backends - Fixed version."""
 
 import asyncio
 import json
@@ -15,6 +15,23 @@ from hegelion.backends import (
     OllamaLLMBackend,
     OpenAILLMBackend,
 )
+
+
+def _create_mock_httpx_client(post_response=None, stream_response=None):
+    """Helper to create properly mocked httpx.AsyncClient."""
+    mock_post = AsyncMock(return_value=post_response) if post_response else None
+    mock_stream = AsyncMock(return_value=stream_response) if stream_response else None
+    
+    mock_context = AsyncMock()
+    if mock_post:
+        mock_context.post = mock_post
+    if mock_stream:
+        mock_context.stream = mock_stream
+    
+    mock_client = AsyncMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_context)
+    mock_client.__aexit__ = AsyncMock(return_value=None)
+    return mock_client
 
 
 @pytest.mark.asyncio
@@ -300,11 +317,9 @@ class TestOllamaLLMBackend:
         mock_response.json.return_value = {"response": "Ollama response text"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = OllamaLLMBackend(model="llama3.3", base_url="http://localhost:11434")
 
             result = await backend.generate("Test prompt", max_tokens=100, temperature=0.8)
@@ -317,15 +332,16 @@ class TestOllamaLLMBackend:
         mock_response.json.return_value = {"response": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_post = AsyncMock(return_value=mock_response)
-            mock_client.return_value.__aenter__.return_value.post = mock_post
+        mock_post = AsyncMock(return_value=mock_response)
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = OllamaLLMBackend(model="llama3.3")
 
             await backend.generate("Test", system_prompt="System message")
 
-            call_kwargs = mock_post.call_args[1]
+            # Get the post call
+            call_kwargs = mock_client.__aenter__.return_value.post.call_args[1]
             payload = call_kwargs["json"]
             assert payload["system"] == "System message"
 
@@ -335,11 +351,9 @@ class TestOllamaLLMBackend:
         mock_response.json.return_value = {"data": "Fallback response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = OllamaLLMBackend(model="llama3.3")
 
             result = await backend.generate("Test")
@@ -352,17 +366,16 @@ class TestOllamaLLMBackend:
         mock_response.json.return_value = {"response": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_post = AsyncMock(return_value=mock_response)
-            mock_client.return_value.__aenter__.return_value.post = mock_post
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = OllamaLLMBackend(
                 model="llama3.3", base_url="http://custom:11434"
             )
 
             await backend.generate("Test")
 
-            call_args = mock_post.call_args
+            call_args = mock_client.__aenter__.return_value.post.call_args
             assert call_args[0][0] == "http://custom:11434/api/generate"
 
     async def test_generate_timeout(self):
@@ -371,16 +384,14 @@ class TestOllamaLLMBackend:
         mock_response.json.return_value = {"response": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client) as mock_patch:
             backend = OllamaLLMBackend(model="llama3.3", timeout=120.0)
 
             await backend.generate("Test")
 
-            mock_client.assert_called_once_with(timeout=120.0)
+            mock_patch.assert_called_once_with(timeout=120.0)
 
     async def test_stream_generate(self):
         """Test streaming generation."""
@@ -399,13 +410,17 @@ class TestOllamaLLMBackend:
         mock_response.raise_for_status = MagicMock()
         mock_response.aiter_lines = AsyncMock(return_value=mock_stream())
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.stream = AsyncMock(
-                return_value=mock_response.__aenter__.return_value
-            )
-            mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-            mock_response.__aexit__ = AsyncMock(return_value=None)
+        mock_stream_context = AsyncMock()
+        mock_stream_context.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_stream_context.__aexit__ = AsyncMock(return_value=None)
 
+        mock_context = AsyncMock()
+        mock_context.stream = AsyncMock(return_value=mock_stream_context)
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_context)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = OllamaLLMBackend(model="llama3.3")
 
             collected = []
@@ -430,13 +445,17 @@ class TestOllamaLLMBackend:
         mock_response.raise_for_status = MagicMock()
         mock_response.aiter_lines = AsyncMock(return_value=mock_stream())
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-            mock_response.__aexit__ = AsyncMock(return_value=None)
-            mock_client.return_value.__aenter__.return_value.stream = AsyncMock(
-                return_value=mock_response.__aenter__.return_value
-            )
+        mock_stream_context = AsyncMock()
+        mock_stream_context.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_stream_context.__aexit__ = AsyncMock(return_value=None)
 
+        mock_context = AsyncMock()
+        mock_context.stream = AsyncMock(return_value=mock_stream_context)
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_context)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = OllamaLLMBackend(model="llama3.3")
 
             collected = []
@@ -460,13 +479,17 @@ class TestOllamaLLMBackend:
         mock_response.raise_for_status = MagicMock()
         mock_response.aiter_lines = AsyncMock(return_value=mock_stream())
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-            mock_response.__aexit__ = AsyncMock(return_value=None)
-            mock_client.return_value.__aenter__.return_value.stream = AsyncMock(
-                return_value=mock_response.__aenter__.return_value
-            )
+        mock_stream_context = AsyncMock()
+        mock_stream_context.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_stream_context.__aexit__ = AsyncMock(return_value=None)
 
+        mock_context = AsyncMock()
+        mock_context.stream = AsyncMock(return_value=mock_stream_context)
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_context)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = OllamaLLMBackend(model="llama3.3")
 
             collected = []
@@ -486,11 +509,9 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"text": "Custom response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model",
                 api_base_url="https://api.example.com/v1/chat",
@@ -506,11 +527,9 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"completion": "Completion text"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model", api_base_url="https://api.example.com/v1/chat"
             )
@@ -525,11 +544,9 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"result": "Result text"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model", api_base_url="https://api.example.com/v1/chat"
             )
@@ -544,11 +561,9 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"output": "Output text"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model", api_base_url="https://api.example.com/v1/chat"
             )
@@ -565,11 +580,9 @@ class TestCustomHTTPLLMBackend:
         }
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model", api_base_url="https://api.example.com/v1/chat"
             )
@@ -584,11 +597,9 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"choices": [{"text": "Text from choices"}]}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model", api_base_url="https://api.example.com/v1/chat"
             )
@@ -603,11 +614,9 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"unknown": "field", "data": 123}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model", api_base_url="https://api.example.com/v1/chat"
             )
@@ -623,10 +632,10 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"text": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_post = AsyncMock(return_value=mock_response)
-            mock_client.return_value.__aenter__.return_value.post = mock_post
+        mock_post = AsyncMock(return_value=mock_response)
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model",
                 api_base_url="https://api.example.com/v1/chat",
@@ -635,7 +644,7 @@ class TestCustomHTTPLLMBackend:
 
             await backend.generate("Test")
 
-            call_kwargs = mock_post.call_args[1]
+            call_kwargs = mock_client.__aenter__.return_value.post.call_args[1]
             headers = call_kwargs["headers"]
             assert headers["Authorization"] == "Bearer secret-key"
 
@@ -645,17 +654,16 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"text": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_post = AsyncMock(return_value=mock_response)
-            mock_client.return_value.__aenter__.return_value.post = mock_post
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model", api_base_url="https://api.example.com/v1/chat"
             )
 
             await backend.generate("Test", system_prompt="System message")
 
-            call_kwargs = mock_post.call_args[1]
+            call_kwargs = mock_client.__aenter__.return_value.post.call_args[1]
             payload = call_kwargs["json"]
             assert payload["system_prompt"] == "System message"
 
@@ -665,11 +673,9 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"text": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client) as mock_patch:
             backend = CustomHTTPLLMBackend(
                 model="custom-model",
                 api_base_url="https://api.example.com/v1/chat",
@@ -678,7 +684,7 @@ class TestCustomHTTPLLMBackend:
 
             await backend.generate("Test")
 
-            mock_client.assert_called_once_with(timeout=90.0)
+            mock_patch.assert_called_once_with(timeout=90.0)
 
     async def test_generate_url_stripping(self):
         """Test base URL trailing slash is stripped."""
@@ -686,17 +692,16 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"text": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_post = AsyncMock(return_value=mock_response)
-            mock_client.return_value.__aenter__.return_value.post = mock_post
+        mock_client = _create_mock_httpx_client(post_response=mock_response)
 
+        with patch("httpx.AsyncClient", return_value=mock_client):
             backend = CustomHTTPLLMBackend(
                 model="custom-model", api_base_url="https://api.example.com/v1/chat/"
             )
 
             await backend.generate("Test")
 
-            call_args = mock_post.call_args
+            call_args = mock_client.__aenter__.return_value.post.call_args
             assert call_args[0][0] == "https://api.example.com/v1/chat/"
 
 

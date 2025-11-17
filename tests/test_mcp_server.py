@@ -85,7 +85,8 @@ class TestCallTool:
         with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = sample_result
 
-            result = await app.call_tool("run_dialectic", {"query": "Test query"})
+            # MCP server call_tool is called with name and arguments
+            result = await app.call_tool(name="run_dialectic", arguments={"query": "Test query"})
 
             assert len(result) == 1
             assert result[0].type == "text"
@@ -98,7 +99,7 @@ class TestCallTool:
         with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = sample_result
 
-            result = await app.call_tool("run_dialectic", {"query": "Test", "debug": True})
+            result = await app.call_tool(name="run_dialectic", arguments={"query": "Test", "debug": True})
 
             mock_run.assert_awaited_once_with(query="Test", debug=True)
 
@@ -111,7 +112,7 @@ class TestCallTool:
             mock_run.return_value = [sample_result, sample_result]
 
             result = await app.call_tool(
-                "run_benchmark", {"prompts_file": str(prompts_file)}
+                name="run_benchmark", arguments={"prompts_file": str(prompts_file)}
             )
 
             assert len(result) == 1
@@ -132,7 +133,7 @@ class TestCallTool:
             mock_run.return_value = [sample_result]
 
             await app.call_tool(
-                "run_benchmark", {"prompts_file": str(prompts_file), "debug": True}
+                name="run_benchmark", arguments={"prompts_file": str(prompts_file), "debug": True}
             )
 
             call_kwargs = mock_run.call_args[1]
@@ -143,14 +144,14 @@ class TestCallTool:
         nonexistent = tmp_path / "nonexistent.jsonl"
 
         with pytest.raises(ValueError) as exc_info:
-            await app.call_tool("run_benchmark", {"prompts_file": str(nonexistent)})
+            await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(nonexistent)})
 
         assert "not found" in str(exc_info.value).lower()
 
     async def test_unknown_tool_raises(self):
         """Test that unknown tool raises error."""
         with pytest.raises(ValueError) as exc_info:
-            await app.call_tool("unknown_tool", {})
+            await app.call_tool(name="unknown_tool", arguments={})
 
         assert "Unknown tool" in str(exc_info.value)
 
@@ -162,19 +163,19 @@ class TestInputValidation:
     async def test_run_dialectic_missing_query_raises(self):
         """Test that run_dialectic requires query field."""
         with pytest.raises(KeyError):
-            await app.call_tool("run_dialectic", {})
+            await app.call_tool(name="run_dialectic", arguments={})
 
     async def test_run_benchmark_missing_prompts_file_raises(self):
         """Test that run_benchmark requires prompts_file field."""
         with pytest.raises(KeyError):
-            await app.call_tool("run_benchmark", {})
+            await app.call_tool(name="run_benchmark", arguments={})
 
     async def test_run_dialectic_debug_defaults_to_false(self, sample_result: HegelionResult):
         """Test that debug defaults to False."""
         with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = sample_result
 
-            await app.call_tool("run_dialectic", {"query": "Test"})
+            await app.call_tool(name="run_dialectic", arguments={"query": "Test"})
 
             mock_run.assert_awaited_once_with(query="Test", debug=False)
 
@@ -186,7 +187,7 @@ class TestInputValidation:
         with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = [sample_result]
 
-            await app.call_tool("run_benchmark", {"prompts_file": str(prompts_file)})
+            await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(prompts_file)})
 
             call_kwargs = mock_run.call_args[1]
             assert call_kwargs["debug"] is False
@@ -204,7 +205,7 @@ class TestErrorHandling:
             mock_run.side_effect = ConfigurationError("No API key")
 
             with pytest.raises(ConfigurationError):
-                await app.call_tool("run_dialectic", {"query": "Test"})
+                await app.call_tool(name="run_dialectic", arguments={"query": "Test"})
 
     async def test_run_benchmark_file_error(self, tmp_path: Path):
         """Test handling of file errors in run_benchmark."""
@@ -215,7 +216,7 @@ class TestErrorHandling:
             mock_run.side_effect = FileNotFoundError("File not found")
 
             with pytest.raises(FileNotFoundError):
-                await app.call_tool("run_benchmark", {"prompts_file": str(prompts_file)})
+                await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(prompts_file)})
 
     async def test_run_benchmark_jsonl_output_format(self, tmp_path: Path, sample_result: HegelionResult):
         """Test that run_benchmark returns proper JSONL format."""
@@ -225,7 +226,7 @@ class TestErrorHandling:
         with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = [sample_result, sample_result]
 
-            result = await app.call_tool("run_benchmark", {"prompts_file": str(prompts_file)})
+            result = await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(prompts_file)})
 
             # Should be newline-delimited JSON
             text = result[0].text
