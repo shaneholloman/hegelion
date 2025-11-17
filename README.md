@@ -1,10 +1,10 @@
 # Hegelion: Dialectical AI Reasoning for Deeper Insights
 
-> **Unleash the power of dialectical reasoning in your LLMs.** Hegelion forces models to argue with themselves (Thesis → Antithesis → Synthesis), revealing hidden contradictions, generating novel research proposals, and providing profoundly structured insights.
+Hegelion runs large language models through a three-phase loop — **Thesis → Antithesis → Synthesis** — and returns the full reasoning trace in structured JSON.
 
-- **Forces LLMs to self-critique:** Go beyond single-answer responses by making models explore opposing viewpoints.
-- **Structured, actionable output:** Get `HegelionResult` (JSON) with clear contradictions and testable research proposals.
-- **Versatile Tooling:** Seamlessly integrate with a powerful **CLI**, flexible **Python API**, and a dedicated **MCP server** for Claude Desktop.
+- **Self-critique:** Go beyond single-answer responses by making models explore opposing viewpoints.
+- **Structured output:** Get `HegelionResult` (JSON) with clear contradictions and testable research proposals.
+- **Multiple entrypoints:** Use a **CLI**, **Python API**, or **MCP server** for Claude Desktop.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -58,20 +58,20 @@ Hegelion runs any LLM through **Thesis → Antithesis → Synthesis** and return
 
 ---
 
-## Why Hegelion? Elevating LLM Reasoning Beyond Single Answers
+## Why Hegelion?
 
-Most LLM tools provide a single, often superficial, answer. Hegelion transcends this limitation by implementing a rigorous, three-phase dialectical process, forcing models into a self-critical loop that uncovers deeper truths and novel insights:
+Many LLM tools provide a single pass answer. Hegelion instead runs a structured, three-phase dialectical process:
 
-1.  **Thesis:** The LLM establishes an initial position or argument on the given query.
-2.  **Antithesis:** The LLM then critically examines its own thesis, identifying contradictions, weaknesses, and alternative perspectives.
-3.  **Synthesis:** Finally, the LLM reconciles the tension between the thesis and antithesis, generating a more nuanced understanding, novel insights, and testable research proposals.
+1. **Thesis:** The LLM establishes an initial position or argument on the given query.
+2. **Antithesis:** The LLM then critically examines its own thesis, identifying contradictions, weaknesses, and alternative perspectives.
+3. **Synthesis:** Finally, the LLM reconciles the tension between the thesis and antithesis, generating a more nuanced understanding and testable research proposals.
 
-This structured reasoning process doesn't just provide an answer; it surfaces the underlying assumptions, contradictions, and potential avenues for further exploration that single-pass responses typically miss. It's about moving from mere information retrieval to genuine knowledge generation.
+This process surfaces assumptions, tensions, and research directions that single-pass responses often miss.
 
-```
-   Query → Thesis → Antithesis → Synthesis
-            ↓         ↓            ↓
-         Position  Contradictions  Synthesis
+```text
+Query    → Thesis      → Antithesis      → Synthesis
+       ↓              ↓                 ↓
+     Position     Contradictions      Synthesis
 ```
 
 ---
@@ -189,6 +189,8 @@ Notes:
 - `metadata.backend_provider` and `metadata.backend_model` are the **canonical** backend fields.
 - Timing fields are broken out (`*_time_ms`) instead of a single nested `timing` object.
 - `trace` is included when `debug=true` (for CLI/API) or when requested via MCP; it exposes internal phase outputs and metrics.
+- `research_proposals` is a list that may be empty when synthesis has nothing actionable to propose; consumers should not assume at least one entry.
+- `metadata.debug.internal_conflict_score` is an experimental indicator surfaced only when `debug=true`; treat it as best-effort research telemetry, not ground truth.
 
 This structured data is ideal for:
 - **Eval Pipelines:** Directly feed into automated evaluation systems for LLM performance and reasoning quality.

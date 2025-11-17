@@ -117,6 +117,7 @@ EVIDENCE: [supporting evidence or reasoning]
 ```
 
 **Output Format:**
+
 ```json
 {
   "description": "Thesis assumes X without considering Y",
@@ -126,10 +127,11 @@ EVIDENCE: [supporting evidence or reasoning]
 
 ### Research Proposal Format
 
-Research proposals are extracted from the synthesis:
+Research proposals are extracted from the synthesis and may be omitted when the synthesis does not produce actionable follow-ups. In JSON, `research_proposals` remains a list (possibly empty) so downstream tools can treat the field consistently.
 
 **Input Format (in Synthesis):**
-```markdown
+
+```text
 RESEARCH_PROPOSAL: [description]
 TESTABLE_PREDICTION: [falsifiable claim]
 ```
@@ -173,12 +175,14 @@ The MCP stdio server (`python -m hegelion.mcp_server`) publishes two tools:
 **Objective**: Generate a comprehensive, multi-perspective answer
 
 **Requirements**:
+
 - Consider multiple viewpoints and approaches
 - Be thorough but clear and well-structured
 - Acknowledge uncertainty where appropriate
 - Provide step-by-step reasoning before final answer
 
 **Quality Criteria**:
+
 - Breadth of perspective
 - Logical coherence
 - Evidence-based reasoning
@@ -189,6 +193,7 @@ The MCP stdio server (`python -m hegelion.mcp_server`) publishes two tools:
 **Objective**: Systematic critique of the thesis
 
 **Requirements**:
+
 - Find contradictions and logical gaps
 - Identify unexamined assumptions
 - Propose alternative framings
@@ -196,6 +201,7 @@ The MCP stdio server (`python -m hegelion.mcp_server`) publishes two tools:
 - Use structured contradiction format
 
 **Quality Criteria**:
+
 - Intellectual honesty (adversarial but fair)
 - Specific, actionable critiques
 - Evidence-based challenges
@@ -206,6 +212,7 @@ The MCP stdio server (`python -m hegelion.mcp_server`) publishes two tools:
 **Objective**: Higher-level resolution transcending both thesis and antithesis
 
 **Requirements**:
+
 - Must transcend (not just combine) original positions
 - Cannot simply say "thesis is right" or "antithesis is right"
 - Cannot say "both have merit" without deeper insight
@@ -214,24 +221,29 @@ The MCP stdio server (`python -m hegelion.mcp_server`) publishes two tools:
 - Encouraged to include research proposals
 
 **Quality Criteria**:
+
 - Novelty of perspective
 - Logical transcendence
 - Testability of insights
 - Research relevance
 
-## Internal Conflict Scoring
+### Internal Conflict Scoring (Experimental / Debug Only)
 
-While conflict scores are not exposed in the main API (to encourage human judgment), they are computed internally for research purposes:
+Hegelion includes an **optional, experimental conflict indicator** that is intended for research and debugging, not as a ground-truth score. It is not required for normal use, and downstream tools should treat it as best-effort and subject to change.
 
-### Scoring Components
+### Scoring Components (Design Intent)
 
-1. **Semantic Distance (40%)**: Cosine similarity between thesis and antithesis embeddings
-2. **Contradiction Signal (30%)**: Based on number and quality of extracted contradictions
-3. **Normative Conflict (30%)**: LLM-based assessment of fundamental disagreement
+The conflict indicator is conceptually designed as a composite of:
 
-### Scoring Scale
+1. **Semantic Distance**: Distance between thesis and antithesis embeddings
+2. **Contradiction Signal**: Strength and quantity of extracted contradictions
+3. **Normative Conflict**: LLM-based assessment of how fundamentally the positions disagree
 
-- **0.0-0.2**: Minimal conflict (complementary positions)
+Implementations are allowed to approximate this design, and the exact weighting or computation may evolve over time. Consumers should not rely on a specific formula.
+
+### Scoring Scale (Heuristic)
+
+- **0.0-0.2**: Minimal conflict (largely complementary positions)
 - **0.2-0.4**: Low conflict (minor tensions)
 - **0.4-0.6**: Moderate conflict (meaningful disagreements)
 - **0.6-0.8**: High conflict (significant tensions)
@@ -239,12 +251,14 @@ While conflict scores are not exposed in the main API (to encourage human judgme
 
 ### Accessing Internal Scores
 
-Internal conflict scores are available in debug mode:
+Internal conflict indicators are exposed only in debug mode:
 
 ```python
 result = await run_dialectic(query, debug=True)
-conflict_score = result.metadata["debug"]["internal_conflict_score"]
+conflict_score = result.metadata.get("debug", {}).get("internal_conflict_score")
 ```
+
+If the field is missing, callers should assume "no score available" rather than trying to infer a value.
 
 ## Backend Configuration
 
@@ -375,6 +389,7 @@ HEGELION_MAX_TOKENS_PER_PHASE=10000
 ### Latency
 
 Typical processing times per query:
+
 - **Thesis**: 1-3 seconds
 - **Antithesis**: 2-4 seconds
 - **Synthesis**: 2-5 seconds
