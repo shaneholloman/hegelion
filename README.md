@@ -1,16 +1,12 @@
-# Hegelion
+# Hegelion: Dialectical AI Reasoning for Deeper Insights
 
-```bash
-pip install hegelion
-hegelion "Can AI be genuinely creative?"
-```
+[![Hegelion Demo](examples/demo_glm_api.gif)](https://github.com/Hmbown/Hegelion/blob/main/examples/demo_glm_api.gif)
 
-> **Dialectical reasoning harness for LLMs (Thesis → Antithesis → Synthesis)**  
-> **Returns structured JSON with contradictions and research proposals**
+> **Unleash the power of dialectical reasoning in your LLMs.** Hegelion forces models to argue with themselves (Thesis → Antithesis → Synthesis), revealing hidden contradictions, generating novel research proposals, and providing profoundly structured insights.
 
-- Forces models to argue with themselves
-- Returns **structured JSON** (`HegelionResult`) with contradictions & research proposals
-- Ships **CLI**, **Python API**, and **MCP server** for Claude Desktop
+- **Forces LLMs to self-critique:** Go beyond single-answer responses by making models explore opposing viewpoints.
+- **Structured, actionable output:** Get `HegelionResult` (JSON) with clear contradictions and testable research proposals.
+- **Versatile Tooling:** Seamlessly integrate with a powerful **CLI**, flexible **Python API**, and a dedicated **MCP server** for Claude Desktop.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -64,15 +60,15 @@ Hegelion runs any LLM through **Thesis → Antithesis → Synthesis** and return
 
 ---
 
-## Why Hegelion?
+## Why Hegelion? Elevating LLM Reasoning Beyond Single Answers
 
-Most LLM tools return a single answer. Hegelion uses a three-phase process:
-- **Thesis** - The model presents an initial position.
-- **Antithesis** - The model identifies contradictions in the thesis.
-- **Synthesis** - The model generates insights that reconcile both positions.
-- **Research proposals** - Each synthesis includes testable predictions.
+Most LLM tools provide a single, often superficial, answer. Hegelion transcends this limitation by implementing a rigorous, three-phase dialectical process, forcing models into a self-critical loop that uncovers deeper truths and novel insights:
 
-The structured reasoning process surfaces contradictions and insights that single-pass responses typically miss.
+1.  **Thesis:** The LLM establishes an initial position or argument on the given query.
+2.  **Antithesis:** The LLM then critically examines its own thesis, identifying contradictions, weaknesses, and alternative perspectives.
+3.  **Synthesis:** Finally, the LLM reconciles the tension between the thesis and antithesis, generating a more nuanced understanding, novel insights, and testable research proposals.
+
+This structured reasoning process doesn't just provide an answer; it surfaces the underlying assumptions, contradictions, and potential avenues for further exploration that single-pass responses typically miss. It's about moving from mere information retrieval to genuine knowledge generation.
 
 ```
    Query → Thesis → Antithesis → Synthesis
@@ -92,7 +88,9 @@ The structured reasoning process surfaces contradictions and insights that singl
 
 ---
 
-## Quick Start
+## Quick Start: Get Started in Minutes!
+
+Ready to dive into dialectical reasoning? Follow these simple steps to get Hegelion up and running:
 
 ```bash
 # Install
@@ -113,11 +111,10 @@ hegelion-bench benchmarks/examples_basic.jsonl --output results.jsonl
 >
 > **Next Steps:** Keep reading for structure and traces, or jump to [Installation](#installation) for backend configuration.
 
----
 
-## What You Get
+## What You Get: Actionable, Structured Insights
 
-Each run returns structured data:
+Every Hegelion run delivers a rich, structured `HegelionResult` object, providing far more than just a text response. This JSON output is designed for immediate utility in various applications, from automated analysis to advanced research:
 
 ```json
 {
@@ -132,8 +129,12 @@ Each run returns structured data:
 }
 ```
 
-Use cases: [Eval pipelines](#for-model-builders--evaluation-teams), [Safety analysis](#use-cases), [Research questions](#use-cases).
-
+This structured data is ideal for:
+- **Eval Pipelines:** Directly feed into automated evaluation systems for LLM performance and reasoning quality.
+- **Safety Analysis:** Identify potential biases or flawed reasoning patterns within LLM outputs.
+- **Research Questions:** Generate novel hypotheses and testable predictions for scientific inquiry.
+- **Advanced RAG:** Enhance Retrieval Augmented Generation by providing deeper contextual understanding.
+```
 ---
 
 ## Your Traces, Your Data
@@ -438,14 +439,16 @@ Please clone https://github.com/Hmbown/Hegelion, run `uv sync`, copy `.env.examp
 
 ---
 
-## Hero Example
+## Hero Example: Witness Dialectical Reasoning in Action
+
+Explore Hegelion's core capability with this compelling example, showcasing how it transforms a single query into a rich, multi-faceted analysis:
 
 **Input:**
 ```bash
 hegelion "Can AI be genuinely creative?" --format summary
 ```
 
-**Output (excerpt):**
+**Output (excerpt):
 
 **Thesis:** *The Creative Machine* - AI can be genuinely creative, mirroring human creativity as a computational process of synthesis and pattern recognition.
 
@@ -461,7 +464,7 @@ hegelion "Can AI be genuinely creative?" --format summary
 - *Co-Creative Trace Analysis*: Human-AI dialogues produce artifacts judged more creative than single-pass outputs
 
 *Full example in `examples/glm4_6_examples.jsonl` - one command → three positions + contradictions + testable prediction.*
-
+```
 ```json
 {
   "query": "Can AI be genuinely creative?",

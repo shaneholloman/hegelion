@@ -73,7 +73,7 @@ def print_summary(results: list) -> None:
     def _avg(total_value: float) -> float:
         return total_value / total if total else 0.0
 
-    print("=== HEGELION BENCHMARK SUMMARY ===")
+    print("HEGELION BENCHMARK SUMMARY")
     print(f"Total queries processed: {total}")
     print(
         f"Contradictions: {total_contradictions} (avg: {_avg(total_contradictions):.1f})"
