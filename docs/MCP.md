@@ -27,9 +27,11 @@ This reference walks through running the Hegelion Model Context Protocol (MCP) s
 | Provider-specific API keys | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, etc. The same values can be passed into Claude Desktop's MCP config if you don't want to rely on `.env`. |
 | Debug toggle | Pass `debug=true` in tool arguments to surface conflict scores in `metadata.debug`. |
 
-## Tool Schemas
+## Tool Schemas & Payloads
 
 ### `run_dialectic`
+
+**Input schema (canonical):**
 
 ```json
 {
@@ -41,7 +43,7 @@ This reference walks through running the Hegelion Model Context Protocol (MCP) s
     },
     "debug": {
       "type": "boolean",
-      "description": "Include debug information and conflict metrics",
+      "description": "Include debug information and conflict metrics (metadata.debug and trace)",
       "default": false
     }
   },
@@ -49,7 +51,63 @@ This reference walks through running the Hegelion Model Context Protocol (MCP) s
 }
 ```
 
+**Friendly example call:**
+
+```json
+{
+  "query": "Can AI be genuinely creative?",
+  "debug": true
+}
+```
+
+**Representative response payload:**
+
+The MCP server wraps the result in a `TextContent` object whose `text` field is a single JSON object following the canonical `HegelionResult` schema:
+
+```json
+{
+  "query": "Can AI be genuinely creative?",
+  "mode": "synthesis",
+  "thesis": "THESIS: The Creative Machine ...",
+  "antithesis": "ANTITHESIS: The Sophisticated Mirror ...",
+  "synthesis": "SYNTHESIS: The Co-Creative Process ...",
+  "contradictions": [
+    {
+      "description": "The Redefinition Fallacy",
+      "evidence": "The thesis narrows 'creativity' to a computable procedure, ignoring intent and subjective urgency."
+    }
+  ],
+  "research_proposals": [
+    {
+      "description": "The Co-Creative Trace Analysis",
+      "testable_prediction": "Iterative human–AI dialogues produce artifacts judged more creative than single-pass outputs."
+    }
+  ],
+  "metadata": {
+    "thesis_time_ms": 1234.5,
+    "antithesis_time_ms": 2345.6,
+    "synthesis_time_ms": 3456.7,
+    "total_time_ms": 7036.8,
+    "backend_provider": "AnthropicLLMBackend",
+    "backend_model": "glm-4.6",
+    "debug": {
+      "internal_conflict_score": 0.95
+    }
+  },
+  "trace": {
+    "thesis": "... full phase output ...",
+    "antithesis": "... full phase output ...",
+    "synthesis": "... full phase output ...",
+    "contradictions_found": 3,
+    "research_proposals": ["..."],
+    "internal_conflict_score": 0.95
+  }
+}
+```
+
 ### `run_benchmark`
+
+**Input schema (canonical):**
 
 ```json
 {
@@ -57,17 +115,56 @@ This reference walks through running the Hegelion Model Context Protocol (MCP) s
   "properties": {
     "prompts_file": {
       "type": "string",
-      "description": "Path to JSONL file containing prompts"
+      "description": "Path to JSONL file containing prompts (one per line; each line may be a string or a JSON object with 'query'/'prompt'/'text')"
     },
     "debug": {
       "type": "boolean",
-      "description": "Include debug information and conflict metrics",
+      "description": "Include debug information and conflict metrics for each result",
       "default": false
     }
   },
   "required": ["prompts_file"]
 }
 ```
+
+**Friendly example call:**
+
+```json
+{
+  "prompts_file": "benchmarks/examples_basic.jsonl",
+  "debug": false
+}
+```
+
+**Representative response payload:**
+
+`run_benchmark` returns a single `TextContent` whose `text` field is **newline-delimited JSON** (JSONL). Each line is one `HegelionResult` object matching the schema above, for example:
+
+```text
+{"query": "Can AI be genuinely creative?", "mode": "synthesis", "thesis": "...", "antithesis": "...", "synthesis": "...", "contradictions": [...], "research_proposals": [...], "metadata": {...}}
+{"query": "What is the capital of France?", "mode": "synthesis", "thesis": "...", "antithesis": "...", "synthesis": "...", "contradictions": [...], "research_proposals": [...], "metadata": {...}}
+```
+
+Assistants should split on newlines and parse each line as independent JSON.
+
+## Assistant Integration Patterns
+
+When integrating Hegelion as an MCP server in a general-purpose AI assistant, we recommend the following patterns:
+
+- Treat `run_dialectic` as the **single-query reasoning tool**.
+- Treat `run_benchmark` as a **batch evaluation tool** for pre-existing prompt sets.
+- For each tool call:
+  - Use the canonical input schemas above.
+  - Parse the `text` content as JSON (or JSONL for `run_benchmark`).
+  - Map fields as follows:
+    - `thesis`, `antithesis`, `synthesis` → the three core reasoning components.
+    - `contradictions[]` → structured critiques with `description` and optional `evidence`.
+    - `research_proposals[]` → structured proposals with `description` and optional `testable_prediction`.
+    - `metadata.backend_provider`, `metadata.backend_model` → backend identification.
+    - `metadata.thesis_time_ms`, `metadata.antithesis_time_ms`, `metadata.synthesis_time_ms`, `metadata.total_time_ms` → timing information.
+    - `metadata.debug` and `trace` → internal metrics and phase traces, present primarily when `debug=true`.
+
+Downstream tools (e.g., custom evaluators, dashboards, or RAG pipelines) should treat `HegelionResult` as a stable contract; engine details may evolve, but this schema is intended to remain compatible.
 
 ## Troubleshooting Checklist
 

@@ -1,7 +1,5 @@
 # Hegelion: Dialectical AI Reasoning for Deeper Insights
 
-[![Hegelion Demo](examples/demo_glm_api.gif)](https://github.com/Hmbown/Hegelion/blob/main/examples/demo_glm_api.gif)
-
 > **Unleash the power of dialectical reasoning in your LLMs.** Hegelion forces models to argue with themselves (Thesis → Antithesis → Synthesis), revealing hidden contradictions, generating novel research proposals, and providing profoundly structured insights.
 
 - **Forces LLMs to self-critique:** Go beyond single-answer responses by making models explore opposing viewpoints.
@@ -114,20 +112,83 @@ hegelion-bench benchmarks/examples_basic.jsonl --output results.jsonl
 
 ## What You Get: Actionable, Structured Insights
 
-Every Hegelion run delivers a rich, structured `HegelionResult` object, providing far more than just a text response. This JSON output is designed for immediate utility in various applications, from automated analysis to advanced research:
+Every Hegelion run delivers a rich, structured `HegelionResult` object, providing far more than just a text response. This JSON output is designed for immediate utility in various applications, from automated analysis to advanced research.
+
+You can think about the output in two layers:
+
+1. **Friendly mental model (short form)** – the pieces you’ll usually read as a human.
+2. **Canonical schema (spec-grade)** – the exact fields and types that tools and evaluators should rely on.
+
+### Friendly: What it feels like
+
+At a glance, each run gives you:
 
 ```json
 {
   "thesis": "Initial position...",
-  "antithesis": "Contradictions...",
-  "synthesis": "Reconciled insights...",
+  "antithesis": "Critique with contradictions...",
+  "synthesis": "Higher-level synthesis...",
   "contradictions": [
     {"description": "...", "evidence": "..."}
   ],
-  "research_proposals": [...],
-  "metadata": {"provider": "...", "model": "...", "timing": {...}}
+  "research_proposals": [
+    {"description": "...", "testable_prediction": "..."}
+  ]
 }
 ```
+
+This is the core **three-phase reasoning loop** plus structured contradictions and research proposals.
+
+### Canonical schema: What tools should depend on
+
+Under the hood, every result follows the `HegelionResult` schema (see `HEGELION_SPEC.md` for the full spec). The canonical shape looks like this:
+
+```json
+{
+  "query": "Can AI be genuinely creative?",
+  "mode": "synthesis",
+  "thesis": "THESIS: The Creative Machine ...",
+  "antithesis": "ANTITHESIS: The Sophisticated Mirror ...",
+  "synthesis": "SYNTHESIS: The Co-Creative Process ...",
+  "contradictions": [
+    {
+      "description": "The Redefinition Fallacy",
+      "evidence": "The thesis narrows 'creativity' to a computable procedure, ignoring intent and subjective urgency."
+    }
+  ],
+  "research_proposals": [
+    {
+      "description": "The Co-Creative Trace Analysis",
+      "testable_prediction": "Iterative human–AI dialogues produce artifacts judged more creative than single-pass outputs."
+    }
+  ],
+  "metadata": {
+    "thesis_time_ms": 1234.5,
+    "antithesis_time_ms": 2345.6,
+    "synthesis_time_ms": 3456.7,
+    "total_time_ms": 7036.8,
+    "backend_provider": "AnthropicLLMBackend",
+    "backend_model": "glm-4.6",
+    "debug": {
+      "internal_conflict_score": 0.95
+    }
+  },
+  "trace": {
+    "thesis": "... full phase output ...",
+    "antithesis": "... full phase output ...",
+    "synthesis": "... full phase output ...",
+    "contradictions_found": 3,
+    "research_proposals": ["..."],
+    "internal_conflict_score": 0.95
+  }
+}
+```
+
+Notes:
+
+- `metadata.backend_provider` and `metadata.backend_model` are the **canonical** backend fields.
+- Timing fields are broken out (`*_time_ms`) instead of a single nested `timing` object.
+- `trace` is included when `debug=true` (for CLI/API) or when requested via MCP; it exposes internal phase outputs and metrics.
 
 This structured data is ideal for:
 - **Eval Pipelines:** Directly feed into automated evaluation systems for LLM performance and reasoning quality.
@@ -356,6 +417,43 @@ Add Hegelion as an MCP server in Claude Desktop by configuring your `claude_desk
 > **Note:** If `hegelion-server` isn't on PATH, use `python -m hegelion.mcp_server` as the command instead.
 
 > **Note:** The `docs/MCP.md` guide contains step-by-step instructions and screenshots for the Claude Desktop integration.
+
+#### Assistant Integration: How tools should call Hegelion
+
+When you wire Hegelion into an AI assistant (Claude Desktop MCP or any MCP-capable client), the contract is:
+
+- **Tool name:** `run_dialectic`
+- **Inputs:**
+
+  ```json
+  {
+    "query": "Can AI be genuinely creative?",
+    "debug": true
+  }
+  ```
+
+- **Output:** one JSON object exactly following the `HegelionResult` schema above. Assistants should:
+
+  - Read `thesis`, `antithesis`, `synthesis` for the three textual components.
+  - Treat `contradictions[]` and `research_proposals[]` as the main **actionable lists**.
+  - Use `metadata.backend_provider`, `metadata.backend_model`, and `*_time_ms` for routing and evaluation.
+  - Look under `metadata.debug` and `trace` **only when present** (typically when `debug=true`).
+
+For batch workflows:
+
+- **Tool name:** `run_benchmark`
+- **Inputs:**
+
+  ```json
+  {
+    "prompts_file": "benchmarks/examples_basic.jsonl",
+    "debug": false
+  }
+  ```
+
+- **Output:** a single text block containing **newline-delimited JSON**, one `HegelionResult` per line. Assistants should split on newlines and parse each line as independent JSON.
+
+See `docs/MCP.md` for full tool schemas and an end-to-end Claude Desktop walkthrough.
 
 #### MCP Tools
 

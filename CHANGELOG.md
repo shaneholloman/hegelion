@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3 – MCP/assistant integration polish
+
+- Clarified canonical `HegelionResult` JSON schema in `README.md`, including backend and timing fields, and documented when `trace` and `metadata.debug` appear.
+- Expanded `docs/MCP.md` with friendly request/response examples for `run_dialectic` and `run_benchmark`, plus explicit assistant-integration guidance for parsing JSON and JSONL outputs.
+- Aligned README/MCP documentation with the actual `HegelionResult` schema used by the core engine, CLI, and MCP server to ensure AI assistants see a single, stable contract.
+
 ## 0.2.2 – MCP documentation and GLM backend verification
 
 - Added comprehensive MCP reference guide (`docs/MCP.md`) with tool schemas, troubleshooting, and client integration notes
