@@ -72,7 +72,7 @@ This process surfaces assumptions, tensions, and research directions that single
 ```text
 Query    → Thesis      → Antithesis      → Synthesis
        ↓              ↓                 ↓
-     Position     Contradictions      Synthesis
+     Position     Contradictions      Resolution
 ```
 
 ---
