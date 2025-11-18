@@ -1,150 +1,160 @@
 # Contributing to Hegelion
 
-Thank you for your interest in contributing to Hegelion! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Hegelion! We welcome contributions from everyone. This document provides guidelines to ensure that contributing to Hegelion is a smooth and collaborative process.
 
-## Development Setup
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Project Philosophy](#project-philosophy)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running Tests](#running-tests)
+- [Development Workflow](#development-workflow)
+  - [Branching](#branching)
+  - [Making Changes](#making-changes)
+  - [Code Quality](#code-quality)
+  - [Submitting a Pull Request](#submitting-a-pull-request)
+- [Architectural Overview](#architectural-overview)
+- [Coding Guidelines](#coding-guidelines)
+- [Reporting Issues](#reporting-issues)
+
+---
+
+## Code of Conduct
+
+All contributors are expected to adhere to our [Code of Conduct](CODE_OF_CONDUCT.md). Please take a moment to read it to understand our commitment to fostering an open and welcoming environment.
+
+---
+
+## Project Philosophy
+
+Hegelion is a research tool designed for robustness, clarity, and extensibility. Our goal is to provide a stable platform for evaluating and improving AI reasoning.
+
+-   **Clarity over cleverness:** Write code that is easy to understand and maintain.
+-   **Robustness is key:** The tool should handle real-world model outputs and fail gracefully.
+-   **Extensibility by design:** The architecture should make it easy to add new backends, features, and evaluation metrics.
+-   **Documentation is paramount:** Changes should be reflected in the `README.md` and `HEGELION_SPEC.md`.
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.10+ (regularly tested on 3.10 and 3.11)
-- `uv` recommended for dependency management (fallback: standard `pip`)
+-   Python 3.10+
+-   `uv` is recommended for dependency management, but `pip` is also supported.
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Hmbown/Hegelion.git
-   cd Hegelion
-   ```
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/Hmbown/Hegelion.git
+    cd Hegelion
+    ```
 
-2. **Install dependencies (prefer `uv`)**
-   ```bash
-   uv sync --dev              # creates .venv and installs runtime + dev deps
-   ```
+2.  **Install dependencies:**
+    ```bash
+    # Using uv (recommended)
+    uv sync --dev
 
-   Alternative with pip:
-   ```bash
-   pip install -e ".[dev]"
-   ```
+    # Using pip
+    pip install -e ".[dev]"
+    ```
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your API keys
-   ```
+3.  **Set up environment variables:**
+    ```bash
+    cp .env.example .env
+    # Edit .env with your API keys for testing
+    ```
 
 ### Running Tests
+
+Ensure your environment is set up correctly by running the test suite.
 
 ```bash
 # Run all tests
 uv run pytest -v
 
-# Run with coverage
+# Run tests with coverage report
 uv run pytest --cov=hegelion --cov-report=html
-
-# Run specific test file
-uv run pytest tests/test_core.py -v
 ```
+
+---
+
+## Development Workflow
+
+### Branching
+
+Create a descriptive branch name based on the type of change:
+
+-   **Features:** `feature/your-feature-name`
+-   **Bug Fixes:** `fix/your-bug-fix`
+-   **Documentation:** `docs/your-doc-update`
+-   **Refactoring:** `refactor/your-refactor-description`
+
+### Making Changes
+
+-   Write clear, atomic commits.
+-   Ensure new features are covered by tests.
+-   Update the `README.md`, `HEGELION_SPEC.md`, and any other relevant documentation if you are changing user-facing behavior.
 
 ### Code Quality
 
+Before committing, ensure your code is formatted and linted correctly. We use `black` for formatting and `ruff` for linting.
+
 ```bash
-# Format code
+# Format and lint your code
 uv run black hegelion tests
-
-# Lint code
 uv run ruff check hegelion tests
-
-# Run both
-uv run black hegelion tests && uv run ruff check hegelion tests
 ```
 
-### Pre-commit Hooks
-
-Install pre-commit hooks to automatically format and lint code before commits:
+We highly recommend installing the pre-commit hooks to automate this process:
 
 ```bash
 uv run pre-commit install
 ```
 
-### CLI Smoke Tests
+### Submitting a Pull Request
 
-Verify CLI tools work correctly:
+1.  Push your branch to your fork on GitHub.
+2.  Open a pull request against the `main` branch of the Hegelion repository.
+3.  Provide a clear title and a detailed description of your changes.
+4.  Link to any relevant issues.
+5.  Ensure all CI checks pass.
 
-```bash
-uv run hegelion --help
-uv run hegelion-bench --help
-uv run hegelion-server --help
-```
+---
 
-## Making Changes
+## Architectural Overview
 
-1. **Create a branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   # or
-   git checkout -b fix/your-bug-fix
-   ```
+Hegelion's codebase is organized into several key modules:
 
-2. **Make your changes**
-   - Write clear, focused commits
-   - Add tests for new functionality
-   - Update documentation as needed
+-   `hegelion/core.py`: The main public API (`run_dialectic`, `run_benchmark`).
+-   `hegelion/engine.py`: The core logic for the Thesis → Antithesis → Synthesis loop.
+-   `hegelion/backends.py`: Abstractions for interacting with different LLM providers.
+-   `hegelion/prompts.py`: The prompt templates for each phase of the dialectic.
+-   `hegelion/models.py`: Pydantic models for data structures like `HegelionResult`.
+-   `hegelion/parsing.py`: Functions for extracting structured data (contradictions, research proposals) from model outputs.
+-   `hegelion/scripts/hegelion_cli.py`: The implementation of the `hegelion` and `hegelion-bench` command-line tools.
 
-3. **Ensure tests pass**
-   ```bash
-   uv run pytest -v
-   ```
+---
 
-4. **Ensure code quality**
-   ```bash
-   uv run black hegelion tests
-   uv run ruff check hegelion tests
-   ```
+## Coding Guidelines
 
-## Submitting Changes
+-   **Style:** Follow PEP 8. Our line length is 88 characters, enforced by `black`.
+-   **Typing:** Use type hints for all function signatures.
+-   **Docstrings:** Write Google-style docstrings for all public modules, classes, and functions.
+-   **Tests:** Use `pytest` for testing. Test files should be placed in the `tests/` directory and mirror the structure of the `hegelion/` directory.
 
-1. **Push your branch**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-2. **Create a Pull Request**
-   - Open a PR on GitHub
-   - Provide a clear description of changes
-   - Reference any related issues
-   - Ensure CI checks pass
-
-3. **Review Process**
-   - Maintainers will review your PR
-   - Address any feedback or requested changes
-   - Once approved, your PR will be merged
-
-## Code Style
-
-- Follow PEP 8 style guidelines
-- Use `black` for code formatting (line length: 88)
-- Use `ruff` for linting
-- Write docstrings for public functions and classes
-- Type hints are encouraged but not required
-
-## Testing Guidelines
-
-- Write tests for new features
-- Ensure existing tests continue to pass
-- Aim for clear, readable test code
-- Use descriptive test names
+---
 
 ## Reporting Issues
 
-- Use GitHub Issues to report bugs or request features
-- Provide clear descriptions and reproduction steps
-- Include relevant environment information (Python version, OS, etc.)
-- For bugs, include error messages and stack traces
+If you encounter a bug or have a feature request, please open an issue on GitHub. Provide as much detail as possible, including:
 
-## Questions?
+-   A clear and descriptive title.
+-   Steps to reproduce the issue.
+-   Your operating system and Python version.
+-   Any relevant error messages or stack traces.
 
-Feel free to open an issue with questions or reach out to the maintainers.
-
-Thank you for contributing to Hegelion!
-
+Thank you for helping us improve Hegelion!

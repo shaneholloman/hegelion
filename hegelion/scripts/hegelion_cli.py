@@ -8,15 +8,16 @@ import asyncio
 import json
 import sys
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 from importlib import resources
 
 if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from hegelion.config import ConfigurationError
+from hegelion.config import ConfigurationError, get_config, set_config_value
 from hegelion.core import run_dialectic
+from hegelion.models import HegelionResult
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -26,7 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "query",
         nargs="?",
-        help="Question or topic to analyze dialectically (optional when using --demo)",
+        help="Question or topic to analyze dialectically (optional when using --interactive or --demo)",
     )
     parser.add_argument(
         "--debug",
@@ -50,6 +51,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Show a cached example trace without calling any live backend",
     )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Run in interactive mode for an exploratory session",
+    )
     return parser
 
 
@@ -58,10 +64,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 
 
 def _load_demo_examples() -> list[dict]:
-    """Load bundled demo examples from the installed package.
-
-    Falls back gracefully if resources are unavailable.
-    """
+    """Load bundled demo examples from the installed package."""
     try:
         with resources.open_text("hegelion.examples_data", "glm4_6_examples.jsonl", encoding="utf-8") as handle:
             return [json.loads(line) for line in handle if line.strip()]
@@ -79,21 +82,9 @@ def print_cached_example(format_type: str = "json") -> None:
     example_data = examples[0]
     
     if format_type == "summary":
-        # Create a HegelionResult from the example data and format it
-        from hegelion.models import HegelionResult
-        result = HegelionResult(
-            query=example_data["query"],
-            mode=example_data["mode"],
-            thesis=example_data["thesis"],
-            antithesis=example_data["antithesis"],
-            synthesis=example_data["synthesis"],
-            contradictions=example_data["contradictions"],
-            research_proposals=example_data["research_proposals"],
-            metadata=example_data["metadata"]
-        )
+        result = HegelionResult(**example_data)
         print(format_summary(result))
     else:
-        # Default to JSON format
         print(json.dumps(example_data, indent=2, ensure_ascii=False))
 
 
@@ -174,19 +165,121 @@ def format_summary(result) -> str:
     return "\n".join(lines)
 
 
+def parse_command_string(line: str) -> tuple[str, list[str]]:
+    """Parse an interactive command line into command and arguments."""
+    parts = line.strip().split()
+    if not parts:
+        return "", []
+    return parts[0].lower(), parts[1:]
+
+
+async def interactive_session() -> None:
+    """Run the Hegelion CLI in an interactive REPL session."""
+    print("Welcome to the Hegelion Interactive Dialectic Explorer.")
+    print("Type a query to start, or 'help' for a list of commands.")
+
+    history: List[str] = []
+    latest_result: Optional[HegelionResult] = None
+    debug_mode = get_config().debug
+
+    while True:
+        try:
+            query = input("Hegelion> ").strip()
+            if not query:
+                continue
+
+            history.append(query)
+            parts = query.lower().split()
+            command = parts[0]
+
+            if command in ("exit", "quit"):
+                break
+            elif command == "help":
+                print_interactive_help()
+            elif command == "history":
+                for i, item in enumerate(history, 1):
+                    print(f"{i}: {item}")
+            elif command == "show":
+                if not latest_result:
+                    print("Run a query first.")
+                    continue
+                if len(parts) < 2:
+                    print("Usage: show <thesis|antithesis|synthesis|contradictions|research|metadata|summary>")
+                    continue
+                show_what = parts[1]
+                if show_what == "thesis":
+                    print(latest_result.thesis)
+                elif show_what == "antithesis":
+                    print(latest_result.antithesis)
+                elif show_what == "synthesis":
+                    print(latest_result.synthesis)
+                elif show_what in ("contradictions", "cons"):
+                    print(json.dumps(latest_result.contradictions, indent=2, ensure_ascii=False))
+                elif show_what in ("research", "proposals"):
+                    print(json.dumps(latest_result.research_proposals, indent=2, ensure_ascii=False))
+                elif show_what == "metadata":
+                    print(json.dumps(latest_result.metadata, indent=2, ensure_ascii=False))
+                elif show_what == "summary":
+                    print(format_summary(latest_result))
+                else:
+                    print(f"Unknown section: {show_what}")
+            elif command == "set":
+                if len(parts) < 3:
+                    print("Usage: set <model|provider|debug> <value>")
+                    continue
+                setting, value = parts[1], " ".join(parts[2:])
+                if setting == "model":
+                    set_config_value("model", value)
+                    print(f"Model set to: {value}")
+                elif setting == "provider":
+                    set_config_value("provider", value)
+                    print(f"Provider set to: {value}")
+                elif setting == "debug":
+                    debug_mode = value.lower() in ("true", "on", "1")
+                    print(f"Debug mode set to: {debug_mode}")
+                else:
+                    print(f"Unknown setting: {setting}")
+            else:
+                # Treat as a new query
+                print("Running dialectic...")
+                latest_result = await run_dialectic(query=query, debug=debug_mode)
+                print(format_summary(latest_result))
+
+        except (EOFError, KeyboardInterrupt):
+            print("\nExiting.")
+            break
+        except Exception as exc:
+            print(f"An error occurred: {exc}", file=sys.stderr)
+
+
+def print_interactive_help() -> None:
+    """Print the help message for the interactive mode."""
+    print("\nHegelion Interactive Commands:")
+    print("  <query>                  - Run a new dialectical query.")
+    print("  show <section>           - Show a section of the last result.")
+    print("    Sections: thesis, antithesis, synthesis, contradictions, research, metadata, summary")
+    print("  set <setting> <value>    - Change a setting for the session.")
+    print("    Settings: model, provider, debug (on/off)")
+    print("  history                  - Show a history of queries from this session.")
+    print("  help                     - Show this help message.")
+    print("  exit, quit               - Exit the interactive session.\n")
+
+
 async def _run(args: argparse.Namespace) -> None:
+    if args.interactive:
+        await interactive_session()
+        return
+
     if args.demo:
-        # In demo mode we ignore live backends and just show a cached trace.
         print_cached_example(format_type=args.format)
         return
 
     if not args.query:
-        raise SystemExit("Error: QUERY is required unless --demo is specified.")
+        raise SystemExit("Error: QUERY is required unless --interactive or --demo is specified.")
 
     try:
         result = await run_dialectic(query=args.query, debug=args.debug)
     except ConfigurationError as exc:
-        # Friendly guidance when no backend/API key is configured.
         message = str(exc)
         guidance = (
             "No LLM backend is configured.\n"
@@ -203,10 +296,8 @@ async def _run(args: argparse.Namespace) -> None:
         output = json.dumps(result.to_dict(), indent=2, ensure_ascii=False)
 
     if args.output:
-        # If a JSONL path is provided, write a single-line JSON object suitable
-        # for appending into a larger trace corpus.
         if args.output.suffix == ".jsonl":
-            with args.output.open("w", encoding="utf-8") as handle:
+            with args.output.open("a", encoding="utf-8") as handle:
                 json.dump(result.to_dict(), handle, ensure_ascii=False)
                 handle.write("\n")
         else:
@@ -220,7 +311,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     args = parse_args(argv)
     try:
         asyncio.run(_run(args))
-    except Exception as exc:  # pragma: no cover - CLI error surface
+    except Exception as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 

@@ -56,7 +56,7 @@ class TestRunDialectic:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await run_dialectic("Test query")
@@ -91,7 +91,7 @@ class TestRunDialectic:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await run_dialectic("Test query", debug=True)
@@ -127,7 +127,7 @@ class TestRunDialectic:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await run_dialectic("Test query")
@@ -165,7 +165,7 @@ class TestRunBenchmark:
         prompts = ["Query 1", "Query 2"]
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts)
@@ -185,7 +185,7 @@ class TestRunBenchmark:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts_file)
@@ -203,7 +203,7 @@ class TestRunBenchmark:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts, output_file=output_file)
@@ -247,7 +247,7 @@ class TestRunBenchmark:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts, debug=True)
@@ -266,7 +266,7 @@ class TestRunBenchmark:
         ]
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts)
@@ -282,7 +282,7 @@ class TestHighLevelAPIs:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.resolve_backend_for_model', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await dialectic("Test query", model="claude-4.5-sonnet")
@@ -294,7 +294,7 @@ class TestHighLevelAPIs:
         mock_backend = MockBackend()
 
         with patch('hegelion.core.get_backend_from_env', return_value=mock_backend):
-            with patch('hegelion.core.get_engine_settings_from_env') as mock_settings:
+            with patch('hegelion.core.get_engine_settings') as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await quickstart("Test query")

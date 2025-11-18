@@ -17,7 +17,8 @@ except ImportError:  # pragma: no cover - optional dependency
 
 try:
     from anthropic import AsyncAnthropic
-except ImportError:  # pragma: no cover - optional dependency
+except ImportError as e:  # pragma: no cover - optional dependency
+    print(f"DEBUG: Failed to import anthropic: {e}")
     AsyncAnthropic = None  # type: ignore
 
 try:

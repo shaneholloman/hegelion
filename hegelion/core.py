@@ -14,7 +14,7 @@ from .cache import CacheConfig, ResultCache, compute_cache_key
 from .backends import LLMBackend
 from .config import (
     get_backend_from_env,
-    get_engine_settings_from_env,
+    get_engine_settings,
     resolve_backend_for_model,
 )
 from .engine import HegelionEngine
@@ -126,9 +126,8 @@ async def run_dialectic(
         ...     result = await run_dialectic("What year was the printing press invented?")
         ...     print(result.synthesis)
         >>>
-        >>> asyncio.run(main())
     """
-    settings = get_engine_settings_from_env()
+    settings = get_engine_settings()
     resolved_tokens = max_tokens_per_phase or settings.max_tokens_per_phase
     resolved_validate = settings.validate_results if validate is None else validate
     resolved_cache_enabled = settings.cache_enabled if use_cache is None else use_cache
@@ -239,7 +238,7 @@ async def run_benchmark(
     if not prompt_list:
         return []
 
-    settings = get_engine_settings_from_env()
+    settings = get_engine_settings()
     resolved_tokens = max_tokens_per_phase or settings.max_tokens_per_phase
 
     if backend is not None:
@@ -350,12 +349,12 @@ async def quickstart(
 
 
 def dialectic_sync(*args, **kwargs) -> HegelionResult:
-    """Synchronous wrapper for :func:`dialectic`."""
+    """Synchronous wrapper for dialectic."""
     return asyncio.run(dialectic(*args, **kwargs))
 
 
 def quickstart_sync(*args, **kwargs) -> HegelionResult:
-    """Synchronous wrapper for :func:`quickstart`."""
+    """Synchronous wrapper for quickstart."""
     return asyncio.run(quickstart(*args, **kwargs))
 
 

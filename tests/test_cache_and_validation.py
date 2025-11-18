@@ -18,7 +18,7 @@ async def test_run_dialectic_cache_hits(tmp_path: Path):
     settings.cache_dir = str(tmp_path)
     settings.cache_ttl_seconds = 60
 
-    with patch("hegelion.core.get_engine_settings_from_env", return_value=settings):
+    with patch("hegelion.core.get_engine_settings", return_value=settings):
         first = await run_dialectic("Cache me", backend=backend, model="mock-model")
         first_calls = backend.call_count
         assert first_calls >= 3  # thesis, antithesis, synthesis (+conflict classifier)
