@@ -9,23 +9,32 @@
 
 Hegelion is a framework that upgrades AI reasoning by forcing language models through a structured, dialectical process. It stress-tests assertions, uncovers hidden assumptions, and produces significantly more robust and well-reasoned insights.
 
+> Get started: [Quick Start](docs/QUICKSTART.md) · [User Guide](docs/USER_GUIDE.md) · [MCP Setup](docs/MODEL_AGNOSTIC.md) · [Examples](examples/README.md)
+
+---
+
+## Table of Contents
+
+- [Value Proposition](#value-proposition)
+- [Key Features](#key-features)
+- [Two Ways to Use Hegelion](#two-ways-to-use-hegelion)
+- [Documentation](#documentation)
+- [Quick Start](#quick-start)
+- [Supported Backends](#supported-backends)
+- [Who is this for?](#who-is-this-for)
+- [Common Use Cases](#common-use-cases)
+- [FAQ](#faq)
+- [New in Version 0.3.0](#new-in-version-030)
+- [Contributing & License](#contributing--license)
+
+---
+
 At its core is a simple, powerful loop:
 
-```
-      ┌──────────────────┐
-      │      Thesis      │
-      │ (Initial Stance) │
-      └─────────┬────────┘
-                │
-      ┌─────────▼────────┐
-      │    Antithesis    │
-      │(Critique/Counter)│
-      └─────────┬────────┘
-                │
-      ┌─────────▼────────┐
-      │     Synthesis    │
-      │ (Refined Result) │
-      └──────────────────┘
+```mermaid
+flowchart TD
+  A[Thesis<br/>(Initial Stance)] --> B[Antithesis<br/>(Critique/Counter)]
+  B --> C[Synthesis<br/>(Refined Result)]
 ```
 
 This framework moves beyond simple Q&A to facilitate complex, multi-layered analysis.
@@ -174,3 +183,44 @@ See [CHANGELOG.md](CHANGELOG.md) for full details.
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 Hegelion is licensed under the [MIT License](LICENSE).
+
+---
+
+## Supported Backends
+
+| Provider | Env Vars (minimum) | Example Model |
+| --- | --- | --- |
+| Anthropic (Claude) | `HEGELION_PROVIDER=anthropic`, `ANTHROPIC_API_KEY` | `claude-4.5-sonnet-latest` |
+| OpenAI / GLM-compatible | `HEGELION_PROVIDER=openai`, `OPENAI_API_KEY`, optional `OPENAI_BASE_URL` | `gpt-4o`, `GLM-4.6` |
+| Google (Gemini) | `HEGELION_PROVIDER=google`, `GOOGLE_API_KEY` | `gemini-2.5-pro` |
+| Ollama (local) | `HEGELION_PROVIDER=ollama`, optional `OLLAMA_BASE_URL` | `llama3.3` |
+| Custom HTTP | `HEGELION_PROVIDER=custom_http`, `CUSTOM_API_BASE_URL`, optional `CUSTOM_API_KEY` | Your internal model ID |
+
+See `env.example` for a ready-to-edit template.
+
+---
+
+## Who is this for?
+
+- Researchers comparing reasoning patterns across models
+- Engineers building evaluation harnesses and CI checks
+- Power users of Cursor / Claude Desktop who want model-agnostic dialectics
+- Educators teaching argumentation and critical thinking
+
+---
+
+## Common Use Cases
+
+- Stress-test a design or policy with structured critique (antithesis)
+- Generate research proposals with testable predictions (synthesis)
+- Batch-benchmark prompts across providers (JSONL in/out)
+- Prompt-driven dialectics in MCP without any API keys
+
+---
+
+## FAQ
+
+- **Why not put everything in the CLI?**  The CLI is great for demos, but advanced workflows (personas, iterations, search grounding) belong in the Python API or MCP where composition is easier.
+- **Why do results vary between runs?**  Different providers/models have different strengths; enable `debug=True` to include internal diagnostics in `metadata.debug`.
+- **How do I capture runs for analysis?**  Use `--output file.jsonl` on the CLI or write `result.to_dict()` in code; process with `jq` or `pandas.read_json(..., lines=True)`.
+- **Which models work best?**  Strong generalists like Claude Sonnet, GPT-4 class, or Gemini Pro produce the most useful contradictions and syntheses.

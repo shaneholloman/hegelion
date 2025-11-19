@@ -36,6 +36,19 @@ Claude Desktop example (`claude_desktop_config.json`):
 }
 ```
 
+Cursor example (use `Settings → Model Context Protocol → Add Server`):
+
+```json
+{
+  "mcpServers": {
+    "hegelion-prompt": {
+      "command": "uv",
+      "args": ["run", "hegelion-prompt-server"]
+    }
+  }
+}
+```
+
 3) Ask your AI to run a dialectic
 
 > “Run a dialectical analysis on ‘Is AI conscious?’ using the Hegelion prompt server with council critiques.”
