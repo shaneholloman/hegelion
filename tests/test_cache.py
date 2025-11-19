@@ -1,10 +1,8 @@
 """Comprehensive tests for caching functionality."""
 
-import json
 import time
 from pathlib import Path
 
-import pytest
 
 from hegelion.cache import CacheConfig, ResultCache, compute_cache_key
 from hegelion.models import HegelionResult
@@ -182,7 +180,7 @@ class TestResultCache:
         cache_dir = tmp_path / "cache"
         config = CacheConfig(cache_dir=cache_dir, ttl_seconds=None)
 
-        cache = ResultCache(config)
+        _ = ResultCache(config)
 
         assert cache_dir.exists()
         assert cache_dir.is_dir()
@@ -491,4 +489,3 @@ class TestResultCache:
         loaded = cache.load(cache_key)
         assert loaded["query"] == "Updated"
         assert loaded["thesis"] == "T2"
-

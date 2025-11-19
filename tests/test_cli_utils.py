@@ -37,4 +37,3 @@ def test_parse_command_string_extra_whitespace():
     cmd, args = parse_command_string("  set   debug   on  ")
     assert cmd == "set"
     assert args == ["debug", "on"]
-

@@ -84,7 +84,11 @@ class TestValidationSuccessCases:
                 "synthesis_time_ms": 0.0,
                 "total_time_ms": 0.0,
                 "errors": [
-                    {"phase": "antithesis", "error": "Exception", "message": "Error message"}
+                    {
+                        "phase": "antithesis",
+                        "error": "Exception",
+                        "message": "Error message",
+                    }
                 ],
             },
         )
@@ -210,7 +214,7 @@ class TestValidationFailureCases:
         result_dict["metadata"]["thesis_time_ms"] = "not-a-number"
 
         # Create a new result with invalid metadata
-        invalid_result = HegelionResult(
+        _ = HegelionResult(
             query="Test",
             mode="synthesis",
             thesis="T",
@@ -489,4 +493,3 @@ class TestResultValidationError:
         assert "validation" in str(exc_info.value).lower()
         assert isinstance(exc_info.value, RuntimeError)
         assert hasattr(exc_info.value, "original")
-

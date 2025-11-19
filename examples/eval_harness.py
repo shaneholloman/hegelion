@@ -56,4 +56,3 @@ if __name__ == "__main__":
         print("Usage: python eval_harness.py results.jsonl", file=sys.stderr)
         raise SystemExit(1)
     main(sys.argv[1])
-

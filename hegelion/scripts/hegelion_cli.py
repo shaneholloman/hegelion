@@ -8,11 +8,13 @@ import asyncio
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import List, Optional, Sequence
 
 from importlib import resources
 
-if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
+if (
+    __package__ is None or __package__ == ""
+):  # pragma: no cover - direct execution fallback
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hegelion.config import ConfigurationError, get_config, set_config_value
@@ -66,7 +68,9 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 def _load_demo_examples() -> list[dict]:
     """Load bundled demo examples from the installed package."""
     try:
-        with resources.open_text("hegelion.examples_data", "glm4_6_examples.jsonl", encoding="utf-8") as handle:
+        with resources.open_text(
+            "hegelion.examples_data", "glm4_6_examples.jsonl", encoding="utf-8"
+        ) as handle:
             return [json.loads(line) for line in handle if line.strip()]
     except Exception:
         return []
@@ -80,7 +84,7 @@ def print_cached_example(format_type: str = "json") -> None:
         return
 
     example_data = examples[0]
-    
+
     if format_type == "summary":
         result = HegelionResult(**example_data)
         print(format_summary(result))
@@ -204,7 +208,9 @@ async def interactive_session() -> None:
                     print("Run a query first.")
                     continue
                 if len(parts) < 2:
-                    print("Usage: show <thesis|antithesis|synthesis|contradictions|research|metadata|summary>")
+                    print(
+                        "Usage: show <thesis|antithesis|synthesis|contradictions|research|metadata|summary>"
+                    )
                     continue
                 show_what = parts[1]
                 if show_what == "thesis":
@@ -214,11 +220,23 @@ async def interactive_session() -> None:
                 elif show_what == "synthesis":
                     print(latest_result.synthesis)
                 elif show_what in ("contradictions", "cons"):
-                    print(json.dumps(latest_result.contradictions, indent=2, ensure_ascii=False))
+                    print(
+                        json.dumps(
+                            latest_result.contradictions, indent=2, ensure_ascii=False
+                        )
+                    )
                 elif show_what in ("research", "proposals"):
-                    print(json.dumps(latest_result.research_proposals, indent=2, ensure_ascii=False))
+                    print(
+                        json.dumps(
+                            latest_result.research_proposals,
+                            indent=2,
+                            ensure_ascii=False,
+                        )
+                    )
                 elif show_what == "metadata":
-                    print(json.dumps(latest_result.metadata, indent=2, ensure_ascii=False))
+                    print(
+                        json.dumps(latest_result.metadata, indent=2, ensure_ascii=False)
+                    )
                 elif show_what == "summary":
                     print(format_summary(latest_result))
                 else:
@@ -257,7 +275,9 @@ def print_interactive_help() -> None:
     print("\nHegelion Interactive Commands:")
     print("  <query>                  - Run a new dialectical query.")
     print("  show <section>           - Show a section of the last result.")
-    print("    Sections: thesis, antithesis, synthesis, contradictions, research, metadata, summary")
+    print(
+        "    Sections: thesis, antithesis, synthesis, contradictions, research, metadata, summary"
+    )
     print("  set <setting> <value>    - Change a setting for the session.")
     print("    Settings: model, provider, debug (on/off)")
     print("  history                  - Show a history of queries from this session.")
@@ -275,7 +295,9 @@ async def _run(args: argparse.Namespace) -> None:
         return
 
     if not args.query:
-        raise SystemExit("Error: QUERY is required unless --interactive or --demo is specified.")
+        raise SystemExit(
+            "Error: QUERY is required unless --interactive or --demo is specified."
+        )
 
     try:
         result = await run_dialectic(query=args.query, debug=args.debug)

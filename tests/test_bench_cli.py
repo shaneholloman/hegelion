@@ -39,7 +39,9 @@ def test_bench_help_runs() -> None:
     )
 
 
-def test_bench_with_jsonl_file(monkeypatch, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_bench_with_jsonl_file(
+    monkeypatch, tmp_path: Path, sample_result: HegelionResult
+) -> None:
     """Test benchmark with JSONL prompts file."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Query 1"}\n{"prompt": "Query 2"}\n')
@@ -54,7 +56,9 @@ def test_bench_with_jsonl_file(monkeypatch, tmp_path: Path, sample_result: Hegel
     assert call_kwargs["prompts"] == prompts_file
 
 
-def test_bench_with_plain_text_prompts(monkeypatch, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_bench_with_plain_text_prompts(
+    monkeypatch, tmp_path: Path, sample_result: HegelionResult
+) -> None:
     """Test benchmark with plain text prompts (one per line)."""
     prompts_file = tmp_path / "prompts.txt"
     prompts_file.write_text("Query 1\nQuery 2\nQuery 3\n")
@@ -67,10 +71,14 @@ def test_bench_with_plain_text_prompts(monkeypatch, tmp_path: Path, sample_resul
     mock_runner.assert_awaited_once()
 
 
-def test_bench_with_mixed_formats(monkeypatch, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_bench_with_mixed_formats(
+    monkeypatch, tmp_path: Path, sample_result: HegelionResult
+) -> None:
     """Test benchmark with mixed JSON and plain text prompts."""
     prompts_file = tmp_path / "prompts.jsonl"
-    prompts_file.write_text('{"query": "JSON query"}\nPlain text query\n{"prompt": "Another JSON"}\n')
+    prompts_file.write_text(
+        '{"query": "JSON query"}\nPlain text query\n{"prompt": "Another JSON"}\n'
+    )
 
     mock_runner = AsyncMock(return_value=[sample_result] * 3)
     monkeypatch.setattr(hegelion_bench, "run_benchmark", mock_runner)
@@ -80,7 +88,9 @@ def test_bench_with_mixed_formats(monkeypatch, tmp_path: Path, sample_result: He
     mock_runner.assert_awaited_once()
 
 
-def test_bench_with_output_file(monkeypatch, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_bench_with_output_file(
+    monkeypatch, tmp_path: Path, sample_result: HegelionResult
+) -> None:
     """Test benchmark with --output file."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Test"}\n')
@@ -97,7 +107,9 @@ def test_bench_with_output_file(monkeypatch, tmp_path: Path, sample_result: Hege
     assert call_kwargs["output_file"] == output_file
 
 
-def test_bench_with_debug_flag(monkeypatch, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_bench_with_debug_flag(
+    monkeypatch, tmp_path: Path, sample_result: HegelionResult
+) -> None:
     """Test benchmark with --debug flag."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Test"}\n')
@@ -111,7 +123,9 @@ def test_bench_with_debug_flag(monkeypatch, tmp_path: Path, sample_result: Hegel
     assert call_kwargs["debug"] is True
 
 
-def test_bench_with_summary(monkeypatch, tmp_path: Path, capsys, sample_result: HegelionResult) -> None:
+def test_bench_with_summary(
+    monkeypatch, tmp_path: Path, capsys, sample_result: HegelionResult
+) -> None:
     """Test benchmark with --summary flag."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Query 1"}\n{"query": "Query 2"}\n')
@@ -187,10 +201,15 @@ def test_bench_empty_file(monkeypatch, tmp_path: Path, capsys) -> None:
     hegelion_bench.main([str(prompts_file), "--summary"])
 
     captured = capsys.readouterr()
-    assert "No results to summarize" in captured.out or "Total queries processed: 0" in captured.out
+    assert (
+        "No results to summarize" in captured.out
+        or "Total queries processed: 0" in captured.out
+    )
 
 
-def test_bench_without_output_prints_jsonl(monkeypatch, tmp_path: Path, capsys, sample_result: HegelionResult) -> None:
+def test_bench_without_output_prints_jsonl(
+    monkeypatch, tmp_path: Path, capsys, sample_result: HegelionResult
+) -> None:
     """Test that benchmark prints JSONL when no output file specified."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Test"}\n')
@@ -224,7 +243,9 @@ def test_bench_error_handling(monkeypatch, tmp_path: Path) -> None:
         hegelion_bench.main([str(prompts_file)])
 
 
-def test_bench_processes_message(monkeypatch, tmp_path: Path, capsys, sample_result: HegelionResult) -> None:
+def test_bench_processes_message(
+    monkeypatch, tmp_path: Path, capsys, sample_result: HegelionResult
+) -> None:
     """Test that processed message is printed to stderr."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Q1"}\n{"query": "Q2"}\n')
@@ -236,4 +257,3 @@ def test_bench_processes_message(monkeypatch, tmp_path: Path, capsys, sample_res
 
     captured = capsys.readouterr()
     assert "Processed 2 queries" in captured.err
-

@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 @dataclass
 class ContradictionResult:
     """A structured contradiction extracted during antithesis."""
+
     description: str
     evidence: Optional[str] = None
 
@@ -23,6 +24,7 @@ class ContradictionResult:
 @dataclass
 class ResearchProposal:
     """A research proposal extracted during synthesis."""
+
     description: str
     testable_prediction: Optional[str] = None
 
@@ -41,6 +43,7 @@ class HegelionResult:
 
     This is the public API output that excludes internal conflict scoring.
     """
+
     query: str
     mode: str  # Always "synthesis" in new design
     thesis: str
@@ -71,6 +74,7 @@ class HegelionResult:
 @dataclass
 class HegelionTrace:
     """Complete dialectical trace for debugging and analysis."""
+
     thesis: str
     antithesis: str
     synthesis: Optional[str]
@@ -96,13 +100,16 @@ class HegelionTrace:
 @dataclass
 class HegelionMetadata:
     """Metadata about Hegelion execution."""
+
     thesis_time_ms: float
     antithesis_time_ms: float
     synthesis_time_ms: Optional[float]
     total_time_ms: float
     backend_provider: Optional[str] = None
     backend_model: Optional[str] = None
-    debug: Optional[Dict[str, Any]] = None  # Debug information including internal scores
+    debug: Optional[Dict[str, Any]] = (
+        None  # Debug information including internal scores
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -144,7 +151,9 @@ class HegelionOutput:
         self.trace = trace
         self.metadata = metadata
 
-    def to_hegelion_result(self, include_debug_conflict_score: bool = False) -> HegelionResult:
+    def to_hegelion_result(
+        self, include_debug_conflict_score: bool = False
+    ) -> HegelionResult:
         """Convert to the new HegelionResult format."""
         debug_info = None
         if include_debug_conflict_score:
@@ -152,7 +161,9 @@ class HegelionOutput:
 
         # Convert contradictions to structured format
         contradictions = []
-        for i, contr_desc in enumerate(self.trace.research_proposals[:self.trace.contradictions_found]):
+        for i, contr_desc in enumerate(
+            self.trace.research_proposals[: self.trace.contradictions_found]
+        ):
             contradictions.append({"description": contr_desc})
 
         return HegelionResult(
@@ -162,7 +173,9 @@ class HegelionOutput:
             antithesis=self.trace.antithesis,
             synthesis=self.trace.synthesis or "",
             contradictions=contradictions,
-            research_proposals=[{"description": rp} for rp in self.trace.research_proposals],
+            research_proposals=[
+                {"description": rp} for rp in self.trace.research_proposals
+            ],
             metadata={
                 "thesis_time_ms": self.metadata.thesis_time_ms,
                 "antithesis_time_ms": self.metadata.antithesis_time_ms,

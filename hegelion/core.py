@@ -131,7 +131,11 @@ async def run_dialectic(
     resolved_tokens = max_tokens_per_phase or settings.max_tokens_per_phase
     resolved_validate = settings.validate_results if validate is None else validate
     resolved_cache_enabled = settings.cache_enabled if use_cache is None else use_cache
-    resolved_cache_ttl = cache_ttl_seconds if cache_ttl_seconds is not None else settings.cache_ttl_seconds
+    resolved_cache_ttl = (
+        cache_ttl_seconds
+        if cache_ttl_seconds is not None
+        else settings.cache_ttl_seconds
+    )
 
     # Backwards-compatible resolution: explicit backend wins, then model,
     # then the environment-configured default.
@@ -156,7 +160,9 @@ async def run_dialectic(
     cache_key: Optional[str] = None
     if resolved_cache_enabled:
         cache = ResultCache(
-            CacheConfig.from_env(cache_dir=settings.cache_dir, ttl_seconds=resolved_cache_ttl)
+            CacheConfig.from_env(
+                cache_dir=settings.cache_dir, ttl_seconds=resolved_cache_ttl
+            )
         )
         backend_name = resolved_backend.__class__.__name__
         cache_key = compute_cache_key(
@@ -271,10 +277,10 @@ async def run_benchmark(
     # Write to output file if specified
     if output_file:
         output_path = Path(output_file)
-        with output_path.open('w', encoding='utf-8') as handle:
+        with output_path.open("w", encoding="utf-8") as handle:
             for result in results:
                 json.dump(result.to_dict(), handle, ensure_ascii=False)
-                handle.write('\n')
+                handle.write("\n")
 
     return results
 

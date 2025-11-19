@@ -1,7 +1,6 @@
 """Tests for Hegelion data models."""
 
 import json
-import pytest
 
 from hegelion.models import (
     ContradictionResult,
@@ -18,26 +17,21 @@ class TestContradictionResult:
     def test_to_dict_basic(self):
         """Test basic to_dict conversion."""
         contradiction = ContradictionResult(
-            description="Test contradiction",
-            evidence="Test evidence"
+            description="Test contradiction", evidence="Test evidence"
         )
         result = contradiction.to_dict()
 
         assert result == {
             "description": "Test contradiction",
-            "evidence": "Test evidence"
+            "evidence": "Test evidence",
         }
 
     def test_to_dict_no_evidence(self):
         """Test to_dict conversion without evidence."""
-        contradiction = ContradictionResult(
-            description="Test contradiction"
-        )
+        contradiction = ContradictionResult(description="Test contradiction")
         result = contradiction.to_dict()
 
-        assert result == {
-            "description": "Test contradiction"
-        }
+        assert result == {"description": "Test contradiction"}
         assert "evidence" not in result
 
 
@@ -47,26 +41,21 @@ class TestResearchProposal:
     def test_to_dict_basic(self):
         """Test basic to_dict conversion."""
         proposal = ResearchProposal(
-            description="Test research",
-            testable_prediction="Test prediction"
+            description="Test research", testable_prediction="Test prediction"
         )
         result = proposal.to_dict()
 
         assert result == {
             "description": "Test research",
-            "testable_prediction": "Test prediction"
+            "testable_prediction": "Test prediction",
         }
 
     def test_to_dict_no_prediction(self):
         """Test to_dict conversion without prediction."""
-        proposal = ResearchProposal(
-            description="Test research"
-        )
+        proposal = ResearchProposal(description="Test research")
         result = proposal.to_dict()
 
-        assert result == {
-            "description": "Test research"
-        }
+        assert result == {"description": "Test research"}
         assert "testable_prediction" not in result
 
 
@@ -77,17 +66,17 @@ class TestHegelionResult:
         """Test basic to_dict conversion."""
         contradictions = [
             {"description": "Test contradiction 1"},
-            {"description": "Test contradiction 2", "evidence": "Evidence"}
+            {"description": "Test contradiction 2", "evidence": "Evidence"},
         ]
         proposals = [
             {"description": "Test proposal"},
-            {"description": "Test proposal 2", "testable_prediction": "Prediction"}
+            {"description": "Test proposal 2", "testable_prediction": "Prediction"},
         ]
         metadata = {
             "thesis_time_ms": 100,
             "antithesis_time_ms": 200,
             "synthesis_time_ms": 300,
-            "total_time_ms": 600
+            "total_time_ms": 600,
         }
 
         result = HegelionResult(
@@ -98,7 +87,7 @@ class TestHegelionResult:
             synthesis="Test synthesis",
             contradictions=contradictions,
             research_proposals=proposals,
-            metadata=metadata
+            metadata=metadata,
         )
 
         dict_result = result.to_dict()
@@ -120,7 +109,7 @@ class TestHegelionResult:
             "thesis_time_ms": 100,
             "antithesis_time_ms": 200,
             "synthesis_time_ms": 300,
-            "total_time_ms": 600
+            "total_time_ms": 600,
         }
 
         result = HegelionResult(
@@ -132,7 +121,7 @@ class TestHegelionResult:
             contradictions=[],
             research_proposals=[],
             metadata=metadata,
-            trace=trace
+            trace=trace,
         )
 
         dict_result = result.to_dict()
@@ -148,7 +137,7 @@ class TestHegelionResult:
             synthesis="Test synthesis",
             contradictions=[],
             research_proposals=[],
-            metadata={"total_time_ms": 100}
+            metadata={"total_time_ms": 100},
         )
 
         # Should not raise an exception
@@ -169,7 +158,7 @@ class TestHegelionTrace:
             antithesis="Test antithesis",
             synthesis="Test synthesis",
             contradictions_found=2,
-            research_proposals=["Proposal 1", "Proposal 2"]
+            research_proposals=["Proposal 1", "Proposal 2"],
         )
 
         result = trace.to_dict()
@@ -189,7 +178,7 @@ class TestHegelionTrace:
             synthesis="Test synthesis",
             contradictions_found=2,
             research_proposals=["Proposal 1"],
-            internal_conflict_score=0.85
+            internal_conflict_score=0.85,
         )
 
         result = trace.to_dict()
@@ -206,7 +195,7 @@ class TestHegelionMetadata:
             thesis_time_ms=100,
             antithesis_time_ms=200,
             synthesis_time_ms=300,
-            total_time_ms=600
+            total_time_ms=600,
         )
 
         result = metadata.to_dict()
@@ -227,7 +216,7 @@ class TestHegelionMetadata:
             synthesis_time_ms=300,
             total_time_ms=600,
             backend_provider="TestProvider",
-            backend_model="test-model"
+            backend_model="test-model",
         )
 
         result = metadata.to_dict()
@@ -243,7 +232,7 @@ class TestHegelionMetadata:
             antithesis_time_ms=200,
             synthesis_time_ms=300,
             total_time_ms=600,
-            debug=debug_info
+            debug=debug_info,
         )
 
         result = metadata.to_dict()

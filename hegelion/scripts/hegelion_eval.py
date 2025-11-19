@@ -8,8 +8,11 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
+if (
+    __package__ is None or __package__ == ""
+):  # pragma: no cover - direct execution fallback
     import sys
+
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hegelion.models import HegelionResult
@@ -60,14 +63,16 @@ def analyze_results(results: List[HegelionResult]) -> Dict[str, Any]:
     total_contradictions = sum(len(r.contradictions) for r in results)
     total_proposals = sum(len(r.research_proposals) for r in results)
     total_time = sum(r.metadata.get("total_time_ms", 0) for r in results)
-    
+
     conflict_scores = []
     for r in results:
         debug = r.metadata.get("debug", {})
         if debug and "internal_conflict_score" in debug:
             conflict_scores.append(debug["internal_conflict_score"])
-    
-    avg_conflict_score = sum(conflict_scores) / len(conflict_scores) if conflict_scores else None
+
+    avg_conflict_score = (
+        sum(conflict_scores) / len(conflict_scores) if conflict_scores else None
+    )
 
     return {
         "model": results[0].metadata.get("backend_model", "Unknown"),
@@ -82,13 +87,21 @@ def analyze_results(results: List[HegelionResult]) -> Dict[str, Any]:
 def generate_report(analysis: List[Dict[str, Any]]) -> str:
     """Generate a Markdown report from the analysis."""
     report = ["# Hegelion Evaluation Report", ""]
-    
+
     # Summary Table
     report.append("## Summary")
-    report.append("| Model | Queries | Avg. Contradictions | Avg. Proposals | Avg. Time (ms) | Avg. Conflict Score |")
-    report.append("|-------|---------|---------------------|----------------|----------------|---------------------|")
+    report.append(
+        "| Model | Queries | Avg. Contradictions | Avg. Proposals | Avg. Time (ms) | Avg. Conflict Score |"
+    )
+    report.append(
+        "|-------|---------|---------------------|----------------|----------------|---------------------|"
+    )
     for stats in analysis:
-        conflict_score_str = f"{stats['avg_conflict_score']:.3f}" if stats['avg_conflict_score'] is not None else "N/A"
+        conflict_score_str = (
+            f"{stats['avg_conflict_score']:.3f}"
+            if stats["avg_conflict_score"] is not None
+            else "N/A"
+        )
         report.append(
             f"| {stats['model']} | {stats['total_queries']} | {stats['avg_contradictions']:.2f} | "
             f"{stats['avg_proposals']:.2f} | {stats['avg_time_ms']:.0f} | {conflict_score_str} |"
@@ -106,7 +119,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         if not results_file.exists():
             print(f"Error: File not found: {results_file}", file=sys.stderr)
             continue
-        
+
         results = load_results(results_file)
         if not results:
             print(f"Warning: No results found in: {results_file}", file=sys.stderr)

@@ -5,6 +5,7 @@ import pytest
 from hegelion import config
 from hegelion.backends import GoogleLLMBackend
 
+
 class _DummyResponse:
     def __init__(self, text: str = ""):
         self.text = text
@@ -16,7 +17,9 @@ class _RecordingAsyncModel:
         self.last_prompt = None
         self.last_kwargs = None
 
-    async def generate_content(self, prompt, **kwargs):  # pragma: no cover - exercised in tests
+    async def generate_content(
+        self, prompt, **kwargs
+    ):  # pragma: no cover - exercised in tests
         self.last_prompt = prompt
         self.last_kwargs = kwargs
         return _DummyResponse(text="Generated from Google")
@@ -43,7 +46,10 @@ def test_google_backend_generates_text(monkeypatch):
 
     result = asyncio.run(
         backend.generate(
-            "Hello Gemini", max_tokens=50, temperature=0.2, system_prompt="System message"
+            "Hello Gemini",
+            max_tokens=50,
+            temperature=0.2,
+            system_prompt="System message",
         )
     )
 

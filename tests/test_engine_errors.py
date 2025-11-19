@@ -1,16 +1,13 @@
 """Tests for engine error handling and graceful degradation."""
 
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 
 from hegelion.backends import DummyLLMBackend
 from hegelion.engine import (
-    AntithesisPhaseError,
     HegelionEngine,
-    SynthesisPhaseError,
     ThesisPhaseError,
 )
 
@@ -33,17 +30,31 @@ class _FailingBackend:
         self.fail_phase = fail_phase
         self.call_count = 0
 
-    async def generate(self, prompt, max_tokens=1000, temperature=0.7, system_prompt=None):
+    async def generate(
+        self, prompt, max_tokens=1000, temperature=0.7, system_prompt=None
+    ):
         self.call_count += 1
 
         # Check for phase in prompt (case-insensitive)
         prompt_upper = prompt.upper()
-        
-        if self.fail_phase == "thesis" and "THESIS" in prompt_upper and "PHASE" in prompt_upper:
+
+        if (
+            self.fail_phase == "thesis"
+            and "THESIS" in prompt_upper
+            and "PHASE" in prompt_upper
+        ):
             raise Exception("Thesis generation failed")
-        if self.fail_phase == "antithesis" and "ANTITHESIS" in prompt_upper and "PHASE" in prompt_upper:
+        if (
+            self.fail_phase == "antithesis"
+            and "ANTITHESIS" in prompt_upper
+            and "PHASE" in prompt_upper
+        ):
             raise Exception("Antithesis generation failed")
-        if self.fail_phase == "synthesis" and "SYNTHESIS" in prompt_upper and "PHASE" in prompt_upper:
+        if (
+            self.fail_phase == "synthesis"
+            and "SYNTHESIS" in prompt_upper
+            and "PHASE" in prompt_upper
+        ):
             raise Exception("Synthesis generation failed")
 
         # Default successful response (check in order: synthesis, antithesis, thesis)
@@ -173,7 +184,10 @@ class TestErrorMetadata:
 
         result = await engine.process_query("Test query")
 
-        assert "errors" not in result.metadata or len(result.metadata.get("errors", [])) == 0
+        assert (
+            "errors" not in result.metadata
+            or len(result.metadata.get("errors", [])) == 0
+        )
 
 
 @pytest.mark.asyncio
@@ -194,7 +208,7 @@ class TestStreamingCallbacks:
         def stream_callback(phase, chunk):
             collected.append((phase, chunk))
 
-        result = await engine.process_query("Test query", stream_callback=stream_callback)
+        _ = await engine.process_query("Test query", stream_callback=stream_callback)
 
         # Should have collected some chunks
         assert len(collected) > 0
@@ -216,7 +230,7 @@ class TestStreamingCallbacks:
         async def stream_callback(phase, chunk):
             collected.append((phase, chunk))
 
-        result = await engine.process_query("Test query", stream_callback=stream_callback)
+        _ = await engine.process_query("Test query", stream_callback=stream_callback)
 
         assert len(collected) > 0
 
@@ -225,7 +239,9 @@ class TestStreamingCallbacks:
         backend = DummyLLMBackend()
 
         # Add stream_generate method to backend
-        async def stream_generate(prompt, max_tokens=1000, temperature=0.7, system_prompt=None):
+        async def stream_generate(
+            prompt, max_tokens=1000, temperature=0.7, system_prompt=None
+        ):
             chunks = ["Hello", " ", "World"]
             for chunk in chunks:
                 yield chunk
@@ -243,7 +259,7 @@ class TestStreamingCallbacks:
         def stream_callback(phase, chunk):
             collected.append((phase, chunk))
 
-        result = await engine.process_query("Test query", stream_callback=stream_callback)
+        _ = await engine.process_query("Test query", stream_callback=stream_callback)
 
         # Should have collected chunks
         assert len(collected) > 0
@@ -267,7 +283,9 @@ class TestProgressCallbacks:
         def progress_callback(event, payload):
             events.append((event, payload))
 
-        result = await engine.process_query("Test query", progress_callback=progress_callback)
+        _ = await engine.process_query(
+            "Test query", progress_callback=progress_callback
+        )
 
         # Should have phase_started events
         phase_starts = [e for e, p in events if e == "phase_started"]
@@ -287,7 +305,9 @@ class TestProgressCallbacks:
         def progress_callback(event, payload):
             events.append((event, payload))
 
-        result = await engine.process_query("Test query", progress_callback=progress_callback)
+        _ = await engine.process_query(
+            "Test query", progress_callback=progress_callback
+        )
 
         # Should have phase_completed events
         phase_completes = [e for e, p in events if e == "phase_completed"]
@@ -313,7 +333,9 @@ class TestProgressCallbacks:
         async def progress_callback(event, payload):
             events.append((event, payload))
 
-        result = await engine.process_query("Test query", progress_callback=progress_callback)
+        _ = await engine.process_query(
+            "Test query", progress_callback=progress_callback
+        )
 
         assert len(events) > 0
 
@@ -381,7 +403,9 @@ class TestConflictScoreComputation:
         # Should handle backend failure gracefully
         # _estimate_normative_conflict returns 0.0 on failure, but other components
         # (semantic distance, contradiction_score) may still contribute
-        score = await engine._compute_conflict("Thesis", "Antithesis", ["Contradiction"])
+        score = await engine._compute_conflict(
+            "Thesis", "Antithesis", ["Contradiction"]
+        )
         # Should return a valid score (may not be exactly 0.0 due to other components)
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
@@ -497,4 +521,3 @@ class TestGracefulDegradation:
         # Should have extracted contradictions
         assert len(result.contradictions) > 0
         assert all("description" in c for c in result.contradictions)
-

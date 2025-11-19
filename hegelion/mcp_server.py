@@ -8,7 +8,6 @@ import json
 from mcp.server import Server
 from mcp.types import TextContent, Tool
 
-import mcp.server.stdio
 
 from .core import run_dialectic, run_benchmark
 
@@ -66,7 +65,7 @@ async def list_tools() -> list[Tool]:
                 },
                 "required": ["prompts_file"],
             },
-        )
+        ),
     ]
 
 

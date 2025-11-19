@@ -1,7 +1,5 @@
 """Test edge cases for improved parsing of LLM output variations."""
 
-import pytest
-
 from hegelion.parsing import (
     extract_contradictions,
     extract_research_proposals,

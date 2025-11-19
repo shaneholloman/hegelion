@@ -39,8 +39,7 @@ class LLMBackend(Protocol):
         max_tokens: int = 1_000,
         temperature: float = 0.7,
         system_prompt: Optional[str] = None,
-    ) -> str:
-        ...
+    ) -> str: ...
 
 
 @dataclass
@@ -80,7 +79,11 @@ class OpenAILLMBackend:
             max_tokens=max_tokens,
             temperature=temperature,
         )
-        response = await maybe_response if inspect.isawaitable(maybe_response) else maybe_response
+        response = (
+            await maybe_response
+            if inspect.isawaitable(maybe_response)
+            else maybe_response
+        )
         content = response.choices[0].message.content
         return content.strip() if content else ""
 
@@ -103,7 +106,9 @@ class OpenAILLMBackend:
             temperature=temperature,
             stream=True,
         )
-        stream = await maybe_stream if inspect.isawaitable(maybe_stream) else maybe_stream
+        stream = (
+            await maybe_stream if inspect.isawaitable(maybe_stream) else maybe_stream
+        )
         async for chunk in stream:
             choices = getattr(chunk, "choices", None)
             if not choices:
@@ -144,7 +149,9 @@ class AnthropicLLMBackend:
             messages=[{"role": "user", "content": prompt}],
         )
         text_chunks = [
-            block.text for block in response.content if getattr(block, "type", None) == "text"
+            block.text
+            for block in response.content
+            if getattr(block, "type", None) == "text"
         ]
         return "\n".join(text_chunks).strip()
 
@@ -163,7 +170,9 @@ class AnthropicLLMBackend:
             messages=[{"role": "user", "content": prompt}],
             stream=True,
         )
-        stream = await maybe_stream if inspect.isawaitable(maybe_stream) else maybe_stream
+        stream = (
+            await maybe_stream if inspect.isawaitable(maybe_stream) else maybe_stream
+        )
         async for event in stream:
             if getattr(event, "type", None) == "content_block_delta":
                 delta = getattr(event, "delta", None)
@@ -228,11 +237,15 @@ class OllamaLLMBackend:
         url = f"{self.base_url.rstrip('/')}/api/generate"
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             stream_ctx = client.stream("POST", url, json=payload)
-            stream_ctx = await stream_ctx if inspect.isawaitable(stream_ctx) else stream_ctx
+            stream_ctx = (
+                await stream_ctx if inspect.isawaitable(stream_ctx) else stream_ctx
+            )
             async with stream_ctx as response:
                 response.raise_for_status()
                 lines_iter = response.aiter_lines()
-                lines_iter = await lines_iter if inspect.isawaitable(lines_iter) else lines_iter
+                lines_iter = (
+                    await lines_iter if inspect.isawaitable(lines_iter) else lines_iter
+                )
                 async for line in lines_iter:
                     if not line:
                         continue
@@ -397,11 +410,11 @@ class GoogleLLMBackend:
                 parts = getattr(content, "parts", None)
                 if isinstance(parts, list):
                     texts = [
-                        getattr(part, "text")
-                        for part in parts
-                        if hasattr(part, "text")
+                        getattr(part, "text") for part in parts if hasattr(part, "text")
                     ]
-                    joined = "\n".join(filter(None, (t for t in texts if isinstance(t, str))))
+                    joined = "\n".join(
+                        filter(None, (t for t in texts if isinstance(t, str)))
+                    )
                     if joined:
                         return joined.strip()
 

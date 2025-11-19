@@ -1,10 +1,7 @@
 """Comprehensive tests for all LLM backends - Fixed version."""
 
-import asyncio
-import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
 import pytest
 
 from hegelion.backends import (
@@ -21,13 +18,13 @@ def _create_mock_httpx_client(post_response=None, stream_response=None):
     """Helper to create properly mocked httpx.AsyncClient."""
     mock_post = AsyncMock(return_value=post_response) if post_response else None
     mock_stream = AsyncMock(return_value=stream_response) if stream_response else None
-    
+
     mock_context = AsyncMock()
     if mock_post:
         mock_context.post = mock_post
     if mock_stream:
         mock_context.stream = mock_stream
-    
+
     mock_client = AsyncMock()
     mock_client.__aenter__ = AsyncMock(return_value=mock_context)
     mock_client.__aexit__ = AsyncMock(return_value=None)
@@ -54,7 +51,9 @@ class TestOpenAILLMBackend:
                 base_url="https://api.openai.com/v1",
             )
 
-            result = await backend.generate("Test prompt", max_tokens=100, temperature=0.7)
+            result = await backend.generate(
+                "Test prompt", max_tokens=100, temperature=0.7
+            )
 
             assert result == "Generated text response"
             mock_client.chat.completions.create.assert_called_once()
@@ -160,7 +159,9 @@ class TestOpenAILLMBackend:
         mock_response.choices = [MagicMock(message=MagicMock(content="Response"))]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client) as mock_openai:
+        with patch(
+            "hegelion.backends.AsyncOpenAI", return_value=mock_client
+        ) as mock_openai:
             backend = OpenAILLMBackend(
                 model="gpt-4", api_key="test-key", organization="org-123"
             )
@@ -180,9 +181,7 @@ class TestAnthropicLLMBackend:
         """Test basic text generation."""
         mock_client = AsyncMock()
         mock_response = MagicMock()
-        mock_response.content = [
-            MagicMock(type="text", text="Claude response text")
-        ]
+        mock_response.content = [MagicMock(type="text", text="Claude response text")]
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
@@ -210,7 +209,9 @@ class TestAnthropicLLMBackend:
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
-            backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
+            backend = AnthropicLLMBackend(
+                model="claude-3-opus-20240229", api_key="test-key"
+            )
 
             result = await backend.generate("Test")
 
@@ -224,7 +225,9 @@ class TestAnthropicLLMBackend:
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
-            backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
+            backend = AnthropicLLMBackend(
+                model="claude-3-opus-20240229", api_key="test-key"
+            )
 
             await backend.generate("User prompt", system_prompt="System message")
 
@@ -254,7 +257,9 @@ class TestAnthropicLLMBackend:
         mock_client.messages.create = AsyncMock(return_value=mock_stream())
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
-            backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
+            backend = AnthropicLLMBackend(
+                model="claude-3-opus-20240229", api_key="test-key"
+            )
 
             collected = []
             async for chunk in backend.stream_generate("Test"):
@@ -279,7 +284,9 @@ class TestAnthropicLLMBackend:
         mock_client.messages.create = AsyncMock(return_value=mock_stream())
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
-            backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
+            backend = AnthropicLLMBackend(
+                model="claude-3-opus-20240229", api_key="test-key"
+            )
 
             collected = []
             async for chunk in backend.stream_generate("Test"):
@@ -296,7 +303,7 @@ class TestAnthropicLLMBackend:
     async def test_base_url_parameter(self):
         """Test base_url parameter is passed."""
         with patch("hegelion.backends.AsyncAnthropic") as mock_anthropic:
-            backend = AnthropicLLMBackend(
+            _ = AnthropicLLMBackend(
                 model="claude-3-opus-20240229",
                 api_key="test-key",
                 base_url="https://custom.anthropic.com",
@@ -320,9 +327,13 @@ class TestOllamaLLMBackend:
         mock_client = _create_mock_httpx_client(post_response=mock_response)
 
         with patch("httpx.AsyncClient", return_value=mock_client):
-            backend = OllamaLLMBackend(model="llama3.3", base_url="http://localhost:11434")
+            backend = OllamaLLMBackend(
+                model="llama3.3", base_url="http://localhost:11434"
+            )
 
-            result = await backend.generate("Test prompt", max_tokens=100, temperature=0.8)
+            result = await backend.generate(
+                "Test prompt", max_tokens=100, temperature=0.8
+            )
 
             assert result == "Ollama response text"
 
@@ -332,7 +343,7 @@ class TestOllamaLLMBackend:
         mock_response.json.return_value = {"response": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        mock_post = AsyncMock(return_value=mock_response)
+        _ = AsyncMock(return_value=mock_response)
         mock_client = _create_mock_httpx_client(post_response=mock_response)
 
         with patch("httpx.AsyncClient", return_value=mock_client):
@@ -369,9 +380,7 @@ class TestOllamaLLMBackend:
         mock_client = _create_mock_httpx_client(post_response=mock_response)
 
         with patch("httpx.AsyncClient", return_value=mock_client):
-            backend = OllamaLLMBackend(
-                model="llama3.3", base_url="http://custom:11434"
-            )
+            backend = OllamaLLMBackend(model="llama3.3", base_url="http://custom:11434")
 
             await backend.generate("Test")
 
@@ -632,7 +641,7 @@ class TestCustomHTTPLLMBackend:
         mock_response.json.return_value = {"text": "Response"}
         mock_response.raise_for_status = MagicMock()
 
-        mock_post = AsyncMock(return_value=mock_response)
+        _ = AsyncMock(return_value=mock_response)
         mock_client = _create_mock_httpx_client(post_response=mock_response)
 
         with patch("httpx.AsyncClient", return_value=mock_client):
@@ -723,7 +732,9 @@ class TestDummyLLMBackend:
         """Test antithesis phase response."""
         backend = DummyLLMBackend()
 
-        result = await backend.generate("You are in the ANTITHESIS phase of Hegelian dialectical reasoning.")
+        result = await backend.generate(
+            "You are in the ANTITHESIS phase of Hegelian dialectical reasoning."
+        )
 
         assert "CONTRADICTION" in result
         assert "EVIDENCE" in result
@@ -733,7 +744,9 @@ class TestDummyLLMBackend:
         """Test synthesis phase response."""
         backend = DummyLLMBackend()
 
-        result = await backend.generate("You are in the SYNTHESIS phase of Hegelian dialectical reasoning.")
+        result = await backend.generate(
+            "You are in the SYNTHESIS phase of Hegelian dialectical reasoning."
+        )
 
         assert "RESEARCH_PROPOSAL" in result
         assert "TESTABLE_PREDICTION" in result
@@ -761,4 +774,3 @@ class TestDummyLLMBackend:
 
         # Should still return deterministic response
         assert "Paris" in result or "deterministic" in result
-

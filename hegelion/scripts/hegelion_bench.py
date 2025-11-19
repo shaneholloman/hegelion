@@ -10,7 +10,9 @@ import sys
 from pathlib import Path
 from typing import Optional, Sequence
 
-if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
+if (
+    __package__ is None or __package__ == ""
+):  # pragma: no cover - direct execution fallback
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hegelion.core import run_benchmark
@@ -78,15 +80,9 @@ def print_summary(results: list) -> None:
     print(
         f"Contradictions: {total_contradictions} (avg: {_avg(total_contradictions):.1f})"
     )
-    print(
-        f"Research proposals: {total_proposals} (avg: {_avg(total_proposals):.1f})"
-    )
-    print(
-        f"Total time: {total_time:.0f}ms (avg: {_avg(total_time):.0f}ms per query)"
-    )
-    print(
-        f"Thesis time total/avg: {thesis_time:.0f}ms / {_avg(thesis_time):.0f}ms"
-    )
+    print(f"Research proposals: {total_proposals} (avg: {_avg(total_proposals):.1f})")
+    print(f"Total time: {total_time:.0f}ms (avg: {_avg(total_time):.0f}ms per query)")
+    print(f"Thesis time total/avg: {thesis_time:.0f}ms / {_avg(thesis_time):.0f}ms")
     print(
         f"Antithesis time total/avg: {antithesis_time:.0f}ms / {_avg(antithesis_time):.0f}ms"
     )

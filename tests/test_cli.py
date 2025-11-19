@@ -28,21 +28,33 @@ def sample_result() -> HegelionResult:
         antithesis="Sample antithesis",
         synthesis="Sample synthesis",
         contradictions=[{"description": "A contradiction", "evidence": "Evidence"}],
-        research_proposals=[{"description": "A proposal", "testable_prediction": "Prediction"}],
+        research_proposals=[
+            {"description": "A proposal", "testable_prediction": "Prediction"}
+        ],
         metadata=metadata,
-        trace={"thesis": "Sample thesis", "antithesis": "Sample antithesis", "synthesis": "Sample synthesis"},
+        trace={
+            "thesis": "Sample thesis",
+            "antithesis": "Sample antithesis",
+            "synthesis": "Sample synthesis",
+        },
     )
 
 
 def test_cli_help_runs() -> None:
-    subprocess.run([sys.executable, "-m", "hegelion.scripts.hegelion_cli", "--help"], check=True)
+    subprocess.run(
+        [sys.executable, "-m", "hegelion.scripts.hegelion_cli", "--help"], check=True
+    )
 
 
 def test_bench_help_runs() -> None:
-    subprocess.run([sys.executable, "-m", "hegelion.scripts.hegelion_bench", "--help"], check=True)
+    subprocess.run(
+        [sys.executable, "-m", "hegelion.scripts.hegelion_bench", "--help"], check=True
+    )
 
 
-def test_cli_json_output(monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult) -> None:
+def test_cli_json_output(
+    monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult
+) -> None:
     mock_runner = AsyncMock(return_value=sample_result)
     monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)
 
@@ -68,7 +80,9 @@ def test_cli_demo_mode(monkeypatch: pytest.MonkeyPatch, capsys) -> None:
     mock_runner.assert_not_awaited()
 
 
-def test_cli_summary_output(monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult) -> None:
+def test_cli_summary_output(
+    monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult
+) -> None:
     mock_runner = AsyncMock(return_value=sample_result)
     monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)
 
@@ -79,7 +93,12 @@ def test_cli_summary_output(monkeypatch: pytest.MonkeyPatch, capsys, sample_resu
     assert "Result saved" not in captured.err
 
 
-def test_bench_cli_prints_json(monkeypatch: pytest.MonkeyPatch, capsys, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_bench_cli_prints_json(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+    tmp_path: Path,
+    sample_result: HegelionResult,
+) -> None:
     prompts_path = tmp_path / "prompts.jsonl"
     prompts_path.write_text('{"query": "Sample"}\n', encoding="utf-8")
 
@@ -98,7 +117,9 @@ def test_bench_cli_prints_json(monkeypatch: pytest.MonkeyPatch, capsys, tmp_path
     mock_runner.assert_awaited_once()
 
 
-def test_cli_with_output_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_cli_with_output_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sample_result: HegelionResult
+) -> None:
     """Test CLI with --output file."""
     output_file = tmp_path / "output.json"
     mock_runner = AsyncMock(return_value=sample_result)
@@ -111,7 +132,9 @@ def test_cli_with_output_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, s
     assert content["query"] == "Sample Query"
 
 
-def test_cli_with_output_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_cli_with_output_jsonl(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sample_result: HegelionResult
+) -> None:
     """Test CLI with --output JSONL file."""
     output_file = tmp_path / "output.jsonl"
     mock_runner = AsyncMock(return_value=sample_result)
@@ -127,7 +150,9 @@ def test_cli_with_output_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, 
     assert payload["query"] == "Sample Query"
 
 
-def test_cli_with_debug_flag(monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult) -> None:
+def test_cli_with_debug_flag(
+    monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult
+) -> None:
     """Test CLI with --debug flag."""
     mock_runner = AsyncMock(return_value=sample_result)
     monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)
@@ -146,7 +171,9 @@ def test_cli_missing_query_raises(monkeypatch: pytest.MonkeyPatch) -> None:
         hegelion_cli.main([])
 
 
-def test_cli_configuration_error_handling(monkeypatch: pytest.MonkeyPatch, capsys) -> None:
+def test_cli_configuration_error_handling(
+    monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
     """Test CLI handles ConfigurationError gracefully."""
     from hegelion.config import ConfigurationError
 
@@ -177,7 +204,9 @@ def test_cli_demo_mode_with_format(monkeypatch: pytest.MonkeyPatch, capsys) -> N
     mock_runner.assert_not_awaited()
 
 
-def test_cli_summary_format_structure(monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult) -> None:
+def test_cli_summary_format_structure(
+    monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult
+) -> None:
     """Test that summary format has correct structure."""
     mock_runner = AsyncMock(return_value=sample_result)
     monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)
@@ -198,7 +227,9 @@ def test_cli_summary_format_structure(monkeypatch: pytest.MonkeyPatch, capsys, s
     assert "=== TIMING ===" in output
 
 
-def test_cli_summary_with_evidence(monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult) -> None:
+def test_cli_summary_with_evidence(
+    monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult
+) -> None:
     """Test summary format includes evidence when present."""
     mock_runner = AsyncMock(return_value=sample_result)
     monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)
@@ -209,7 +240,9 @@ def test_cli_summary_with_evidence(monkeypatch: pytest.MonkeyPatch, capsys, samp
     assert "Evidence:" in captured.out
 
 
-def test_cli_summary_with_prediction(monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult) -> None:
+def test_cli_summary_with_prediction(
+    monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult
+) -> None:
     """Test summary format includes predictions when present."""
     mock_runner = AsyncMock(return_value=sample_result)
     monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)
@@ -220,7 +253,9 @@ def test_cli_summary_with_prediction(monkeypatch: pytest.MonkeyPatch, capsys, sa
     assert "Prediction:" in captured.out
 
 
-def test_cli_json_format_default(monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult) -> None:
+def test_cli_json_format_default(
+    monkeypatch: pytest.MonkeyPatch, capsys, sample_result: HegelionResult
+) -> None:
     """Test that JSON format is default."""
     mock_runner = AsyncMock(return_value=sample_result)
     monkeypatch.setattr(hegelion_cli, "run_dialectic", mock_runner)
@@ -233,7 +268,9 @@ def test_cli_json_format_default(monkeypatch: pytest.MonkeyPatch, capsys, sample
     assert payload["query"] == "Sample Query"
 
 
-def test_cli_output_file_message(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sample_result: HegelionResult) -> None:
+def test_cli_output_file_message(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sample_result: HegelionResult
+) -> None:
     """Test that output file message is printed to stderr."""
     output_file = tmp_path / "output.json"
     mock_runner = AsyncMock(return_value=sample_result)

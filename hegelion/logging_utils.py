@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import sys
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 # Configure logging level from environment
 LOG_LEVEL = os.getenv("HEGELION_LOG_LEVEL", "WARNING").upper()
@@ -14,6 +14,7 @@ LOG_LEVEL = os.getenv("HEGELION_LOG_LEVEL", "WARNING").upper()
 # Create logger
 logger = logging.getLogger("hegelion")
 logger.setLevel(getattr(logging, LOG_LEVEL, logging.WARNING))
+
 
 # JSON formatter for structured logs
 class JSONFormatter(logging.Formatter):

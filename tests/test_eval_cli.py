@@ -85,10 +85,10 @@ def test_eval_cli_multiple_files(tmp_path: Path, capsys):
             "backend_model": "model-b",
         },
     }
-    
+
     file1 = tmp_path / "file1.jsonl"
     file2 = tmp_path / "file2.jsonl"
-    
+
     file1.write_text(json.dumps(result) + "\n", encoding="utf-8")
     file2.write_text(json.dumps(result) + "\n", encoding="utf-8")
 
@@ -97,7 +97,6 @@ def test_eval_cli_multiple_files(tmp_path: Path, capsys):
 
     captured = capsys.readouterr()
     output = captured.out
-    
+
     # Should appear twice in the table (once per file analysis)
     assert output.count("model-b") == 2
-

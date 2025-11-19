@@ -13,7 +13,6 @@ from hegelion.backends import (
 )
 from hegelion.config import (
     ConfigurationError,
-    EngineSettings,
     get_backend_from_env,
     get_config,
     get_engine_settings,
@@ -28,7 +27,8 @@ class TestResolveBackendForModel:
         """Test resolving Anthropic backend for Claude models."""
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
 
-        get_config.cache_clear(); backend = resolve_backend_for_model("claude-3-opus-20240229")
+        get_config.cache_clear()
+        backend = resolve_backend_for_model("claude-3-opus-20240229")
 
         assert isinstance(backend, AnthropicLLMBackend)
         assert backend.model == "claude-3-opus-20240229"
@@ -37,7 +37,8 @@ class TestResolveBackendForModel:
         """Test resolving Claude model case-insensitively."""
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
 
-        get_config.cache_clear(); backend = resolve_backend_for_model("CLAUDE-3-SONNET")
+        get_config.cache_clear()
+        backend = resolve_backend_for_model("CLAUDE-3-SONNET")
 
         assert isinstance(backend, AnthropicLLMBackend)
 
@@ -45,7 +46,8 @@ class TestResolveBackendForModel:
         """Test resolving OpenAI backend for GPT models."""
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        get_config.cache_clear(); backend = resolve_backend_for_model("gpt-4")
+        get_config.cache_clear()
+        backend = resolve_backend_for_model("gpt-4")
 
         assert isinstance(backend, OpenAILLMBackend)
         assert backend.model == "gpt-4"
@@ -54,7 +56,8 @@ class TestResolveBackendForModel:
         """Test resolving OpenAI backend for o1 models."""
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        get_config.cache_clear(); backend = resolve_backend_for_model("o1-preview")
+        get_config.cache_clear()
+        backend = resolve_backend_for_model("o1-preview")
 
         assert isinstance(backend, OpenAILLMBackend)
         assert backend.model == "o1-preview"
@@ -63,7 +66,8 @@ class TestResolveBackendForModel:
         """Test resolving OpenAI backend for GLM models."""
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
-        get_config.cache_clear(); backend = resolve_backend_for_model("GLM-4.6")
+        get_config.cache_clear()
+        backend = resolve_backend_for_model("GLM-4.6")
 
         assert isinstance(backend, OpenAILLMBackend)
         assert backend.model == "GLM-4.6"
@@ -74,7 +78,8 @@ class TestResolveBackendForModel:
 
         with patch("hegelion.config.GoogleLLMBackend") as mock_google:
             mock_google.return_value = MagicMock()
-            get_config.cache_clear(); backend = resolve_backend_for_model("gemini-2.5-pro")
+            get_config.cache_clear()
+            _ = resolve_backend_for_model("gemini-2.5-pro")
 
             mock_google.assert_called_once()
             assert mock_google.call_args[1]["model"] == "gemini-2.5-pro"
@@ -85,20 +90,23 @@ class TestResolveBackendForModel:
 
         with patch("hegelion.config.GoogleLLMBackend") as mock_google:
             mock_google.return_value = MagicMock()
-            get_config.cache_clear(); backend = resolve_backend_for_model("g-2.0-flash")
+            get_config.cache_clear()
+            _ = resolve_backend_for_model("g-2.0-flash")
 
             mock_google.assert_called_once()
 
     def test_resolve_local_ollama_model(self, monkeypatch):
         """Test resolving Ollama backend for local-* models."""
-        get_config.cache_clear(); backend = resolve_backend_for_model("local-llama3.3")
+        get_config.cache_clear()
+        backend = resolve_backend_for_model("local-llama3.3")
 
         assert isinstance(backend, OllamaLLMBackend)
         assert backend.model == "llama3.3"
 
     def test_resolve_local_model_default(self, monkeypatch):
         """Test resolving local model with default."""
-        get_config.cache_clear(); backend = resolve_backend_for_model("local-")
+        get_config.cache_clear()
+        backend = resolve_backend_for_model("local-")
 
         assert isinstance(backend, OllamaLLMBackend)
         assert backend.model == "llama3.3"
@@ -182,7 +190,7 @@ class TestGetBackendFromEnv:
 
         with patch("hegelion.config.GoogleLLMBackend") as mock_google:
             mock_google.return_value = MagicMock()
-            backend = get_backend_from_env()
+            _ = get_backend_from_env()
 
             mock_google.assert_called_once()
 
@@ -287,7 +295,8 @@ class TestGetEngineSettingsFromEnv:
         ]:
             monkeypatch.delenv(key, raising=False)
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert settings.model == "claude-4.5-sonnet-latest"
         assert settings.synthesis_threshold == 0.85
@@ -300,7 +309,8 @@ class TestGetEngineSettingsFromEnv:
         """Test custom model setting."""
         monkeypatch.setenv("HEGELION_MODEL", "custom-model")
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert settings.model == "custom-model"
 
@@ -308,7 +318,8 @@ class TestGetEngineSettingsFromEnv:
         """Test custom synthesis threshold."""
         monkeypatch.setenv("HEGELION_SYNTHESIS_THRESHOLD", "0.75")
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert settings.synthesis_threshold == 0.75
 
@@ -316,7 +327,8 @@ class TestGetEngineSettingsFromEnv:
         """Test custom max tokens."""
         monkeypatch.setenv("HEGELION_MAX_TOKENS_PER_PHASE", "5000")
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert settings.max_tokens_per_phase == 5000
 
@@ -324,7 +336,8 @@ class TestGetEngineSettingsFromEnv:
         """Test disabling validation."""
         monkeypatch.setenv("HEGELION_VALIDATE_RESULTS", "0")
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert settings.validate_results is False
 
@@ -333,7 +346,8 @@ class TestGetEngineSettingsFromEnv:
         for false_value in ["false", "no", "False", "NO"]:
             monkeypatch.setenv("HEGELION_VALIDATE_RESULTS", false_value)
 
-            get_config.cache_clear(); settings = get_engine_settings()
+            get_config.cache_clear()
+            settings = get_engine_settings()
 
             assert settings.validate_results is False
 
@@ -341,7 +355,8 @@ class TestGetEngineSettingsFromEnv:
         """Test disabling cache."""
         monkeypatch.setenv("HEGELION_CACHE", "0")
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert settings.cache_enabled is False
 
@@ -349,7 +364,8 @@ class TestGetEngineSettingsFromEnv:
         """Test custom cache TTL."""
         monkeypatch.setenv("HEGELION_CACHE_TTL_SECONDS", "3600")
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert settings.cache_ttl_seconds == 3600
 
@@ -357,7 +373,8 @@ class TestGetEngineSettingsFromEnv:
         """Test custom cache directory."""
         monkeypatch.setenv("HEGELION_CACHE_DIR", "/custom/cache/path")
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert settings.cache_dir == "/custom/cache/path"
 
@@ -385,10 +402,13 @@ class TestGetEngineSettingsFromEnv:
         """Test that cache dir expands ~."""
         monkeypatch.setenv("HEGELION_CACHE_DIR", "~/.custom_cache")
 
-        get_config.cache_clear(); settings = get_engine_settings()
+        get_config.cache_clear()
+        settings = get_engine_settings()
 
         assert "~" not in settings.cache_dir
-        assert os.path.expanduser("~") in settings.cache_dir or settings.cache_dir.startswith("/")
+        assert os.path.expanduser(
+            "~"
+        ) in settings.cache_dir or settings.cache_dir.startswith("/")
 
 
 class TestConfigurationError:
@@ -400,4 +420,3 @@ class TestConfigurationError:
 
         assert "Test error message" in str(error)
         assert isinstance(error, RuntimeError)
-

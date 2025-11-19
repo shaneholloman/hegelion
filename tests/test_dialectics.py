@@ -48,12 +48,17 @@ async def test_process_query_with_debug(engine: HegelionEngine) -> None:
     debug_info = result.metadata["debug"]
     assert "internal_conflict_score" in debug_info
     assert result.trace is not None
-    assert result.trace.get("internal_conflict_score") == debug_info["internal_conflict_score"]
+    assert (
+        result.trace.get("internal_conflict_score")
+        == debug_info["internal_conflict_score"]
+    )
 
 
 @pytest.mark.asyncio
 async def test_process_query_structures_contradictions(engine: HegelionEngine) -> None:
-    result = await engine.process_query("How do proteins fold quickly despite vast configuration space?")
+    result = await engine.process_query(
+        "How do proteins fold quickly despite vast configuration space?"
+    )
 
     assert isinstance(result.contradictions, list)
     assert all("description" in item for item in result.contradictions)

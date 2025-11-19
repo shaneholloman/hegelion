@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -82,11 +82,15 @@ class TestCallTool:
 
     async def test_run_dialectic_tool_execution(self, sample_result: HegelionResult):
         """Test run_dialectic tool execution."""
-        with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_dialectic", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.return_value = sample_result
 
             # MCP server call_tool is called with name and arguments
-            result = await app.call_tool(name="run_dialectic", arguments={"query": "Test query"})
+            result = await app.call_tool(
+                name="run_dialectic", arguments={"query": "Test query"}
+            )
 
             assert len(result) == 1
             assert result[0].type == "text"
@@ -96,19 +100,27 @@ class TestCallTool:
 
     async def test_run_dialectic_with_debug(self, sample_result: HegelionResult):
         """Test run_dialectic tool with debug flag."""
-        with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_dialectic", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.return_value = sample_result
 
-            result = await app.call_tool(name="run_dialectic", arguments={"query": "Test", "debug": True})
+            _ = await app.call_tool(
+                name="run_dialectic", arguments={"query": "Test", "debug": True}
+            )
 
             mock_run.assert_awaited_once_with(query="Test", debug=True)
 
-    async def test_run_benchmark_tool_execution(self, tmp_path: Path, sample_result: HegelionResult):
+    async def test_run_benchmark_tool_execution(
+        self, tmp_path: Path, sample_result: HegelionResult
+    ):
         """Test run_benchmark tool execution."""
         prompts_file = tmp_path / "prompts.jsonl"
         prompts_file.write_text('{"query": "Q1"}\n{"query": "Q2"}\n')
 
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_benchmark", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.return_value = [sample_result, sample_result]
 
             result = await app.call_tool(
@@ -124,16 +136,21 @@ class TestCallTool:
                 payload = json.loads(line)
                 assert payload["query"] == "Test Query"
 
-    async def test_run_benchmark_with_debug(self, tmp_path: Path, sample_result: HegelionResult):
+    async def test_run_benchmark_with_debug(
+        self, tmp_path: Path, sample_result: HegelionResult
+    ):
         """Test run_benchmark tool with debug flag."""
         prompts_file = tmp_path / "prompts.jsonl"
         prompts_file.write_text('{"query": "Test"}\n')
 
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_benchmark", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.return_value = [sample_result]
 
             await app.call_tool(
-                name="run_benchmark", arguments={"prompts_file": str(prompts_file), "debug": True}
+                name="run_benchmark",
+                arguments={"prompts_file": str(prompts_file), "debug": True},
             )
 
             call_kwargs = mock_run.call_args[1]
@@ -144,7 +161,9 @@ class TestCallTool:
         nonexistent = tmp_path / "nonexistent.jsonl"
 
         with pytest.raises(ValueError) as exc_info:
-            await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(nonexistent)})
+            await app.call_tool(
+                name="run_benchmark", arguments={"prompts_file": str(nonexistent)}
+            )
 
         assert "not found" in str(exc_info.value).lower()
 
@@ -170,24 +189,34 @@ class TestInputValidation:
         with pytest.raises(KeyError):
             await app.call_tool(name="run_benchmark", arguments={})
 
-    async def test_run_dialectic_debug_defaults_to_false(self, sample_result: HegelionResult):
+    async def test_run_dialectic_debug_defaults_to_false(
+        self, sample_result: HegelionResult
+    ):
         """Test that debug defaults to False."""
-        with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_dialectic", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.return_value = sample_result
 
             await app.call_tool(name="run_dialectic", arguments={"query": "Test"})
 
             mock_run.assert_awaited_once_with(query="Test", debug=False)
 
-    async def test_run_benchmark_debug_defaults_to_false(self, tmp_path: Path, sample_result: HegelionResult):
+    async def test_run_benchmark_debug_defaults_to_false(
+        self, tmp_path: Path, sample_result: HegelionResult
+    ):
         """Test that debug defaults to False for benchmark."""
         prompts_file = tmp_path / "prompts.jsonl"
         prompts_file.write_text('{"query": "Test"}\n')
 
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_benchmark", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.return_value = [sample_result]
 
-            await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(prompts_file)})
+            await app.call_tool(
+                name="run_benchmark", arguments={"prompts_file": str(prompts_file)}
+            )
 
             call_kwargs = mock_run.call_args[1]
             assert call_kwargs["debug"] is False
@@ -201,7 +230,9 @@ class TestErrorHandling:
         """Test handling of backend errors in run_dialectic."""
         from hegelion.config import ConfigurationError
 
-        with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_dialectic", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.side_effect = ConfigurationError("No API key")
 
             with pytest.raises(ConfigurationError):
@@ -212,21 +243,31 @@ class TestErrorHandling:
         prompts_file = tmp_path / "prompts.jsonl"
         prompts_file.write_text('{"query": "Test"}\n')
 
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_benchmark", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.side_effect = FileNotFoundError("File not found")
 
             with pytest.raises(FileNotFoundError):
-                await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(prompts_file)})
+                await app.call_tool(
+                    name="run_benchmark", arguments={"prompts_file": str(prompts_file)}
+                )
 
-    async def test_run_benchmark_jsonl_output_format(self, tmp_path: Path, sample_result: HegelionResult):
+    async def test_run_benchmark_jsonl_output_format(
+        self, tmp_path: Path, sample_result: HegelionResult
+    ):
         """Test that run_benchmark returns proper JSONL format."""
         prompts_file = tmp_path / "prompts.jsonl"
         prompts_file.write_text('{"query": "Q1"}\n{"query": "Q2"}\n')
 
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
+        with patch(
+            "hegelion.mcp_server.run_benchmark", new_callable=AsyncMock
+        ) as mock_run:
             mock_run.return_value = [sample_result, sample_result]
 
-            result = await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(prompts_file)})
+            result = await app.call_tool(
+                name="run_benchmark", arguments={"prompts_file": str(prompts_file)}
+            )
 
             # Should be newline-delimited JSON
             text = result[0].text
@@ -235,4 +276,3 @@ class TestErrorHandling:
             # Each line should be valid JSON
             for line in lines:
                 json.loads(line)  # Should not raise
-

@@ -25,4 +25,6 @@ def validate_hegelion_result(result: HegelionResult) -> None:
     try:
         validate(instance=payload, schema=HEGELION_RESULT_SCHEMA)
     except ValidationError as exc:  # pragma: no cover - defensive
-        raise ResultValidationError(f"Result failed schema validation: {exc.message}", exc) from exc
+        raise ResultValidationError(
+            f"Result failed schema validation: {exc.message}", exc
+        ) from exc
