@@ -104,9 +104,16 @@ async def run_dialectic(
     validate: Optional[bool] = None,
     stream_callback: Optional[Callable[[str, str], Any]] = None,
     progress_callback: Optional[Callable[[str, dict], Any]] = None,
+    # Phase 2 enhancements
+    use_search: bool = False,
+    use_council: bool = False,
+    use_judge: bool = False,
+    min_judge_score: int = 5,
+    council_members: Optional[List[str]] = None,
+    max_iterations: int = 1,
 ) -> HegelionResult:
     """
-    Run a single dialectical reasoning query.
+    Run a single dialectical reasoning query with optional Phase 2 enhancements.
 
     Args:
         query: The question or prompt to analyze dialectically.
@@ -114,6 +121,12 @@ async def run_dialectic(
         backend: Optional LLM backend (defaults to env-configured backend).
         model: Optional model name override.
         max_tokens_per_phase: Optional override for maximum tokens per phase.
+        use_search: Enable search-grounded antithesis (Phase 2).
+        use_council: Enable multi-perspective council critiques (Phase 2).
+        use_judge: Enable quality evaluation with Iron Judge (Phase 2).
+        min_judge_score: Minimum acceptable judge score (0-10).
+        council_members: Specific council members to use (default: all).
+        max_iterations: Maximum iterations for quality improvement.
 
     Returns:
         HegelionResult: Structured result with thesis, antithesis, synthesis, and analysis
@@ -122,6 +135,7 @@ async def run_dialectic(
         >>> import asyncio
         >>> from hegelion import run_dialectic
         >>>
+        >>> # Basic dialectic
         >>> async def main():
         ...     result = await run_dialectic("What year was the printing press invented?")
         ...     print(result.synthesis)
@@ -177,12 +191,34 @@ async def run_dialectic(
         if cached_payload:
             return HegelionResult(**cached_payload)
 
-    result = await engine.process_query(
-        query,
-        debug=debug,
-        stream_callback=stream_callback,
-        progress_callback=progress_callback,
-    )
+    # Check for Phase 2 features
+    if use_search or use_council or use_judge:
+        # Import Phase 2 modules only when needed
+        from .search_providers import search_for_context
+        from .council import DialecticalCouncil
+        from .judge import judge_dialectic
+        
+        result = await _run_enhanced_dialectic(
+            engine=engine,
+            query=query,
+            debug=debug,
+            use_search=use_search,
+            use_council=use_council,
+            use_judge=use_judge,
+            min_judge_score=min_judge_score,
+            council_members=council_members,
+            max_iterations=max_iterations,
+            stream_callback=stream_callback,
+            progress_callback=progress_callback,
+        )
+    else:
+        # Standard Phase 1 processing
+        result = await engine.process_query(
+            query,
+            debug=debug,
+            stream_callback=stream_callback,
+            progress_callback=progress_callback,
+        )
 
     if resolved_validate:
         validate_hegelion_result(result)
@@ -191,6 +227,228 @@ async def run_dialectic(
         cache.save(cache_key, result)
 
     return result
+
+
+async def _run_enhanced_dialectic(
+    engine: HegelionEngine,
+    query: str,
+    debug: bool = False,
+    use_search: bool = False,
+    use_council: bool = False,
+    use_judge: bool = False,
+    min_judge_score: int = 5,
+    council_members: Optional[List[str]] = None,
+    max_iterations: int = 1,
+    stream_callback=None,
+    progress_callback=None,
+) -> HegelionResult:
+    """Run enhanced Phase 2 dialectical reasoning.
+    
+    Args:
+        engine: Hegelion engine instance
+        query: Query to analyze
+        debug: Include debug information
+        use_search: Enable search grounding
+        use_council: Enable council critiques
+        use_judge: Enable quality judging
+        min_judge_score: Minimum judge score
+        council_members: Specific council members
+        max_iterations: Maximum quality iterations
+        
+    Returns:
+        Enhanced HegelionResult
+    """
+    from .search_providers import search_for_context
+    from .council import DialecticalCouncil
+    from .judge import judge_dialectic
+    import time
+    
+    for iteration in range(max_iterations):
+        try:
+            start_time = time.time()
+            
+            # Step 1: Standard thesis generation
+            if progress_callback:
+                progress_callback("thesis", {"iteration": iteration + 1})
+                
+            thesis_result = await engine.process_query(
+                query,
+                debug=debug,
+                stream_callback=stream_callback,
+                progress_callback=progress_callback,
+            )
+            
+            # Step 2: Search grounding (if enabled)
+            search_context = []
+            if use_search:
+                if progress_callback:
+                    progress_callback("search", {"query": query})
+                search_context = await search_for_context(query, max_results=5)
+                if debug and search_context:
+                    print(f"🔍 Found {len(search_context)} search results for grounding")
+            
+            # Step 3: Enhanced antithesis
+            if use_council:
+                if progress_callback:
+                    progress_callback("council", {"members": council_members or "all"})
+                    
+                council = DialecticalCouncil(engine.backend)
+                council_results = await council.generate_council_antithesis(
+                    query=query,
+                    thesis=thesis_result.thesis,
+                    search_context=search_context if search_context else None,
+                    selected_members=council_members
+                )
+                enhanced_antithesis = council.synthesize_council_input(council_results)
+                
+                # Store council info for trace
+                thesis_result.metadata.council_perspectives = len(council_results)
+                if debug and hasattr(thesis_result, 'trace') and thesis_result.trace:
+                    thesis_result.trace.council_critiques = [
+                        f"{name}: {critique.member.expertise}" 
+                        for name, critique in council_results.items()
+                    ]
+            else:
+                # Enhanced antithesis with search context
+                enhanced_antithesis = await _generate_search_enhanced_antithesis(
+                    engine.backend, query, thesis_result.thesis, search_context
+                )
+            
+            # Step 4: Update the result with enhanced antithesis
+            thesis_result.antithesis = enhanced_antithesis
+            
+            # Re-extract contradictions from enhanced antithesis
+            from .parsing import extract_contradictions, extract_research_proposals
+            thesis_result.contradictions = extract_contradictions(enhanced_antithesis)
+            
+            # Step 5: Enhanced synthesis with all context
+            synthesis_prompt = _build_enhanced_synthesis_prompt(
+                query=query,
+                thesis=thesis_result.thesis,
+                antithesis=enhanced_antithesis,
+                contradictions=thesis_result.contradictions,
+                search_context=search_context
+            )
+            
+            enhanced_synthesis = await engine.backend.generate(synthesis_prompt)
+            thesis_result.synthesis = enhanced_synthesis
+            thesis_result.research_proposals = extract_research_proposals(enhanced_synthesis)
+            
+            # Step 6: Judge quality (if enabled)
+            if use_judge:
+                if progress_callback:
+                    progress_callback("judge", {"min_score": min_judge_score})
+                    
+                try:
+                    judge_result = await judge_dialectic(
+                        backend=engine.backend,
+                        query=query,
+                        thesis=thesis_result.thesis,
+                        antithesis=enhanced_antithesis,
+                        synthesis=enhanced_synthesis,
+                        min_score=min_judge_score
+                    )
+                    
+                    # Store judge info in metadata
+                    if not hasattr(thesis_result.metadata, 'debug') or not thesis_result.metadata.debug:
+                        from .models import HegelionDebugInfo
+                        thesis_result.metadata.debug = HegelionDebugInfo()
+                    
+                    thesis_result.metadata.debug.judge_score = judge_result.score
+                    thesis_result.metadata.debug.judge_reasoning = judge_result.reasoning
+                    thesis_result.metadata.debug.critique_validity = judge_result.critique_validity
+                    
+                    if debug:
+                        print(f"⚖️ Judge Score: {judge_result.score}/10")
+                        print(f"✅ Critique Validity: {judge_result.critique_validity}")
+                        
+                    # Success! Return result
+                    thesis_result.mode = "enhanced_synthesis"
+                    return thesis_result
+                    
+                except ValueError as e:
+                    # Quality below threshold, retry if iterations remaining
+                    if iteration < max_iterations - 1:
+                        if debug:
+                            print(f"🔄 Iteration {iteration + 1}: {e}")
+                        continue
+                    else:
+                        # Last iteration, let it through but log warning
+                        import logging
+                        logging.warning(f"Final iteration below quality threshold: {e}")
+                        thesis_result.mode = "enhanced_synthesis"
+                        return thesis_result
+            else:
+                # No judging, return enhanced result
+                thesis_result.mode = "enhanced_synthesis"
+                return thesis_result
+                
+        except Exception as e:
+            if iteration < max_iterations - 1:
+                if debug:
+                    print(f"🔄 Iteration {iteration + 1} failed, retrying: {e}")
+                continue
+            else:
+                raise RuntimeError(f"Enhanced dialectic failed after {max_iterations} iterations: {e}")
+    
+    raise RuntimeError("Should not reach here")
+
+
+async def _generate_search_enhanced_antithesis(
+    backend, 
+    query: str, 
+    thesis: str, 
+    search_context: List[str]
+) -> str:
+    """Generate antithesis with search context."""
+    from .prompts import ANTITHESIS_PROMPT
+    
+    # Enhanced antithesis prompt with search context
+    context_section = ""
+    if search_context:
+        context_section = f"""
+
+SEARCH CONTEXT (for fact-checking and grounding):
+{chr(10).join(f"- {context}" for context in search_context)}
+
+Use this context to ground your critique in real-world information."""
+
+    enhanced_prompt = ANTITHESIS_PROMPT.format(
+        query=query,
+        thesis=thesis
+    ) + context_section
+    
+    return await backend.generate(enhanced_prompt)
+
+
+def _build_enhanced_synthesis_prompt(
+    query: str,
+    thesis: str,
+    antithesis: str,
+    contradictions: List[dict],
+    search_context: List[str]
+) -> str:
+    """Build enhanced synthesis prompt with all context."""
+    from .prompts import SYNTHESIS_PROMPT
+    
+    contradictions_str = "\n".join(f"- {c['description']}: {c['evidence']}" for c in contradictions)
+    
+    base_prompt = SYNTHESIS_PROMPT.format(
+        query=query,
+        thesis=thesis,
+        antithesis=antithesis,
+        contradictions=contradictions_str
+    )
+    
+    if search_context:
+        base_prompt += f"""
+
+ADDITIONAL CONTEXT FROM SEARCH:
+{chr(10).join(f"- {context}" for context in search_context)}
+
+Your synthesis should integrate insights from this real-world information."""
+    
+    return base_prompt
 
 
 async def run_benchmark(

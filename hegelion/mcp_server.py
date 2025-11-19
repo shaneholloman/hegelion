@@ -26,7 +26,8 @@ async def list_tools() -> list[Tool]:
                 "Process a query using Hegelian dialectical reasoning "
                 "(thesis → antithesis → synthesis). "
                 "Always performs synthesis to generate comprehensive reasoning. "
-                "Returns structured contradictions and research proposals."
+                "Returns structured contradictions and research proposals. "
+                "Supports Phase 2 enhancements: search grounding, council critiques, and quality judging."
             ),
             inputSchema={
                 "type": "object",
@@ -39,6 +40,35 @@ async def list_tools() -> list[Tool]:
                         "type": "boolean",
                         "description": "Include debug information and internal conflict scores",
                         "default": False,
+                    },
+                    "use_search": {
+                        "type": "boolean", 
+                        "description": "Enable search-grounded antithesis with real-world information",
+                        "default": False,
+                    },
+                    "use_council": {
+                        "type": "boolean",
+                        "description": "Enable multi-perspective council critiques (Logician, Empiricist, Ethicist)",
+                        "default": False,
+                    },
+                    "use_judge": {
+                        "type": "boolean",
+                        "description": "Enable quality evaluation with Iron Judge",
+                        "default": False,
+                    },
+                    "min_judge_score": {
+                        "type": "integer",
+                        "description": "Minimum acceptable judge score (0-10), raises error if below",
+                        "default": 5,
+                        "minimum": 0,
+                        "maximum": 10,
+                    },
+                    "max_iterations": {
+                        "type": "integer", 
+                        "description": "Maximum iterations for quality improvement",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 3,
                     },
                 },
                 "required": ["query"],
@@ -77,8 +107,21 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     if name == "run_dialectic":
         query = arguments["query"]
         debug = arguments.get("debug", False)
+        use_search = arguments.get("use_search", False)
+        use_council = arguments.get("use_council", False)
+        use_judge = arguments.get("use_judge", False)
+        min_judge_score = arguments.get("min_judge_score", 5)
+        max_iterations = arguments.get("max_iterations", 1)
 
-        result = await run_dialectic(query=query, debug=debug)
+        result = await run_dialectic(
+            query=query,
+            debug=debug,
+            use_search=use_search,
+            use_council=use_council,
+            use_judge=use_judge,
+            min_judge_score=min_judge_score,
+            max_iterations=max_iterations,
+        )
         payload = json.dumps(result.to_dict(), indent=2)
         return [TextContent(type="text", text=payload)]
 
