@@ -2,7 +2,6 @@
 
 import json
 import pytest
-from unittest.mock import AsyncMock, patch
 from hegelion.prompt_mcp_server import app
 
 

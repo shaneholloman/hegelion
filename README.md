@@ -1,310 +1,106 @@
-# Hegelion: Dialectical AI Reasoning for Deeper Insights
+# Hegelion
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion)
 [![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
 
-Hegelion is a framework for evaluating and improving AI reasoning by running language models through a **Thesis → Antithesis → Synthesis** loop. It stress-tests models, uncovers hidden assumptions, and produces structured, actionable insights for AI developers and research teams.
+**Dialectical Reasoning Framework for LLMs**
+
+Hegelion is a framework that upgrades AI reasoning by forcing language models through a **Thesis → Antithesis → Synthesis** loop. It stress-tests models, uncovers hidden assumptions, and produces structured, actionable insights.
 
 ---
 
-## Table of Contents
+## Value Proposition
 
-- [Value Proposition for AI Companies](#value-proposition-for-ai-companies)
-- [How It Works](#how-it-works)
-- [Key Features](#key-features)
-- [Quick Start](#quick-start)
-- [Example Output](#example-output)
-- [Usage](#usage)
-  - [Command Line Interface](#command-line-interface)
-  - [Python API](#python-api)
-  - [Claude Desktop Integration](#claude-desktop-integration)
-- [For Evaluation Teams](#for-evaluation-teams)
-- [Supported Backends](#supported-backends)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
+- **Deeper Insights:** Move beyond simple Q&A to complex, multi-layered analysis.
+- **Uncover Assumptions:** The dialectical process surfaces hidden biases and logical gaps.
+- **Model Agnostic:** Works with your existing tools (Cursor, Claude Desktop) or as a standalone library.
 
 ---
 
-## Value Proposition for AI Companies
+## Two Ways to Use Hegelion
 
-Hegelion is designed to be a powerful tool for internal testing, evaluation, and red-teaming of language models.
+Hegelion supports two distinct usage patterns depending on your needs:
 
-- **Go Beyond Surface-Level Testing:** Move past simple Q&A and evaluate a model's ability to reason, self-critique, and synthesize complex information.
-- **Identify Model Weaknesses:** The dialectical process is highly effective at surfacing logical fallacies, hidden biases, and gaps in a model's knowledge.
-- **Compare Models Systematically:** Run the same dialectical prompts across different models (e.g., your internal checkpoints vs. commercial APIs) and compare their reasoning abilities using the structured output.
-- **Generate Rich Datasets:** Create high-quality datasets of complex reasoning traces, complete with structured contradictions and research proposals, for fine-tuning and analysis.
-- **Improve Safety and Alignment:** Use Hegelion to explore the ethical and safety implications of model behavior in a structured and repeatable way.
+### 1. Model-Agnostic (Prompt-Based)
+**Best for:** Users of Cursor, Claude Desktop, VS Code, or Antigravity.
+
+- **Why:** Use your *existing* configured model (Gemini 3, Claude 3.5, GPT-5, etc.). Zero configuration required.
+- **Tool:** `hegelion-prompt-server` (MCP)
+- **Key Features:**
+  - **Council of Critics:** Activates "The Logician," "The Empiricist," and "The Ethicist" for multi-perspective critiques.
+  - **Zero Cost:** Uses your existing subscription/API setup.
+  - **Flexible:** Works with any model that can follow instructions.
+
+### 2. Automated (API-Based)
+**Best for:** Python scripts, CI/CD pipelines, and Batch Benchmarking.
+
+- **Why:** Automate testing across multiple models programmatically.
+- **Tool:** `hegelion` CLI / Python API
+- **Key Features:**
+  - **Batch Processing:** Run benchmarks on hundreds of prompts.
+  - **Structured Evaluation:** Compare model performance systematically.
+  - **Backend Agnostic:** Supports Anthropic, OpenAI, Google Gemini, Ollama, etc.
 
 ---
 
-## How It Works
+## Quick Start
 
-Hegelion implements a computational version of Hegelian dialectics. For any given query, it guides an LLM through three distinct phases:
+### Installation
 
-1.  **Thesis:** The model establishes a comprehensive, well-reasoned initial position.
-2.  **Antithesis:** The model then systematically critiques its own thesis, identifying contradictions, gaps, and alternative perspectives.
-3.  **Synthesis:** Finally, the model attempts to resolve the tension between the thesis and antithesis, generating a more nuanced, higher-level understanding.
+```bash
+pip install hegelion
+```
 
-This entire process is captured in a single, structured `HegelionResult` JSON object.
+### Option 1: Cursor / Claude Desktop Setup (MCP)
 
-```text
-Query    → Thesis      → Antithesis      → Synthesis
-       ↓              ↓                 ↓
-     Position     Contradictions      Resolution
+Add this to your MCP configuration file (e.g., `claude_desktop_config.json` or Cursor settings):
+
+```json
+{
+  "mcpServers": {
+    "hegelion-prompt": {
+      "command": "uv",
+      "args": ["run", "hegelion-prompt-server"]
+    }
+  }
+}
+```
+*Now, just ask your AI: "Run a dialectical analysis on 'Is AI conscious?' using the prompt server."*
+
+### Option 2: Python API / CLI
+
+```bash
+# Configure your API key
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Run a single query
+hegelion "Can AI be genuinely creative?" --format summary
 ```
 
 ---
 
 ## Key Features
 
--   **Structured JSON Output:** Get a `HegelionResult` with contradictions, research proposals, and metadata for every run.
--   **Backend Agnostic:** Supports Anthropic, OpenAI, Google Gemini, Ollama, and any custom HTTP endpoint.
--   **Multiple Interfaces:** Use the tool via a **CLI**, a **Python API**, or as an **MCP server** for integration with tools like Claude Desktop.
--   **Interactive & Demo-Friendly CLI:** REPL-style interactive mode and `--demo` mode let you explore cached traces without any API keys.
--   **Built for Evaluation:** A dedicated `hegelion-bench` CLI for running batch evaluations from a JSONL file.
--   **Evaluation & Reporting:** The `hegelion-eval` CLI compares benchmark runs and generates Markdown reports from JSONL outputs.
--   **Streaming and Caching:** A `stream_callback` and progress callbacks for real-time UI updates, plus disk caching to avoid re-running expensive calls.
--   **Internal Conflict Judge (Debug-Only):** Optional conflict indicators combine semantic distance, contradiction count, and an LLM-based disagreement classifier into a single research-oriented score.
--   **Robust and Production-Ready:** Features include structured logging, graceful error handling, and schema-validated outputs.
+- **Dialectical Loop:** Automated Thesis → Antithesis → Synthesis workflow.
+- **Council of Critics:** Multi-perspective analysis (Logic, Facts, Ethics).
+- **Structured Output:** JSON results with identified contradictions and research proposals.
+- **Search Grounding:** Prompts include instructions to use available search tools for evidence.
+- **Evaluation Harness:** Tools to benchmark and compare model reasoning capabilities.
 
 ---
 
-## Quick Start
+## Documentation
 
-Get Hegelion running in minutes.
-
-```bash
-# Install from PyPI
-pip install hegelion
-
-# Configure your API key (e.g., for Anthropic)
-export ANTHROPIC_API_KEY="sk-ant-..."
-
-# Run your first dialectical query
-hegelion "Can AI be genuinely creative?" --format summary
-
-# Run a benchmark from a file
-hegelion-bench benchmarks/examples_basic.jsonl --output results.jsonl
-
-# Explore a cached example without configuring any API keys
-hegelion --demo --format summary
-```
+- **[Full Specification (HEGELION_SPEC.md)](HEGELION_SPEC.md)**: Detailed architecture and schema.
+- **[Prompt Server Guide (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)**: How to use the model-agnostic MCP server.
+- **[MCP Reference (docs/MCP.md)](docs/MCP.md)**: Technical details for MCP integration.
 
 ---
 
-## Example Output
+## Contributing & License
 
-A single query to Hegelion yields a rich, structured JSON object.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-**Query:**
-```bash
-hegelion "Can AI be genuinely creative?"
-```
-
-**Result (summary):**
-
-```json
-{
-  "query": "Can AI be genuinely creative?",
-  "thesis": "THESIS: The Creative Machine...",
-  "antithesis": "ANTITHESIS: The Sophisticated Mirror...",
-  "synthesis": "SYNTHESIS: The Co-Creative Process...",
-  "contradictions": [
-    {
-      "description": "The Redefinition Fallacy",
-      "evidence": "The thesis narrows 'creativity' to a computable procedure, ignoring intent and subjective urgency."
-    }
-  ],
-  "research_proposals": [
-    {
-      "description": "The Co-Creative Trace Analysis",
-      "testable_prediction": "Iterative human–AI dialogues produce artifacts judged more creative than single-pass outputs."
-    }
-  ],
-  "metadata": {
-    "backend_provider": "OpenAILLMBackend",
-    "backend_model": "glm-4.6",
-    "total_time_ms": 37564.40
-  }
-}
-```
-*For the full, detailed schema, see `HEGELION_SPEC.md`.*
-
----
-
-## Usage
-
-### Command Line Interface
-
-The CLI is ideal for quick experiments and batch processing.
-
-```bash
-# Get a readable summary for a single query
-hegelion "Is privacy more important than security?" --format summary
-
-# Get the full, raw JSON result
-hegelion "Explain photosynthesis." --format json
-
-# Run a benchmark and save the results
-hegelion-bench benchmarks/examples_basic.jsonl --output runs.jsonl --summary
-```
-
-### Python API
-
-Integrate Hegelion directly into your Python applications.
-
-```python
-import asyncio
-from hegelion import quickstart, dialectic
-
-
-async def main():
-    # Easiest path – uses env-configured backend/model
-    result = await quickstart("Is privacy more important than security?", debug=True)
-    print(result.synthesis)
-    print(f"Contradictions Found: {len(result.contradictions)}")
-
-    # Explicit model with auto-detected backend (e.g., Anthropic/OpenAI/Gemini/local)
-    alt = await dialectic("Can AI be genuinely creative?", model="claude-4.5-sonnet")
-    print(f"Backend synthesis: {alt.synthesis[:120]}...")
-
-
-asyncio.run(main())
-```
-
-The API also supports streaming and progress callbacks for interactive applications.
-
-### Interactive Mode
-
-For a more exploratory experience, use the interactive mode:
-
-```bash
-hegelion --interactive
-```
-
-This will launch a REPL-style session where you can run queries, explore results, and change settings on the fly.
-
-**Commands:**
-
--   `<query>`: Run a new dialectical query.
--   `show <section>`: Show a section of the last result (e.g., `show thesis`, `show summary`).
--   `set <setting> <value>`: Change a setting (e.g., `set model gpt-4`, `set debug on`).
--   `history`: View past queries from the session.
--   `help`: Show all available commands.
--   `exit`: Exit the session.
-
-### Claude Desktop Integration
-
-Hegelion can be added as an MCP server in Claude Desktop. Start the server with `hegelion-server` (or `python -m hegelion.mcp_server`) and see `docs/MCP.md` for a full walkthrough and tool schemas.
-
----
-
-## For Evaluation Teams
-
-Hegelion is built with model evaluation in mind. The `hegelion-bench` tool and structured JSONL output are designed to fit directly into your existing evaluation pipelines.
-
-**Typical Workflow:**
-
-1.  **Create a Prompt Set:** Create a JSONL file with a diverse set of prompts (factual, philosophical, creative, etc.).
-
-    ```jsonl
-    {"query": "How does climate change influence monsoon cycles?"}
-    {"prompt": "What strategic lessons came from the Apollo program?"}
-    "What was the lasting impact of the printing press?"
-    ```
-
-2.  **Run Benchmarks:** Execute `hegelion-bench` for each model you want to evaluate.
-
-    ```bash
-    # Run with Model A
-    export HEGELION_MODEL=model-a
-    hegelion-bench prompts.jsonl --output results_model_a.jsonl
-
-    # Run with Model B
-    export HEGELION_MODEL=model-b
-    hegelion-bench prompts.jsonl --output results_model_b.jsonl
-    ```
-
-3.  **Analyze the Results:** The output is plain JSONL, ready for analysis with your favorite tools.
-
-    ```bash
-    # Count the average number of contradictions found by each model
-    jq '.contradictions | length' results_model_a.jsonl | awk '{s+=$1} END {print "Model A Avg Contradictions:", s/NR}'
-    jq '.contradictions | length' results_model_b.jsonl | awk '{s+=$1} END {print "Model B Avg Contradictions:", s/NR}'
-    ```
-
-4.  **Generate a Comparison Report:** Use the `hegelion-eval` script to generate a Markdown report comparing the results.
-
-    ```bash
-    hegelion-eval results_model_a.jsonl results_model_b.jsonl --output report.md
-    ```
-
-    This will generate a `report.md` file with a summary table like this:
-
-    | Model   | Queries | Avg. Contradictions | Avg. Proposals | Avg. Time (ms) | Avg. Conflict Score |
-    |---------|---------|---------------------|----------------|----------------|---------------------|
-    | model-a | 10      | 2.30                | 1.10           | 8500           | 0.650               |
-    | model-b | 10      | 1.90                | 1.40           | 9200           | 0.710               |
-
-An example Python script for analysis, `examples/eval_harness.py`, is included in the repository.
-
----
-
-## Supported Backends
-
-Hegelion is designed to be backend-agnostic. Configuration is managed via environment variables.
-
--   **Anthropic:** `HEGELION_PROVIDER=anthropic`
--   **OpenAI:** `HEGELION_PROVIDER=openai`
--   **Google Gemini:** `HEGELION_PROVIDER=google`
--   **Ollama (local):** `HEGELION_PROVIDER=ollama`
--   **Custom HTTP:** `HEGELION_PROVIDER=custom_http`
-
-### Verified Backends
-
--   **Anthropic Claude:** Default configuration in `.env.example`, used in most examples.
--   **GLM 4.6 via Z.AI (OpenAI-compatible):** Configure `HEGELION_PROVIDER=openai`, `HEGELION_MODEL=GLM-4.6`, set `OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4`, and provide your Z.AI API key. See `docs/USER_GUIDE.md` for end-to-end setup and log-sanitization guidance.
-
----
-
-## Installation
-
--   **Python:** 3.10+
--   **Recommended Installer:** `uv` (`pip` is also supported)
-
-**From PyPI (recommended):**
-```bash
-pip install hegelion
-```
-
-**From Source:**
-```bash
-git clone https://github.com/Hmbown/Hegelion.git
-cd Hegelion
-uv sync  # Or pip install -e .
-```
-
----
-
-## Configuration
-
-1.  Copy the environment template: `cp .env.example .env`
-2.  Edit the `.env` file to add your API keys and select your desired `HEGELION_PROVIDER` and `HEGELION_MODEL`.
-
-See `HEGELION_SPEC.md` for detailed configuration options.
-
----
-
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing guidelines, and how to submit a pull request.
-
----
-
-## License
-
-Hegelion is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Hegelion is licensed under the [MIT License](LICENSE).

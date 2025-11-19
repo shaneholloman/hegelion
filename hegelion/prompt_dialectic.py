@@ -7,7 +7,6 @@ Perfect for Cursor, Claude Desktop, or any MCP-compatible environment.
 
 from __future__ import annotations
 
-import json
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
