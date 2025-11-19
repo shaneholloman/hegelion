@@ -42,6 +42,9 @@ Hegelion supports two distinct usage patterns depending on your needs:
   - **Batch Processing:** Run benchmarks on hundreds of prompts.
   - **Structured Evaluation:** Compare model performance systematically.
   - **Backend Agnostic:** Supports Anthropic, OpenAI, Google Gemini, Ollama, etc.
+  - **Persona-Based Critiques:** Configure custom critic personas (Security Engineer, Ruthless Editor, etc.).
+  - **Iterative Refinement:** Run multiple rounds of dialectics (Synthesis Round 1 → Thesis Round 2).
+  - **Search Grounding:** Instruct models to verify claims with search tools during critique.
 
 ---
 
@@ -67,7 +70,7 @@ Add this to your MCP configuration file (e.g., `claude_desktop_config.json` or C
   }
 }
 ```
-*Now, just ask your AI: "Run a dialectical analysis on 'Is AI conscious?' using the prompt server."*
+*Now, just ask your AI: "Run a dialectical analysis on 'Is AI conscious?' using the prompt server with council critiques."*
 
 ### Option 2: Python API / CLI
 
@@ -75,8 +78,42 @@ Add this to your MCP configuration file (e.g., `claude_desktop_config.json` or C
 # Configure your API key
 export ANTHROPIC_API_KEY="sk-ant-..."
 
-# Run a single query
+# Run a single query with default critique
 hegelion "Can AI be genuinely creative?" --format summary
+
+# Run with Council of Critics (multi-perspective)
+hegelion "Should we implement UBI?" --personas council --format summary
+
+# Run with iterative refinement (2 rounds)
+hegelion "What is consciousness?" --personas council --iterations 2
+
+# Run with search grounding (instructs model to verify facts)
+hegelion "What are the latest developments in fusion energy?" --use-search --format summary
+```
+
+**Python API Example:**
+
+```python
+import asyncio
+from hegelion import run_dialectic
+
+async def main():
+    # Basic query
+    result = await run_dialectic("Is AI conscious?")
+    print(result.synthesis)
+    
+    # With Council of Critics
+    result = await run_dialectic(
+        "Should we regulate AI?",
+        personas="council",  # Activates Logician, Empiricist, Ethicist
+        use_search=True,     # Instructs model to verify facts
+        iterations=2         # Runs 2 refinement loops
+    )
+    
+    print(f"Contradictions Found: {len(result.contradictions)}")
+    print(f"Research Proposals: {len(result.research_proposals)}")
+
+asyncio.run(main())
 ```
 
 ---
@@ -84,10 +121,19 @@ hegelion "Can AI be genuinely creative?" --format summary
 ## Key Features
 
 - **Dialectical Loop:** Automated Thesis → Antithesis → Synthesis workflow.
-- **Council of Critics:** Multi-perspective analysis (Logic, Facts, Ethics).
+- **Council of Critics:** Multi-perspective analysis (Logic, Facts, Ethics) or custom personas (Security, Editorial, etc.).
 - **Structured Output:** JSON results with identified contradictions and research proposals.
 - **Search Grounding:** Prompts include instructions to use available search tools for evidence.
+- **Iterative Refinement:** Run multiple rounds where Synthesis becomes the new Thesis for deeper analysis.
 - **Evaluation Harness:** Tools to benchmark and compare model reasoning capabilities.
+
+### Available Persona Presets
+
+- **`council`**: The Logician, The Empiricist, The Ethicist (default multi-perspective)
+- **`security`**: Security Engineer (focuses on vulnerabilities and exploits)
+- **`editorial`**: Ruthless Editor (cuts fluff, demands clarity)
+- **`debate`**: Devil's Advocate (takes opposite view, steel-mans opposition)
+- **`comprehensive`**: All of the above
 
 ---
 
@@ -96,6 +142,17 @@ hegelion "Can AI be genuinely creative?" --format summary
 - **[Full Specification (HEGELION_SPEC.md)](HEGELION_SPEC.md)**: Detailed architecture and schema.
 - **[Prompt Server Guide (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)**: How to use the model-agnostic MCP server.
 - **[MCP Reference (docs/MCP.md)](docs/MCP.md)**: Technical details for MCP integration.
+
+---
+
+## New in Version 0.3.0
+
+- 🎭 **Persona-Based Critiques**: Configure specific critic personas for targeted analysis.
+- 🔄 **Iterative Refinement**: Run multiple rounds of dialectics for deeper reasoning.
+- 🔍 **Search Grounding**: Instruct models to verify facts with search tools.
+- 🌳 **Branching Analysis**: Generate multiple critiques from different perspectives simultaneously.
+
+See [CHANGELOG.md](CHANGELOG.md) for full details.
 
 ---
 

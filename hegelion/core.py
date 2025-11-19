@@ -19,6 +19,7 @@ from .config import (
 )
 from .engine import HegelionEngine
 from .models import HegelionResult
+from .personas import Persona, get_personas
 from .validation import validate_hegelion_result
 
 try:
@@ -104,6 +105,9 @@ async def run_dialectic(
     validate: Optional[bool] = None,
     stream_callback: Optional[Callable[[str, str], Any]] = None,
     progress_callback: Optional[Callable[[str, dict], Any]] = None,
+    personas: Optional[Union[List[Persona], str]] = None,
+    iterations: int = 1,
+    use_search: bool = False,
 ) -> HegelionResult:
     """
     Run a single dialectical reasoning query.
@@ -114,6 +118,9 @@ async def run_dialectic(
         backend: Optional LLM backend (defaults to env-configured backend).
         model: Optional model name override.
         max_tokens_per_phase: Optional override for maximum tokens per phase.
+        personas: Optional list of Persona objects OR preset name (e.g., "council", "security").
+        iterations: Number of refinement loops (Synthesis T1 -> Thesis T2). Defaults to 1.
+        use_search: Whether to instruct the model to use search tools during antithesis.
 
     Returns:
         HegelionResult: Structured result with thesis, antithesis, synthesis, and analysis
@@ -137,6 +144,13 @@ async def run_dialectic(
         else settings.cache_ttl_seconds
     )
 
+    # Resolve Personas
+    resolved_personas: Optional[List[Persona]] = None
+    if isinstance(personas, str):
+        resolved_personas = get_personas(preset_name=personas)
+    elif isinstance(personas, list):
+        resolved_personas = personas
+
     # Backwards-compatible resolution: explicit backend wins, then model,
     # then the environment-configured default.
     if backend is not None:
@@ -158,6 +172,12 @@ async def run_dialectic(
 
     cache: Optional[ResultCache] = None
     cache_key: Optional[str] = None
+
+    # Update cache key to include new params
+    persona_key_part = (
+        ",".join(p.name for p in resolved_personas) if resolved_personas else "none"
+    )
+
     if resolved_cache_enabled:
         cache = ResultCache(
             CacheConfig.from_env(
@@ -165,7 +185,9 @@ async def run_dialectic(
             )
         )
         backend_name = resolved_backend.__class__.__name__
-        cache_key = compute_cache_key(
+
+        # Enhanced cache key
+        base_key = compute_cache_key(
             query=query,
             model=resolved_model,
             backend_provider=backend_name,
@@ -173,6 +195,9 @@ async def run_dialectic(
             max_tokens_per_phase=resolved_tokens,
             debug=debug,
         )
+        # Append new features to key manually since compute_cache_key is fixed signature
+        cache_key = f"{base_key}_{persona_key_part}_{iterations}_{use_search}"
+
         cached_payload = cache.load(cache_key)
         if cached_payload:
             return HegelionResult(**cached_payload)
@@ -180,6 +205,9 @@ async def run_dialectic(
     result = await engine.process_query(
         query,
         debug=debug,
+        max_iterations=iterations,
+        personas=resolved_personas,
+        use_search=use_search,
         stream_callback=stream_callback,
         progress_callback=progress_callback,
     )
@@ -206,6 +234,9 @@ async def run_benchmark(
     validate: Optional[bool] = None,
     stream_callback: Optional[Callable[[str, str], Any]] = None,
     progress_callback: Optional[Callable[[str, dict], Any]] = None,
+    personas: Optional[Union[List[Persona], str]] = None,
+    iterations: int = 1,
+    use_search: bool = False,
 ) -> List[HegelionResult]:
     """
     Run Hegelion on multiple prompts for benchmarking.
@@ -220,20 +251,6 @@ async def run_benchmark(
 
     Returns:
         List[HegelionResult]: Results for all prompts
-
-    Example:
-        >>> import asyncio
-        >>> from pathlib import Path
-        >>> from hegelion import run_benchmark
-        >>>
-        >>> async def main():
-        ...     prompts = ["What is AI?", "How does photosynthesis work?"]
-        ...     results = await run_benchmark(prompts)
-        ...     for result in results:
-        ...         print(f"Query: {result.query}")
-        ...         print(f"Mode: {result.mode}")
-        >>>
-        >>> asyncio.run(main())
     """
     path_like = (str, Path, PathLike)
     if isinstance(prompts, path_like):
@@ -271,6 +288,9 @@ async def run_benchmark(
             validate=validate,
             stream_callback=stream_callback,
             progress_callback=progress_callback,
+            personas=personas,
+            iterations=iterations,
+            use_search=use_search,
         )
         results.append(result)
 
@@ -307,6 +327,9 @@ async def dialectic(
     validate: Optional[bool] = None,
     stream_callback: Optional[Callable[[str, str], Any]] = None,
     progress_callback: Optional[Callable[[str, dict], Any]] = None,
+    personas: Optional[Union[List[Persona], str]] = None,
+    iterations: int = 1,
+    use_search: bool = False,
 ) -> HegelionResult:
     """Universal entrypoint for running a single dialectic query.
 
@@ -324,6 +347,9 @@ async def dialectic(
         validate=validate,
         stream_callback=stream_callback,
         progress_callback=progress_callback,
+        personas=personas,
+        iterations=iterations,
+        use_search=use_search,
     )
 
 
@@ -336,6 +362,9 @@ async def quickstart(
     validate: Optional[bool] = None,
     stream_callback: Optional[Callable[[str, str], Any]] = None,
     progress_callback: Optional[Callable[[str, dict], Any]] = None,
+    personas: Optional[Union[List[Persona], str]] = None,
+    iterations: int = 1,
+    use_search: bool = False,
 ) -> HegelionResult:
     """One-call helper for the common case.
 
@@ -351,6 +380,9 @@ async def quickstart(
         validate=validate,
         stream_callback=stream_callback,
         progress_callback=progress_callback,
+        personas=personas,
+        iterations=iterations,
+        use_search=use_search,
     )
 
 

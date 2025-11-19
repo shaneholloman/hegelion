@@ -22,6 +22,7 @@ Original question:
 
 Thesis answer:
 {thesis}
+{search_instruction}
 
 Your task:
 1. Find contradictions, inconsistencies, or logical gaps in the thesis.
@@ -35,6 +36,28 @@ CONTRADICTION: [brief description]
 EVIDENCE: [why this is problematic]
 
 Now produce your ANTITHESIS critique.
+"""
+
+PERSONA_ANTITHESIS_PROMPT = """You are {persona_name}.
+{persona_description}
+
+Original question:
+{query}
+
+Thesis answer:
+{thesis}
+{search_instruction}
+
+Your expertise: {persona_focus}
+Your instructions: {persona_instructions}
+
+Examine the thesis from your specialized perspective. Identify problems within your domain.
+
+For each issue you identify, use this format:
+CONTRADICTION: [brief description]
+EVIDENCE: [detailed explanation from your expert perspective]
+
+Generate your specialized critique now.
 """
 
 SYNTHESIS_PROMPT = """You are in the SYNTHESIS phase of Hegelian dialectical reasoning.
@@ -63,6 +86,38 @@ Requirements for a valid SYNTHESIS:
 - Must not just say "both have merit".
 - Must offer a genuinely novel perspective.
 - Should be more sophisticated than either original position.
+
+If the synthesis suggests new research, use this format:
+RESEARCH_PROPOSAL: [brief description]
+TESTABLE_PREDICTION: [specific falsifiable claim]
+
+Now produce your SYNTHESIS.
+"""
+
+MULTI_PERSPECTIVE_SYNTHESIS_PROMPT = """You are in the SYNTHESIS phase of Hegelian dialectical reasoning.
+
+Original question:
+{query}
+
+Thesis:
+{thesis}
+
+CRITIQUES (Multiple Perspectives):
+{antithesis}
+
+Identified contradictions:
+{contradictions}
+
+Your task:
+1. Synthesize the thesis with ALL the critiques provided above.
+2. Resolve the tensions between the initial position and the various critical perspectives.
+3. Find a higher-level perspective that satisfies the valid points raised by all critics.
+4. Make predictions that transcend the initial debate.
+
+Requirements for a valid SYNTHESIS:
+- Must not simply say "everyone is right".
+- Must offer a genuinely novel perspective that integrates these diverse viewpoints.
+- Should be more sophisticated than any single position.
 
 If the synthesis suggests new research, use this format:
 RESEARCH_PROPOSAL: [brief description]

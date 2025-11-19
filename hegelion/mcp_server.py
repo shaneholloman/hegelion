@@ -40,6 +40,20 @@ async def list_tools() -> list[Tool]:
                         "description": "Include debug information and internal conflict scores",
                         "default": False,
                     },
+                    "personas": {
+                        "type": "string",
+                        "description": "Critic persona preset (e.g., 'council', 'security', 'editorial', 'debate'). Defaults to single standard critic if omitted.",
+                    },
+                    "iterations": {
+                        "type": "integer",
+                        "description": "Number of refinement loops (Synthesis -> new Thesis). Defaults to 1.",
+                        "default": 1,
+                    },
+                    "use_search": {
+                        "type": "boolean",
+                        "description": "Instruct the model to use search tools during critique to verify facts.",
+                        "default": False,
+                    },
                 },
                 "required": ["query"],
             },
@@ -63,6 +77,18 @@ async def list_tools() -> list[Tool]:
                         "description": "Include debug information and internal conflict scores",
                         "default": False,
                     },
+                    "personas": {
+                        "type": "string",
+                        "description": "Critic persona preset for all items in benchmark.",
+                    },
+                    "iterations": {
+                        "type": "integer",
+                        "default": 1,
+                    },
+                    "use_search": {
+                        "type": "boolean",
+                        "default": False,
+                    },
                 },
                 "required": ["prompts_file"],
             },
@@ -77,8 +103,17 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     if name == "run_dialectic":
         query = arguments["query"]
         debug = arguments.get("debug", False)
+        personas = arguments.get("personas")
+        iterations = arguments.get("iterations", 1)
+        use_search = arguments.get("use_search", False)
 
-        result = await run_dialectic(query=query, debug=debug)
+        result = await run_dialectic(
+            query=query,
+            debug=debug,
+            personas=personas,
+            iterations=iterations,
+            use_search=use_search,
+        )
         payload = json.dumps(result.to_dict(), indent=2)
         return [TextContent(type="text", text=payload)]
 
@@ -87,11 +122,20 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 
         prompts_file = Path(arguments["prompts_file"])
         debug = arguments.get("debug", False)
+        personas = arguments.get("personas")
+        iterations = arguments.get("iterations", 1)
+        use_search = arguments.get("use_search", False)
 
         if not prompts_file.exists():
             raise ValueError(f"Prompts file not found: {prompts_file}")
 
-        results = await run_benchmark(prompts_file, debug=debug)
+        results = await run_benchmark(
+            prompts_file,
+            debug=debug,
+            personas=personas,
+            iterations=iterations,
+            use_search=use_search,
+        )
 
         # Format results as JSONL
         lines = [json.dumps(result.to_dict(), ensure_ascii=False) for result in results]

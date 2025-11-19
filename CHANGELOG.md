@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 – Feature Release: Personas, Search Grounding, and Iterative Refinement
+
+- **New: Persona-Based Critiques:** Configure specific personas for the antithesis phase (e.g., "Council of Critics," "Security Engineer," "Ruthless Editor").
+- **New: Multi-Perspective Analysis:** Support for generating multiple critiques from different personas in parallel before synthesis.
+- **New: Iterative Refinement:** Added `iterations` parameter to loop the dialectical process (Synthesis Round 1 → Thesis Round 2).
+- **New: Search Grounding:** Added `use_search` parameter to instruct models to verify claims with search tools during the antithesis phase.
+- **Enhanced:** Updated `run_dialectic` API to support `personas`, `iterations`, and `use_search` arguments.
+- **Refactored:** Engine logic now supports recursive loops and branching workflows.
+
 ## 0.2.3 – MCP/assistant integration polish
 
 - Clarified canonical `HegelionResult` JSON schema in `README.md`, including backend and timing fields, and documented when `trace` and `metadata.debug` appear.
@@ -28,4 +37,3 @@
 - Implemented MCP server (`hegelion-server`) exposing `run_dialectic` and `run_benchmark` tools.
 - Wrote comprehensive README and `HEGELION_SPEC.md` describing the protocol and JSON schema.
 - Added test suite, pre-commit hooks, and GitHub Actions CI for automated testing.
-
