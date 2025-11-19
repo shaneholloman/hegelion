@@ -26,7 +26,7 @@ Hegelion supports two distinct usage patterns depending on your needs:
 ### 1. Model-Agnostic (Prompt-Based)
 **Best for:** Users of Cursor, Claude Desktop, VS Code, or Antigravity.
 
-- **Why:** Use your *existing* configured model (Gemini 3, Claude 3.5, GPT-5, etc.). Zero configuration required.
+- **Why:** Use your *existing* configured model (Gemini 3, Claude 4.5, GPT-5.1, etc.). Zero configuration required.
 - **Tool:** `hegelion-prompt-server` (MCP)
 - **Key Features:**
   - **Council of Critics:** Activates "The Logician," "The Empiricist," and "The Ethicist" for multi-perspective critiques.
