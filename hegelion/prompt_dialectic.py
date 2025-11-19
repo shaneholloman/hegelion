@@ -12,9 +12,10 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
 
-@dataclass 
+@dataclass
 class DialecticalPrompt:
     """A structured prompt for dialectical reasoning."""
+
     phase: str
     prompt: str
     instructions: str
@@ -23,10 +24,10 @@ class DialecticalPrompt:
 
 class PromptDrivenDialectic:
     """Orchestrates dialectical reasoning using prompts instead of API calls."""
-    
+
     def __init__(self):
         self.conversation_state = {}
-    
+
     def generate_thesis_prompt(self, query: str) -> DialecticalPrompt:
         """Generate a prompt for the thesis phase."""
         return DialecticalPrompt(
@@ -44,17 +45,19 @@ Your task:
 
 Generate your THESIS response now.""",
             instructions="Respond with a clear, well-structured thesis that establishes your initial position on the query.",
-            expected_format="Free-form text thesis response"
+            expected_format="Free-form text thesis response",
         )
-    
-    def generate_antithesis_prompt(self, query: str, thesis: str, use_search_context: bool = False) -> DialecticalPrompt:
+
+    def generate_antithesis_prompt(
+        self, query: str, thesis: str, use_search_context: bool = False
+    ) -> DialecticalPrompt:
         """Generate a prompt for the antithesis phase."""
-        
+
         search_instruction = ""
         if use_search_context:
             search_instruction = """
 IMPORTANT: Before critiquing, use available search tools to find current information about this topic. Ground your critique in real-world evidence and recent developments."""
-        
+
         return DialecticalPrompt(
             phase="antithesis",
             prompt=f"""You are in the ANTITHESIS phase of Hegelian dialectical reasoning.
@@ -77,30 +80,32 @@ EVIDENCE: [detailed explanation of why this is problematic]
 
 Generate your ANTITHESIS critique now.""",
             instructions="Respond with a rigorous critique that identifies specific contradictions and weaknesses in the thesis.",
-            expected_format="Text with embedded CONTRADICTION: and EVIDENCE: sections"
+            expected_format="Text with embedded CONTRADICTION: and EVIDENCE: sections",
         )
-    
-    def generate_council_prompts(self, query: str, thesis: str) -> List[DialecticalPrompt]:
+
+    def generate_council_prompts(
+        self, query: str, thesis: str
+    ) -> List[DialecticalPrompt]:
         """Generate prompts for multi-perspective council critique."""
-        
+
         council_members = [
             {
                 "name": "The Logician",
-                "expertise": "Logical consistency and formal reasoning", 
-                "focus": "logical fallacies, internal contradictions, invalid inferences, missing premises"
+                "expertise": "Logical consistency and formal reasoning",
+                "focus": "logical fallacies, internal contradictions, invalid inferences, missing premises",
             },
             {
-                "name": "The Empiricist", 
+                "name": "The Empiricist",
                 "expertise": "Evidence, facts, and empirical grounding",
-                "focus": "factual errors, unsupported claims, missing evidence, contradictions with established science"
+                "focus": "factual errors, unsupported claims, missing evidence, contradictions with established science",
             },
             {
                 "name": "The Ethicist",
                 "expertise": "Ethical implications and societal impact",
-                "focus": "potential harm, ethical blind spots, fairness issues, unintended consequences"
-            }
+                "focus": "potential harm, ethical blind spots, fairness issues, unintended consequences",
+            },
         ]
-        
+
         prompts = []
         for member in council_members:
             prompt = DialecticalPrompt(
@@ -122,28 +127,28 @@ EVIDENCE: [detailed explanation from your expert perspective]
 
 Generate your specialized critique now.""",
                 instructions=f"Respond as {member['name']} with critiques specific to {member['expertise']}",
-                expected_format="Text with embedded CONTRADICTION: and EVIDENCE: sections"
+                expected_format="Text with embedded CONTRADICTION: and EVIDENCE: sections",
             )
             prompts.append(prompt)
-        
+
         return prompts
-    
+
     def generate_synthesis_prompt(
-        self, 
-        query: str, 
-        thesis: str, 
-        antithesis: str, 
-        contradictions: Optional[List[str]] = None
+        self,
+        query: str,
+        thesis: str,
+        antithesis: str,
+        contradictions: Optional[List[str]] = None,
     ) -> DialecticalPrompt:
         """Generate a prompt for the synthesis phase."""
-        
+
         contradictions_text = ""
         if contradictions:
             contradictions_text = f"""
 
 IDENTIFIED CONTRADICTIONS:
 {chr(10).join(f"- {contradiction}" for contradiction in contradictions)}"""
-        
+
         return DialecticalPrompt(
             phase="synthesis",
             prompt=f"""You are in the SYNTHESIS phase of Hegelian dialectical reasoning.
@@ -174,18 +179,14 @@ TESTABLE_PREDICTION: [specific falsifiable claim]
 
 Generate your SYNTHESIS now.""",
             instructions="Respond with a synthesis that transcends both positions and offers novel insights",
-            expected_format="Text with optional RESEARCH_PROPOSAL: and TESTABLE_PREDICTION: sections"
+            expected_format="Text with optional RESEARCH_PROPOSAL: and TESTABLE_PREDICTION: sections",
         )
-    
+
     def generate_judge_prompt(
-        self, 
-        query: str, 
-        thesis: str, 
-        antithesis: str, 
-        synthesis: str
+        self, query: str, thesis: str, antithesis: str, synthesis: str
     ) -> DialecticalPrompt:
         """Generate a prompt for quality evaluation."""
-        
+
         return DialecticalPrompt(
             phase="judge",
             prompt=f"""You are the Iron Judge, evaluating dialectical reasoning quality.
@@ -216,102 +217,108 @@ REASONING: [detailed explanation]
 STRENGTHS: [specific areas of excellence]
 IMPROVEMENTS: [specific areas needing work]""",
             instructions="Evaluate the dialectical quality and provide structured feedback",
-            expected_format="Structured response with SCORE:, CRITIQUE_VALIDITY:, REASONING:, STRENGTHS:, IMPROVEMENTS:"
+            expected_format="Structured response with SCORE:, CRITIQUE_VALIDITY:, REASONING:, STRENGTHS:, IMPROVEMENTS:",
         )
 
 
 def create_dialectical_workflow(
-    query: str, 
+    query: str,
     use_search: bool = False,
-    use_council: bool = False, 
-    use_judge: bool = False
+    use_council: bool = False,
+    use_judge: bool = False,
 ) -> Dict[str, Any]:
     """Create a complete dialectical workflow as structured prompts.
-    
+
     Returns a workflow that can be executed by any LLM via MCP.
     """
-    
+
     dialectic = PromptDrivenDialectic()
-    workflow = {
-        "query": query,
-        "workflow_type": "prompt_driven_dialectic",
-        "steps": []
-    }
-    
+    workflow = {"query": query, "workflow_type": "prompt_driven_dialectic", "steps": []}
+
     # Step 1: Thesis
-    workflow["steps"].append({
-        "step": 1,
-        "name": "Generate Thesis",
-        "prompt": dialectic.generate_thesis_prompt(query).__dict__
-    })
-    
+    workflow["steps"].append(
+        {
+            "step": 1,
+            "name": "Generate Thesis",
+            "prompt": dialectic.generate_thesis_prompt(query).__dict__,
+        }
+    )
+
     # Step 2: Antithesis (standard or council-based)
     if use_council:
-        council_prompts = dialectic.generate_council_prompts(query, "{{thesis_from_step_1}}")
+        council_prompts = dialectic.generate_council_prompts(
+            query, "{{thesis_from_step_1}}"
+        )
         for i, council_prompt in enumerate(council_prompts):
-            workflow["steps"].append({
-                "step": 2 + i,
-                "name": f"Council Critique: {council_prompt.phase}",
-                "prompt": council_prompt.__dict__
-            })
+            workflow["steps"].append(
+                {
+                    "step": 2 + i,
+                    "name": f"Council Critique: {council_prompt.phase}",
+                    "prompt": council_prompt.__dict__,
+                }
+            )
         antithesis_step = 2 + len(council_prompts)
     else:
-        workflow["steps"].append({
-            "step": 2, 
-            "name": "Generate Antithesis",
-            "prompt": dialectic.generate_antithesis_prompt(query, "{{thesis_from_step_1}}", use_search).__dict__
-        })
+        workflow["steps"].append(
+            {
+                "step": 2,
+                "name": "Generate Antithesis",
+                "prompt": dialectic.generate_antithesis_prompt(
+                    query, "{{thesis_from_step_1}}", use_search
+                ).__dict__,
+            }
+        )
         antithesis_step = 3
-    
+
     # Step 3: Synthesis
-    workflow["steps"].append({
-        "step": antithesis_step,
-        "name": "Generate Synthesis", 
-        "prompt": dialectic.generate_synthesis_prompt(
-            query, 
-            "{{thesis_from_step_1}}", 
-            "{{antithesis_from_step_2}}"
-        ).__dict__
-    })
-    
+    workflow["steps"].append(
+        {
+            "step": antithesis_step,
+            "name": "Generate Synthesis",
+            "prompt": dialectic.generate_synthesis_prompt(
+                query, "{{thesis_from_step_1}}", "{{antithesis_from_step_2}}"
+            ).__dict__,
+        }
+    )
+
     # Step 4: Judge (optional)
     if use_judge:
-        workflow["steps"].append({
-            "step": antithesis_step + 1,
-            "name": "Evaluate Quality",
-            "prompt": dialectic.generate_judge_prompt(
-                query,
-                "{{thesis_from_step_1}}", 
-                "{{antithesis_from_step_2}}",
-                f"{{synthesis_from_step_{antithesis_step}}}"
-            ).__dict__
-        })
-    
+        workflow["steps"].append(
+            {
+                "step": antithesis_step + 1,
+                "name": "Evaluate Quality",
+                "prompt": dialectic.generate_judge_prompt(
+                    query,
+                    "{{thesis_from_step_1}}",
+                    "{{antithesis_from_step_2}}",
+                    f"{{synthesis_from_step_{antithesis_step}}}",
+                ).__dict__,
+            }
+        )
+
     workflow["instructions"] = {
         "execution_mode": "sequential",
         "description": "Execute each step in order, using outputs from previous steps as inputs to later steps",
         "variable_substitution": "Replace {{variable_name}} with actual outputs from previous steps",
-        "final_output": "Combine all outputs into a structured HegelionResult"
+        "final_output": "Combine all outputs into a structured HegelionResult",
     }
-    
+
     return workflow
 
 
 def create_single_shot_dialectic_prompt(
-    query: str,
-    use_search: bool = False,
-    use_council: bool = False
+    query: str, use_search: bool = False, use_council: bool = False
 ) -> str:
     """Create a single comprehensive prompt for dialectical reasoning.
-    
+
     This is for models that can handle complex multi-step reasoning in one go.
     """
-    
+
     search_instruction = ""
     if use_search:
         search_instruction = """
 Before beginning, use available search tools to gather current information about this topic."""
-    
+
     council_instruction = ""
     if use_council:
         council_instruction = """
@@ -321,7 +328,7 @@ For the ANTITHESIS phase, adopt three distinct critical perspectives:
 - THE ETHICIST: Focus on ethical implications and societal impact
 
 Generate critiques from each perspective, then synthesize them."""
-    
+
     return f"""You will now perform Hegelian dialectical reasoning on the following query using a three-phase process: THESIS → ANTITHESIS → SYNTHESIS.
 {search_instruction}
 

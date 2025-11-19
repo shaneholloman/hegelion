@@ -1,7 +1,7 @@
 """Model-agnostic MCP server for dialectical reasoning.
 
 This version works with whatever LLM is calling the MCP server,
-rather than making its own API calls. Perfect for Cursor, Claude Desktop, 
+rather than making its own API calls. Perfect for Cursor, Claude Desktop,
 VS Code, or any MCP-compatible environment.
 """
 
@@ -14,7 +14,10 @@ import json
 from mcp.server import Server
 from mcp.types import TextContent, Tool
 
-from .prompt_dialectic import create_dialectical_workflow, create_single_shot_dialectic_prompt
+from .prompt_dialectic import (
+    create_dialectical_workflow,
+    create_single_shot_dialectic_prompt,
+)
 
 app = Server("hegelion-prompt-server")
 
@@ -58,21 +61,21 @@ async def list_tools() -> list[Tool]:
                         "type": "string",
                         "enum": ["workflow", "single_prompt"],
                         "description": "Return structured workflow or single comprehensive prompt",
-                        "default": "workflow"
-                    }
+                        "default": "workflow",
+                    },
                 },
                 "required": ["query"],
             },
         ),
         Tool(
-            name="dialectical_single_shot", 
+            name="dialectical_single_shot",
             description=(
                 "Generate a single comprehensive prompt for dialectical reasoning that can be "
                 "executed by any capable LLM in one go. The LLM performs thesis → antithesis → synthesis "
                 "and returns structured results. Great for powerful models like Gemini 3, Claude 3.5, etc."
             ),
             inputSchema={
-                "type": "object", 
+                "type": "object",
                 "properties": {
                     "query": {
                         "type": "string",
@@ -84,10 +87,10 @@ async def list_tools() -> list[Tool]:
                         "default": False,
                     },
                     "use_council": {
-                        "type": "boolean", 
+                        "type": "boolean",
                         "description": "Enable multi-perspective council critiques",
                         "default": False,
-                    }
+                    },
                 },
                 "required": ["query"],
             },
@@ -135,7 +138,7 @@ async def list_tools() -> list[Tool]:
                         "type": "boolean",
                         "description": "Use council-based multi-perspective critique",
                         "default": False,
-                    }
+                    },
                 },
                 "required": ["query", "thesis"],
             },
@@ -158,9 +161,9 @@ async def list_tools() -> list[Tool]:
                         "description": "The thesis output",
                     },
                     "antithesis": {
-                        "type": "string", 
+                        "type": "string",
                         "description": "The antithesis critique output",
-                    }
+                    },
                 },
                 "required": ["query", "thesis", "antithesis"],
             },
@@ -178,12 +181,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         use_council = arguments.get("use_council", False)
         use_judge = arguments.get("use_judge", False)
         format_type = arguments.get("format", "workflow")
-        
+
         if format_type == "single_prompt":
             prompt = create_single_shot_dialectic_prompt(
-                query=query,
-                use_search=use_search,
-                use_council=use_council
+                query=query, use_search=use_search, use_council=use_council
             )
             return [TextContent(type="text", text=prompt)]
         else:
@@ -191,7 +192,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 query=query,
                 use_search=use_search,
                 use_council=use_council,
-                use_judge=use_judge
+                use_judge=use_judge,
             )
             return [TextContent(type="text", text=json.dumps(workflow, indent=2))]
 
@@ -199,50 +200,50 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         query = arguments["query"]
         use_search = arguments.get("use_search", False)
         use_council = arguments.get("use_council", False)
-        
+
         prompt = create_single_shot_dialectic_prompt(
-            query=query,
-            use_search=use_search,
-            use_council=use_council
+            query=query, use_search=use_search, use_council=use_council
         )
         return [TextContent(type="text", text=prompt)]
 
     elif name == "thesis_prompt":
         from .prompt_dialectic import PromptDrivenDialectic
-        
+
         query = arguments["query"]
         dialectic = PromptDrivenDialectic()
         prompt_obj = dialectic.generate_thesis_prompt(query)
-        
+
         response = f"""# THESIS PROMPT
 
 {prompt_obj.prompt}
 
 **Instructions:** {prompt_obj.instructions}
 **Expected Format:** {prompt_obj.expected_format}"""
-        
+
         return [TextContent(type="text", text=response)]
 
     elif name == "antithesis_prompt":
         from .prompt_dialectic import PromptDrivenDialectic
-        
+
         query = arguments["query"]
         thesis = arguments["thesis"]
         use_search = arguments.get("use_search", False)
         use_council = arguments.get("use_council", False)
-        
+
         dialectic = PromptDrivenDialectic()
-        
+
         if use_council:
             council_prompts = dialectic.generate_council_prompts(query, thesis)
             response_parts = ["# COUNCIL ANTITHESIS PROMPTS\n"]
-            
+
             for prompt_obj in council_prompts:
-                response_parts.append(f"## {prompt_obj.phase.replace('_', ' ').title()}")
+                response_parts.append(
+                    f"## {prompt_obj.phase.replace('_', ' ').title()}"
+                )
                 response_parts.append(prompt_obj.prompt)
                 response_parts.append(f"**Instructions:** {prompt_obj.instructions}")
                 response_parts.append("")
-            
+
             response = "\n".join(response_parts)
         else:
             prompt_obj = dialectic.generate_antithesis_prompt(query, thesis, use_search)
@@ -252,26 +253,26 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 
 **Instructions:** {prompt_obj.instructions}
 **Expected Format:** {prompt_obj.expected_format}"""
-        
+
         return [TextContent(type="text", text=response)]
 
     elif name == "synthesis_prompt":
         from .prompt_dialectic import PromptDrivenDialectic
-        
+
         query = arguments["query"]
         thesis = arguments["thesis"]
         antithesis = arguments["antithesis"]
-        
+
         dialectic = PromptDrivenDialectic()
         prompt_obj = dialectic.generate_synthesis_prompt(query, thesis, antithesis)
-        
+
         response = f"""# SYNTHESIS PROMPT
 
 {prompt_obj.prompt}
 
 **Instructions:** {prompt_obj.instructions}
 **Expected Format:** {prompt_obj.expected_format}"""
-        
+
         return [TextContent(type="text", text=response)]
 
     else:
@@ -283,16 +284,14 @@ async def run_server() -> None:
     from mcp.server.stdio import stdio_server
 
     async with stdio_server() as (read_stream, write_stream):
-        await app.run(
-            read_stream, write_stream, app.create_initialization_options()
-        )
+        await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
 def main() -> None:
     """Main entry point for the prompt-driven MCP server."""
     parser = argparse.ArgumentParser(
         description="Hegelion Prompt-Driven MCP Server - Works with any LLM",
-        add_help=True
+        add_help=True,
     )
     # Remove the redundant --help argument
     parser.parse_args()
