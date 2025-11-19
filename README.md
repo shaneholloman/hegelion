@@ -78,7 +78,20 @@ Hegelion supports two distinct usage patterns depending on your needs:
 
 ---
 
+## Documentation
+
+- [Quick Start (docs/QUICKSTART.md)](docs/QUICKSTART.md) — 5-minute setup for MCP and Python API
+- [User Guide (docs/USER_GUIDE.md)](docs/USER_GUIDE.md) — detailed usage and options
+- [Model-Agnostic Prompt Server (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)
+- [MCP Reference (docs/MCP.md)](docs/MCP.md)
+- [Examples (examples/README.md)](examples/README.md)
+- [Publishing Guide (docs/PUBLISHING.md)](docs/PUBLISHING.md)
+
+---
+
 ## Quick Start
+
+See [docs/QUICKSTART.md](docs/QUICKSTART.md) for a 5-minute guide. The basics are below.
 
 ### Installation
 
@@ -142,15 +155,6 @@ hegelion "Can AI be genuinely creative?" --format summary
 # Run in demo mode (no API key needed)
 hegelion --demo
 ```
-
----
-
-## Documentation
-
-- **[Full Specification (HEGELION_SPEC.md)](HEGELION_SPEC.md)**: Detailed architecture and schema.
-- **[Prompt Server Guide (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)**: How to use the model-agnostic MCP server.
-- **[MCP Reference (docs/MCP.md)](docs/MCP.md)**: Technical details for MCP integration.
-- **[Publishing Guide (docs/PUBLISHING.md)](docs/PUBLISHING.md)**: How to build and publish releases.
 
 ---
 

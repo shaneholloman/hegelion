@@ -64,3 +64,8 @@ hegelion.egg-info/
 .cache/
 .temp/
 .social-ideas/
+
+# Tooling traces
+.genkit/
+# Explicitly ignore Firebase debug log
+firebase-debug.log

@@ -1,0 +1,8 @@
+# Treat docs and examples as documentation in linguist
+/docs/* linguist-documentation
+/docs/** linguist-documentation
+/examples/* linguist-documentation
+/examples/** linguist-documentation
+
+# Normalize text files
+* text=auto eol=lf

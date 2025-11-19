@@ -1,43 +1,68 @@
 # Hegelion Examples
 
-This directory now houses real traces captured from a Claude-compatible `glm-4.6` backend along with the original narrative walk-throughs.
+This directory houses recorded traces and runnable demos.
 
 ## Recorded JSONL Traces
 
 - `glm4_6_examples.jsonl` — four canonical runs recorded during development:
-  - **Philosophical**: `"Can AI be genuinely creative?"`
-  - **Factual**: `"What is the capital of France?"`
-  - **Scientific**: `"Explain what photosynthesis does for a plant."`
-  - **Historical**: `"When was the first moon landing?"`
+  - **Philosophical**: "Can AI be genuinely creative?"
+  - **Factual**: "What is the capital of France?"
+  - **Scientific**: "Explain what photosynthesis does for a plant."
+  - **Historical**: "When was the first moon landing?"
 
-Each line is a `HegelionResult` serialized via `to_dict()` and includes thesis/antithesis/synthesis, structured contradictions, research proposals, provenance metadata, and debug-only conflict scores tucked under `metadata.debug`.
+Each line is a `HegelionResult` serialized via `to_dict()` and includes thesis/antithesis/synthesis, structured contradictions, research proposals, provenance metadata, and (optionally) `metadata.debug` fields.
 
 ## Markdown Walk-Throughs
 
-- **[ai_creativity_example.md](./ai_creativity_example.md)** — Hero example referenced in the README (philosophical)
-- **[consciousness_example.md](./consciousness_example.md)** — Dialectic on subjective experience (philosophical)
-- **[gravity_example.md](./gravity_example.md)** — Treats gravity as geometry vs force (scientific)
+- [ai_creativity_example.md](./ai_creativity_example.md) — Hero example (philosophical)
+- [consciousness_example.md](./consciousness_example.md) — Subjective experience (philosophical)
+- [gravity_example.md](./gravity_example.md) — Geometry vs force (scientific)
 
-## Reproducing an Example Run
+## Demos
+
+### GLM API Demo (Python)
+
+- `demo_glm_api.py` — Demonstrates direct API usage with GLM backend.
+- Optional: `mock_glm_server.py` — Deterministic offline server for docs/CI.
+
+Quick start (GLM via OpenAI-compatible endpoint):
 
 ```bash
-# Philosophical hero example (summary)
+export OPENAI_API_KEY='your-glm-api-key-here'
+export HEGELION_PROVIDER=openai
+export HEGELION_MODEL=GLM-4.6
+export OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4
+
+cd examples
+python3 demo_glm_api.py
+```
+
+Offline deterministic run:
+
+```bash
+# Terminal 1
+cd examples
+python3 mock_glm_server.py
+
+# Terminal 2
+export OPENAI_BASE_URL=http://127.0.0.1:8000/v1
+export OPENAI_API_KEY=dummy-key
+python3 demo_glm_api.py
+```
+
+## Reproducing an Example via CLI (demo)
+
+```bash
 hegelion "Can AI be genuinely creative?" --format summary
-
-# Same example, but save a JSONL trace you can analyze later
-hegelion "Can AI be genuinely creative?" --format json --output glm_creativity_trace.jsonl
-
-# Factual / scientific / historical prompts
-hegelion "What is the capital of France?" --format summary
-hegelion "Explain what photosynthesis does for a plant." --format summary
-hegelion "When was the first moon landing?" --format summary
 ```
 
-Results will vary depending on your configured backend/model. The JSONL traces capture the provenance for the glm-4.6 runs; compare them with your own provider by writing your outputs to JSONL via:
+Or save JSONL:
 
 ```bash
-hegelion "question" --output my_trace.jsonl
-hegelion-bench benchmarks/examples_basic.jsonl --output my_results.jsonl
+hegelion "Can AI be genuinely creative?" --format json --output glm_creativity_trace.jsonl
 ```
 
-You own these traces – they are plain JSONL files you can diff with `git`, slice with `jq`, or load into Python dataframes.
+## Tips
+
+- Results vary with backend/model. Save outputs as JSONL to compare across providers.
+- Analyze JSONL with `jq` or `pandas.read_json(..., lines=True)`.
