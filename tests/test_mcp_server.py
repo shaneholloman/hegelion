@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 
@@ -96,7 +96,13 @@ class TestCallTool:
             assert result[0].type == "text"
             payload = json.loads(result[0].text)
             assert payload["query"] == "Test Query"
-            mock_run.assert_awaited_once_with(query="Test query", debug=False)
+            mock_run.assert_awaited_once_with(
+                query="Test query",
+                debug=False,
+                personas=None,
+                iterations=1,
+                use_search=False,
+            )
 
     async def test_run_dialectic_with_debug(self, sample_result: HegelionResult):
         """Test run_dialectic tool with debug flag."""
@@ -109,7 +115,13 @@ class TestCallTool:
                 name="run_dialectic", arguments={"query": "Test", "debug": True}
             )
 
-            mock_run.assert_awaited_once_with(query="Test", debug=True)
+            mock_run.assert_awaited_once_with(
+                query="Test",
+                debug=True,
+                personas=None,
+                iterations=1,
+                use_search=False,
+            )
 
     async def test_run_benchmark_tool_execution(
         self, tmp_path: Path, sample_result: HegelionResult
@@ -200,7 +212,13 @@ class TestInputValidation:
 
             await app.call_tool(name="run_dialectic", arguments={"query": "Test"})
 
-            mock_run.assert_awaited_once_with(query="Test", debug=False)
+            mock_run.assert_awaited_once_with(
+                query="Test",
+                debug=False,
+                personas=None,
+                iterations=1,
+                use_search=False,
+            )
 
     async def test_run_benchmark_debug_defaults_to_false(
         self, tmp_path: Path, sample_result: HegelionResult
