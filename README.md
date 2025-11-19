@@ -31,10 +31,21 @@ Hegelion is a framework that upgrades AI reasoning by forcing language models th
 
 At its core is a simple, powerful loop:
 
-```mermaid
-flowchart TD
-  A[Thesis<br/>(Initial Stance)] --> B[Antithesis<br/>(Critique/Counter)]
-  B --> C[Synthesis<br/>(Refined Result)]
+```
+      ┌──────────────────┐
+      │      Thesis      │
+      │ (Initial Stance) │
+      └─────────┬────────┘
+                │
+      ┌─────────▼────────┐
+      │    Antithesis    │
+      │(Critique/Counter)│
+      └─────────┬────────┘
+                │
+      ┌─────────▼────────┐
+      │     Synthesis    │
+      │ (Refined Result) │
+      └──────────────────┘
 ```
 
 This framework moves beyond simple Q&A to facilitate complex, multi-layered analysis.
