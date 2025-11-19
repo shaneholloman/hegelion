@@ -5,9 +5,30 @@
 [![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion)
 [![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
 
-**Dialectical Reasoning Framework for LLMs**
+**Dialectical Reasoning Framework for Large Language Models**
 
-Hegelion is a framework that upgrades AI reasoning by forcing language models through a **Thesis → Antithesis → Synthesis** loop. It stress-tests models, uncovers hidden assumptions, and produces structured, actionable insights.
+Hegelion is a framework that upgrades AI reasoning by forcing language models through a structured, dialectical process. It stress-tests assertions, uncovers hidden assumptions, and produces significantly more robust and well-reasoned insights.
+
+At its core is a simple, powerful loop:
+
+```
+      ┌──────────────────┐
+      │      Thesis      │
+      │ (Initial Stance) │
+      └─────────┬────────┘
+                │
+      ┌─────────▼────────┐
+      │    Antithesis    │
+      │(Critique/Counter)│
+      └─────────┬────────┘
+                │
+      ┌─────────▼────────┐
+      │     Synthesis    │
+      │ (Refined Result) │
+      └──────────────────┘
+```
+
+This framework moves beyond simple Q&A to facilitate complex, multi-layered analysis.
 
 ---
 
@@ -16,6 +37,17 @@ Hegelion is a framework that upgrades AI reasoning by forcing language models th
 - **Deeper Insights:** Move beyond simple Q&A to complex, multi-layered analysis.
 - **Uncover Assumptions:** The dialectical process surfaces hidden biases and logical gaps.
 - **Model Agnostic:** Works with your existing tools (Cursor, Claude Desktop) or as a standalone library.
+
+---
+
+## Key Features
+
+- **Dialectical Loop:** Automated Thesis → Antithesis → Synthesis workflow.
+- **Council of Critics:** Multi-perspective analysis (Logic, Facts, Ethics) or custom personas (Security, Editorial, etc.).
+- **Structured Output:** JSON results with identified contradictions and research proposals.
+- **Search Grounding:** Prompts include instructions to use available search tools for evidence.
+- **Iterative Refinement:** Run multiple rounds where Synthesis becomes the new Thesis for deeper analysis.
+- **Evaluation Harness:** Tools to benchmark and compare model reasoning capabilities.
 
 ---
 
@@ -45,6 +77,18 @@ Hegelion supports two distinct usage patterns depending on your needs:
   - **Persona-Based Critiques:** Configure custom critic personas (Security Engineer, Ruthless Editor, etc.).
   - **Iterative Refinement:** Run multiple rounds of dialectics (Synthesis Round 1 → Thesis Round 2).
   - **Search Grounding:** Instruct models to verify claims with search tools during critique.
+
+  #### Available Persona Presets
+
+  The `--personas` argument activates different combinations of critical lenses.
+
+  | Preset | Personas Activated | Purpose |
+  |---|---|---|
+  | **`council`** | `Logician`, `Empiricist`, `Ethicist` | Default multi-perspective analysis. Balances logic, facts, and ethical considerations. |
+  | **`security`**| `Security Engineer` | Focuses exclusively on identifying vulnerabilities, exploits, and security risks. |
+  | **`editorial`**| `Ruthless Editor` | Aims to improve clarity, cut fluff, and strengthen the core argument. |
+  | **`debate`**| `Devil's Advocate` | Takes a strong opposing view to steel-man the argument and expose weak points. |
+  | **`comprehensive`** | All of the above | A "gloves-off" critique that combines all available perspectives. |
 
 ---
 
@@ -115,25 +159,6 @@ async def main():
 
 asyncio.run(main())
 ```
-
----
-
-## Key Features
-
-- **Dialectical Loop:** Automated Thesis → Antithesis → Synthesis workflow.
-- **Council of Critics:** Multi-perspective analysis (Logic, Facts, Ethics) or custom personas (Security, Editorial, etc.).
-- **Structured Output:** JSON results with identified contradictions and research proposals.
-- **Search Grounding:** Prompts include instructions to use available search tools for evidence.
-- **Iterative Refinement:** Run multiple rounds where Synthesis becomes the new Thesis for deeper analysis.
-- **Evaluation Harness:** Tools to benchmark and compare model reasoning capabilities.
-
-### Available Persona Presets
-
-- **`council`**: The Logician, The Empiricist, The Ethicist (default multi-perspective)
-- **`security`**: Security Engineer (focuses on vulnerabilities and exploits)
-- **`editorial`**: Ruthless Editor (cuts fluff, demands clarity)
-- **`debate`**: Devil's Advocate (takes opposite view, steel-mans opposition)
-- **`comprehensive`**: All of the above
 
 ---
 
