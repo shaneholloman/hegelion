@@ -64,8 +64,11 @@ Query    → Thesis      → Antithesis      → Synthesis
 -   **Structured JSON Output:** Get a `HegelionResult` with contradictions, research proposals, and metadata for every run.
 -   **Backend Agnostic:** Supports Anthropic, OpenAI, Google Gemini, Ollama, and any custom HTTP endpoint.
 -   **Multiple Interfaces:** Use the tool via a **CLI**, a **Python API**, or as an **MCP server** for integration with tools like Claude Desktop.
+-   **Interactive & Demo-Friendly CLI:** REPL-style interactive mode and `--demo` mode let you explore cached traces without any API keys.
 -   **Built for Evaluation:** A dedicated `hegelion-bench` CLI for running batch evaluations from a JSONL file.
--   **Streaming and Caching:** A `stream_callback` for real-time UI updates and disk caching to avoid re-running expensive calls.
+-   **Evaluation & Reporting:** The `hegelion-eval` CLI compares benchmark runs and generates Markdown reports from JSONL outputs.
+-   **Streaming and Caching:** A `stream_callback` and progress callbacks for real-time UI updates, plus disk caching to avoid re-running expensive calls.
+-   **Internal Conflict Judge (Debug-Only):** Optional conflict indicators combine semantic distance, contradiction count, and an LLM-based disagreement classifier into a single research-oriented score.
 -   **Robust and Production-Ready:** Features include structured logging, graceful error handling, and schema-validated outputs.
 
 ---
@@ -86,6 +89,9 @@ hegelion "Can AI be genuinely creative?" --format summary
 
 # Run a benchmark from a file
 hegelion-bench benchmarks/examples_basic.jsonl --output results.jsonl
+
+# Explore a cached example without configuring any API keys
+hegelion --demo --format summary
 ```
 
 ---
@@ -153,12 +159,19 @@ Integrate Hegelion directly into your Python applications.
 
 ```python
 import asyncio
-from hegelion import run_dialectic
+from hegelion import quickstart, dialectic
+
 
 async def main():
-    result = await run_dialectic("Is privacy more important than security?", debug=True)
+    # Easiest path – uses env-configured backend/model
+    result = await quickstart("Is privacy more important than security?", debug=True)
     print(result.synthesis)
     print(f"Contradictions Found: {len(result.contradictions)}")
+
+    # Explicit model with auto-detected backend (e.g., Anthropic/OpenAI/Gemini/local)
+    alt = await dialectic("Can AI be genuinely creative?", model="claude-4.5-sonnet")
+    print(f"Backend synthesis: {alt.synthesis[:120]}...")
+
 
 asyncio.run(main())
 ```
@@ -186,7 +199,7 @@ This will launch a REPL-style session where you can run queries, explore results
 
 ### Claude Desktop Integration
 
-Hegelion can be added as an MCP server in Claude Desktop. See `docs/MCP.md` for a full walkthrough.
+Hegelion can be added as an MCP server in Claude Desktop. Start the server with `hegelion-server` (or `python -m hegelion.mcp_server`) and see `docs/MCP.md` for a full walkthrough and tool schemas.
 
 ---
 
@@ -250,6 +263,11 @@ Hegelion is designed to be backend-agnostic. Configuration is managed via enviro
 -   **Google Gemini:** `HEGELION_PROVIDER=google`
 -   **Ollama (local):** `HEGELION_PROVIDER=ollama`
 -   **Custom HTTP:** `HEGELION_PROVIDER=custom_http`
+
+### Verified Backends
+
+-   **Anthropic Claude:** Default configuration in `.env.example`, used in most examples.
+-   **GLM 4.6 via Z.AI (OpenAI-compatible):** Configure `HEGELION_PROVIDER=openai`, `HEGELION_MODEL=GLM-4.6`, set `OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4`, and provide your Z.AI API key. See `docs/USER_GUIDE.md` for end-to-end setup and log-sanitization guidance.
 
 ---
 

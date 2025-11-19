@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import argparse
 import json
 
 from mcp.server import Server
@@ -102,7 +103,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         raise ValueError(f"Unknown tool: {name}")
 
 
-async def main() -> None:
+async def run_server() -> None:
     """Run the MCP stdio server."""
 
     from mcp.server.stdio import stdio_server
@@ -115,8 +116,18 @@ async def main() -> None:
         )
 
 
+def main() -> None:
+    """Sync entrypoint for the CLI."""
+    parser = argparse.ArgumentParser(
+        description="Hegelion MCP Server - Dialectical Reasoning & Benchmarking"
+    )
+    parser.parse_args()
+
+    asyncio.run(run_server())
+
+
 if __name__ == "__main__":  # pragma: no cover - CLI entrypoint
-    asyncio.run(main())
+    main()
 
 # Expose decorated handlers on the app instance for test convenience
 # These wrappers allow awaiting app.list_tools() and app.call_tool(name=..., arguments=...)
