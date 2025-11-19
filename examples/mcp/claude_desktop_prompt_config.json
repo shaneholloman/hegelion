@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "hegelion-prompt": {
+      "command": "hegelion-prompt-server",
+      "args": [],
+      "cwd": "/path/to/hegelion",
+      "env": {}
+    }
+  }
+}

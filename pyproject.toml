@@ -50,6 +50,7 @@ hegelion = "hegelion.scripts.hegelion_cli:main"
 hegelion-bench = "hegelion.scripts.hegelion_bench:main"
 hegelion-eval = "hegelion.scripts.hegelion_eval:main"
 hegelion-server = "hegelion.mcp_server:main"
+hegelion-prompt-server = "hegelion.prompt_mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/Hmbown/Hegelion"
