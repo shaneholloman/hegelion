@@ -1,13 +1,13 @@
 # Changelog
 
-## 0.3.0 – Feature Release: Personas, Search Grounding, and Iterative Refinement
+## 0.3.0 – Model-Agnostic Support & Feature Expansion
 
-- **New: Persona-Based Critiques:** Configure specific personas for the antithesis phase (e.g., "Council of Critics," "Security Engineer," "Ruthless Editor").
-- **New: Multi-Perspective Analysis:** Support for generating multiple critiques from different personas in parallel before synthesis.
-- **New: Iterative Refinement:** Added `iterations` parameter to loop the dialectical process (Synthesis Round 1 → Thesis Round 2).
-- **New: Search Grounding:** Added `use_search` parameter to instruct models to verify claims with search tools during the antithesis phase.
-- **Enhanced:** Updated `run_dialectic` API to support `personas`, `iterations`, and `use_search` arguments.
-- **Refactored:** Engine logic now supports recursive loops and branching workflows.
+- **New: Model-Agnostic MCP Server:** Introduced `hegelion-prompt-server` which allows using Hegelion with *any* model configured in your editor/IDE (Cursor, VS Code, Claude Desktop) without needing API keys.
+- **New: Persona-Based Critiques:** Configure specific personas for the antithesis phase (e.g., "Council of Critics," "Security Engineer," "Ruthless Editor") via the Python API.
+- **New: Iterative Refinement:** Support for looping the dialectical process (Synthesis Round 1 → Thesis Round 2) for deeper analysis.
+- **New: Search Grounding:** Instruct models to verify claims with search tools during the antithesis phase.
+- **Changed:** The `hegelion` CLI is now primarily a demo/summary tool. Advanced workflows (personas, iterations) are available via the Python API and MCP servers.
+- **Documentation:** Comprehensive rewrite of README and documentation to emphasize the dual-path usage (Prompt-Based vs. API-Based).
 
 ## 0.2.3 – MCP/assistant integration polish
 

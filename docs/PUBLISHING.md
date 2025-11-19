@@ -1,41 +1,54 @@
 # Publishing Guide
 
-## Quick PyPI Publish
+This guide documents the release process for Hegelion.
 
-1. **Get PyPI API Token**
-   - Go to [PyPI API Tokens](https://pypi.org/manage/account/token/)
-   - Create new token for this project
-   - Copy the token (starts with `pypi-`)
+## Prerequisites
 
-2. **Publish with script**
+- `uv` installed
+- PyPI account with API token
+
+## Automated Release (Recommended)
+
+1. **Bump version** in `hegelion/__init__.py` and `pyproject.toml`.
+2. **Update CHANGELOG.md**.
+3. **Run the publish script:**
+
    ```bash
-   PYPI_TOKEN=<your-token> ./scripts/publish_pypi.sh
+   # Export your PyPI token
+   export PYPI_TOKEN=pypi-...
+   
+   # Run the script
+   ./scripts/publish_pypi.sh
    ```
 
-## Manual Publishing (if script fails)
+## Manual Release
 
-1. **Clean and build**
+If you prefer to run the steps manually or need to debug:
+
+1. **Clean previous builds:**
    ```bash
    rm -rf dist/ build/ *.egg-info/
+   ```
+
+2. **Build the package:**
+   ```bash
    uv run python -m build
    ```
 
-2. **Check packages**
+3. **Verify the package (optional but recommended):**
    ```bash
    uv run twine check dist/*
    ```
 
-3. **Upload to PyPI**
+4. **Upload to PyPI:**
    ```bash
-   uv run twine upload dist/* --username __token__ --password <PYPI_TOKEN>
+   uv run twine upload dist/* --username __token__ --password <your-pypi-token>
    ```
 
-## Pre-release Checklist
+## Release Checklist
 
-- [ ] Update version in `pyproject.toml`
+- [ ] Run full test suite: `uv run pytest`
+- [ ] Verify version numbers match in `pyproject.toml` and `__init__.py`
 - [ ] Update `CHANGELOG.md`
-- [ ] Run tests: `uv run pytest`
-- [ ] Build packages: `uv run python -m build`
-- [ ] Check packages: `uv run twine check dist/*`
-- [ ] Commit and tag release
-- [ ] Publish to PyPI
+- [ ] Commit all changes
+- [ ] Tag the release in git: `git tag v0.3.0 && git push origin v0.3.0`

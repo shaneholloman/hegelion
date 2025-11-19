@@ -69,26 +69,12 @@ Hegelion supports two distinct usage patterns depending on your needs:
 **Best for:** Python scripts, CI/CD pipelines, and Batch Benchmarking.
 
 - **Why:** Automate testing across multiple models programmatically.
-- **Tool:** `hegelion` CLI / Python API
+- **Tool:** `hegelion` Python API (or basic CLI demo)
 - **Key Features:**
   - **Batch Processing:** Run benchmarks on hundreds of prompts.
   - **Structured Evaluation:** Compare model performance systematically.
   - **Backend Agnostic:** Supports Anthropic, OpenAI, Google Gemini, Ollama, etc.
-  - **Persona-Based Critiques:** Configure custom critic personas (Security Engineer, Ruthless Editor, etc.).
-  - **Iterative Refinement:** Run multiple rounds of dialectics (Synthesis Round 1 → Thesis Round 2).
-  - **Search Grounding:** Instruct models to verify claims with search tools during critique.
-
-  #### Available Persona Presets
-
-  The `--personas` argument activates different combinations of critical lenses.
-
-  | Preset | Personas Activated | Purpose |
-  |---|---|---|
-  | **`council`** | `Logician`, `Empiricist`, `Ethicist` | Default multi-perspective analysis. Balances logic, facts, and ethical considerations. |
-  | **`security`**| `Security Engineer` | Focuses exclusively on identifying vulnerabilities, exploits, and security risks. |
-  | **`editorial`**| `Ruthless Editor` | Aims to improve clarity, cut fluff, and strengthen the core argument. |
-  | **`debate`**| `Devil's Advocate` | Takes a strong opposing view to steel-man the argument and expose weak points. |
-  | **`comprehensive`** | All of the above | A "gloves-off" critique that combines all available perspectives. |
+  - **Advanced Features:** Full access to persona-based critiques, iterations, and search grounding via Python API.
 
 ---
 
@@ -116,26 +102,11 @@ Add this to your MCP configuration file (e.g., `claude_desktop_config.json` or C
 ```
 *Now, just ask your AI: "Run a dialectical analysis on 'Is AI conscious?' using the prompt server with council critiques."*
 
-### Option 2: Python API / CLI
+### Option 2: Python API
 
-```bash
-# Configure your API key
-export ANTHROPIC_API_KEY="sk-ant-..."
+1. Copy `env.example` to `.env` and configure your API keys (or set environment variables).
 
-# Run a single query with default critique
-hegelion "Can AI be genuinely creative?" --format summary
-
-# Run with Council of Critics (multi-perspective)
-hegelion "Should we implement UBI?" --personas council --format summary
-
-# Run with iterative refinement (2 rounds)
-hegelion "What is consciousness?" --personas council --iterations 2
-
-# Run with search grounding (instructs model to verify facts)
-hegelion "What are the latest developments in fusion energy?" --use-search --format summary
-```
-
-**Python API Example:**
+2. Run a script:
 
 ```python
 import asyncio
@@ -160,6 +131,18 @@ async def main():
 asyncio.run(main())
 ```
 
+### CLI Demo
+
+A basic CLI is included for quick checks and demos:
+
+```bash
+# Run a single query with default settings
+hegelion "Can AI be genuinely creative?" --format summary
+
+# Run in demo mode (no API key needed)
+hegelion --demo
+```
+
 ---
 
 ## Documentation
@@ -167,6 +150,7 @@ asyncio.run(main())
 - **[Full Specification (HEGELION_SPEC.md)](HEGELION_SPEC.md)**: Detailed architecture and schema.
 - **[Prompt Server Guide (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)**: How to use the model-agnostic MCP server.
 - **[MCP Reference (docs/MCP.md)](docs/MCP.md)**: Technical details for MCP integration.
+- **[Publishing Guide (docs/PUBLISHING.md)](docs/PUBLISHING.md)**: How to build and publish releases.
 
 ---
 

@@ -20,10 +20,10 @@ uv sync  # or: pip install -e .
 
 ## Basic Configuration
 
-Create a `.env` file (or export environment variables) to choose your backend:
+Create a `.env` file (or export environment variables) to choose your backend. We provide a template `env.example`:
 
 ```bash
-cp .env.example .env
+cp env.example .env
 ```
 
 Edit `.env` to point at Anthropic, OpenAI, Ollama, or a custom HTTP backend as described in `HEGELION_SPEC.md` and the main README.
@@ -32,7 +32,7 @@ Edit `.env` to point at Anthropic, OpenAI, Ollama, or a custom HTTP backend as d
 
 The project maintainers currently verify two providers end-to-end:
 
-- **Anthropic Claude** (default `.env.example` entries).
+- **Anthropic Claude** (default in `env.example`).
 - **GLM 4.6** — configure `HEGELION_PROVIDER=openai`, `HEGELION_MODEL=GLM-4.6`, `OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4`, and your Z.AI API key. Reference transcripts live in `examples/glm4_6_examples.jsonl`; replay with `hegelion-bench` to diff against new runs.
 
 We welcome confirmation for other Anthropic/OpenAI-compatible deployments (Azure OpenAI, custom base URLs, etc.).
@@ -55,7 +55,9 @@ jq 'del(.query, .thesis, .antithesis, .synthesis, .contradictions, .research_pro
 
 Attach the sanitized file (or paste its contents) when reporting provider success/failure.
 
-## CLI Usage
+## CLI Usage (Basic)
+
+The CLI is primarily for demos and quick checks. For advanced features (personas, iterations), use the Python API or MCP.
 
 Single query with a readable summary:
 
@@ -83,10 +85,11 @@ Traces are written as **JSONL** – one `HegelionResult` per line – so you can
 
 ## Python API
 
+For full control, use the Python API.
+
 ```python
 import asyncio
 from hegelion import quickstart, dialectic, run_benchmark
-
 
 async def main():
     # Easiest path – uses env-configured backend/model
@@ -114,4 +117,3 @@ Additional resources:
 
 - `docs/MCP.md` – in-depth reference covering MCP tool schemas, troubleshooting, and client-specific notes.
 - `examples/mcp/claude_desktop_config.json` – ready-made Claude Desktop snippet you can drop into your config file.
-

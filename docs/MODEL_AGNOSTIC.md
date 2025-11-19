@@ -5,7 +5,7 @@ This version of Hegelion works with **whatever LLM is currently calling the MCP 
 - **Cursor** with Gemini 3, Claude 3.5, or any model
 - **Claude Desktop** using its native model
 - **VS Code** with any configured LLM
-- **Antigraity** or other MCP-compatible environments
+- **Antigravity** or other MCP-compatible environments
 
 ## 🎯 **The Problem This Solves**
 
@@ -93,7 +93,7 @@ All Phase 2 features work in prompt-driven mode:
 ```
 
 ### Cursor/VS Code
-1. Install Hegelion MCP extension
+1. Install Hegelion MCP extension (or configure via command)
 2. Configure to use `hegelion-prompt-server`
 3. Works with any model you have configured
 

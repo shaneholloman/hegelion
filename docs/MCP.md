@@ -13,7 +13,7 @@ This reference walks through running the Hegelion Model Context Protocol (MCP) s
 ## Quick Start (Claude Desktop)
 
 1. Ensure `hegelion` is installed (either from PyPI or via `uv sync`).
-2. Copy `.env.example` to `.env` and fill in the provider keys you plan to use.
+2. Copy `env.example` to `.env` and fill in the provider keys you plan to use.
 3. Drop the sample config from `examples/mcp/claude_desktop_config.json` into your `claude_desktop_config.json` (or merge it with existing servers).
 4. Restart Claude Desktop. You should see "Hegelion" listed under available tools.
 5. Run a prompt such as "Can AI be genuinely creative?". The Hegelion MCP server will return the structured JSON described in `HEGELION_SPEC.md`.
@@ -43,7 +43,22 @@ This reference walks through running the Hegelion Model Context Protocol (MCP) s
     },
     "debug": {
       "type": "boolean",
-      "description": "Include debug information and conflict metrics (metadata.debug and trace)",
+      "description": "Include debug information and conflict metrics",
+      "default": false
+    },
+    "personas": {
+      "type": "string",
+      "description": "Critic persona preset (e.g., 'council', 'security', 'editorial', 'debate')",
+      "default": null
+    },
+    "iterations": {
+      "type": "integer",
+      "description": "Number of refinement loops (Synthesis -> new Thesis). Defaults to 1.",
+      "default": 1
+    },
+    "use_search": {
+      "type": "boolean",
+      "description": "Instruct the model to use search tools during critique to verify facts",
       "default": false
     }
   },
@@ -56,6 +71,7 @@ This reference walks through running the Hegelion Model Context Protocol (MCP) s
 ```json
 {
   "query": "Can AI be genuinely creative?",
+  "personas": "council",
   "debug": true
 }
 ```
@@ -115,12 +131,16 @@ The MCP server wraps the result in a `TextContent` object whose `text` field is 
   "properties": {
     "prompts_file": {
       "type": "string",
-      "description": "Path to JSONL file containing prompts (one per line; each line may be a string or a JSON object with 'query'/'prompt'/'text')"
+      "description": "Path to JSONL file containing prompts (one per line)"
     },
     "debug": {
       "type": "boolean",
-      "description": "Include debug information and conflict metrics for each result",
+      "description": "Include debug information and conflict metrics",
       "default": false
+    },
+    "personas": {
+      "type": "string",
+      "description": "Critic persona preset for all items in benchmark"
     }
   },
   "required": ["prompts_file"]
@@ -138,12 +158,7 @@ The MCP server wraps the result in a `TextContent` object whose `text` field is 
 
 **Representative response payload:**
 
-`run_benchmark` returns a single `TextContent` whose `text` field is **newline-delimited JSON** (JSONL). Each line is one `HegelionResult` object matching the schema above, for example:
-
-```text
-{"query": "Can AI be genuinely creative?", "mode": "synthesis", "thesis": "...", "antithesis": "...", "synthesis": "...", "contradictions": [...], "research_proposals": [...], "metadata": {...}}
-{"query": "What is the capital of France?", "mode": "synthesis", "thesis": "...", "antithesis": "...", "synthesis": "...", "contradictions": [...], "research_proposals": [...], "metadata": {...}}
-```
+`run_benchmark` returns a single `TextContent` whose `text` field is **newline-delimited JSON** (JSONL). Each line is one `HegelionResult` object matching the schema above.
 
 Assistants should split on newlines and parse each line as independent JSON.
 
@@ -164,7 +179,7 @@ When integrating Hegelion as an MCP server in a general-purpose AI assistant, we
     - `metadata.thesis_time_ms`, `metadata.antithesis_time_ms`, `metadata.synthesis_time_ms`, `metadata.total_time_ms` → timing information.
     - `metadata.debug` and `trace` → internal metrics and phase traces, present primarily when `debug=true`.
 
-Downstream tools (e.g., custom evaluators, dashboards, or RAG pipelines) should treat `HegelionResult` as a stable contract; engine details may evolve, but this schema is intended to remain compatible.
+Downstream tools (e.g., custom evaluators, dashboards, or RAG pipelines) should treat `HegelionResult` as a stable contract.
 
 ## Troubleshooting Checklist
 
