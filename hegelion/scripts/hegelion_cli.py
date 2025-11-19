@@ -12,9 +12,7 @@ from typing import List, Optional, Sequence
 
 from importlib import resources
 
-if (
-    __package__ is None or __package__ == ""
-):  # pragma: no cover - direct execution fallback
+if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hegelion.config import ConfigurationError, get_config, set_config_value
@@ -220,11 +218,7 @@ async def interactive_session() -> None:
                 elif show_what == "synthesis":
                     print(latest_result.synthesis)
                 elif show_what in ("contradictions", "cons"):
-                    print(
-                        json.dumps(
-                            latest_result.contradictions, indent=2, ensure_ascii=False
-                        )
-                    )
+                    print(json.dumps(latest_result.contradictions, indent=2, ensure_ascii=False))
                 elif show_what in ("research", "proposals"):
                     print(
                         json.dumps(
@@ -234,9 +228,7 @@ async def interactive_session() -> None:
                         )
                     )
                 elif show_what == "metadata":
-                    print(
-                        json.dumps(latest_result.metadata, indent=2, ensure_ascii=False)
-                    )
+                    print(json.dumps(latest_result.metadata, indent=2, ensure_ascii=False))
                 elif show_what == "summary":
                     print(format_summary(latest_result))
                 else:
@@ -295,9 +287,7 @@ async def _run(args: argparse.Namespace) -> None:
         return
 
     if not args.query:
-        raise SystemExit(
-            "Error: QUERY is required unless --interactive or --demo is specified."
-        )
+        raise SystemExit("Error: QUERY is required unless --interactive or --demo is specified.")
 
     try:
         result = await run_dialectic(query=args.query, debug=args.debug)

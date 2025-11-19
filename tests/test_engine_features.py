@@ -23,9 +23,7 @@ class TestEngineFeatures:
 
         # Mock internal generation methods to track calls
         with (
-            patch.object(
-                engine, "_generate_thesis_phase", new_callable=AsyncMock
-            ) as mock_thesis,
+            patch.object(engine, "_generate_thesis_phase", new_callable=AsyncMock) as mock_thesis,
             patch.object(engine, "_run_cycle", new_callable=AsyncMock) as mock_cycle,
         ):
 
@@ -61,20 +59,14 @@ class TestEngineFeatures:
             patch.object(
                 engine, "_generate_persona_antithesis", new_callable=AsyncMock
             ) as mock_persona_gen,
-            patch.object(
-                engine, "_generate_antithesis", new_callable=AsyncMock
-            ) as mock_std_gen,
+            patch.object(engine, "_generate_antithesis", new_callable=AsyncMock) as mock_std_gen,
         ):
 
             # Mock returns
-            mock_persona_gen.return_value = MagicMock(
-                text="Critique", contradictions=[]
-            )
+            mock_persona_gen.return_value = MagicMock(text="Critique", contradictions=[])
 
             # We need to mock the rest of the cycle to avoid crashes
-            with patch.object(
-                engine, "_generate_synthesis", new_callable=AsyncMock
-            ) as mock_synth:
+            with patch.object(engine, "_generate_synthesis", new_callable=AsyncMock) as mock_synth:
                 mock_synth.return_value = MagicMock(text="Synth", research_proposals=[])
 
                 await engine._run_cycle(
@@ -113,9 +105,7 @@ class TestEngineFeatures:
             mock_call.return_value = "Response"
 
             # Test standard antithesis
-            await engine._generate_antithesis(
-                "q", "t", use_search=True, stream_callback=None
-            )
+            await engine._generate_antithesis("q", "t", use_search=True, stream_callback=None)
             args, _ = mock_call.call_args
             prompt = args[0]
             assert "available search tools" in prompt

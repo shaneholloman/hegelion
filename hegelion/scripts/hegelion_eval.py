@@ -8,9 +8,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-if (
-    __package__ is None or __package__ == ""
-):  # pragma: no cover - direct execution fallback
+if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
     import sys
 
     sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -70,9 +68,7 @@ def analyze_results(results: List[HegelionResult]) -> Dict[str, Any]:
         if debug and "internal_conflict_score" in debug:
             conflict_scores.append(debug["internal_conflict_score"])
 
-    avg_conflict_score = (
-        sum(conflict_scores) / len(conflict_scores) if conflict_scores else None
-    )
+    avg_conflict_score = sum(conflict_scores) / len(conflict_scores) if conflict_scores else None
 
     return {
         "model": results[0].metadata.get("backend_model", "Unknown"),

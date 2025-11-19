@@ -73,9 +73,7 @@ def _get_env_float(name: str, default: float) -> float:
     try:
         return float(raw)
     except ValueError as exc:
-        raise ConfigurationError(
-            f"Environment variable {name} must be a float."
-        ) from exc
+        raise ConfigurationError(f"Environment variable {name} must be a float.") from exc
 
 
 def _get_env_int(name: str, default: int) -> int:
@@ -85,9 +83,7 @@ def _get_env_int(name: str, default: int) -> int:
     try:
         return int(raw)
     except ValueError as exc:
-        raise ConfigurationError(
-            f"Environment variable {name} must be an integer."
-        ) from exc
+        raise ConfigurationError(f"Environment variable {name} must be an integer.") from exc
 
 
 def _get_env_bool(name: str, default: bool) -> bool:
@@ -111,9 +107,7 @@ def get_config() -> Config:
         validate_results=_get_env_bool("HEGELION_VALIDATE_RESULTS", True),
         cache_enabled=_get_env_bool("HEGELION_CACHE", True),
         cache_ttl_seconds=_get_env_int("HEGELION_CACHE_TTL_SECONDS", 86_400),
-        cache_dir=os.path.expanduser(
-            os.getenv("HEGELION_CACHE_DIR", "~/.cache/hegelion")
-        ),
+        cache_dir=os.path.expanduser(os.getenv("HEGELION_CACHE_DIR", "~/.cache/hegelion")),
         openai_key=os.getenv("OPENAI_API_KEY"),
         openai_base_url=os.getenv("OPENAI_BASE_URL"),
         openai_org=os.getenv("OPENAI_ORG_ID"),
@@ -210,9 +204,7 @@ def get_backend_from_env() -> LLMBackend:
 
     if config.provider == "custom_http":
         if not config.custom_base_url:
-            raise ConfigurationError(
-                "CUSTOM_API_BASE_URL must be set for custom_http provider."
-            )
+            raise ConfigurationError("CUSTOM_API_BASE_URL must be set for custom_http provider.")
         return CustomHTTPLLMBackend(
             model=config.model,
             api_base_url=config.custom_base_url,

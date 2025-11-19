@@ -107,9 +107,7 @@ class HegelionMetadata:
     total_time_ms: float
     backend_provider: Optional[str] = None
     backend_model: Optional[str] = None
-    debug: Optional[Dict[str, Any]] = (
-        None  # Debug information including internal scores
-    )
+    debug: Optional[Dict[str, Any]] = None  # Debug information including internal scores
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -151,9 +149,7 @@ class HegelionOutput:
         self.trace = trace
         self.metadata = metadata
 
-    def to_hegelion_result(
-        self, include_debug_conflict_score: bool = False
-    ) -> HegelionResult:
+    def to_hegelion_result(self, include_debug_conflict_score: bool = False) -> HegelionResult:
         """Convert to the new HegelionResult format."""
         debug_info = None
         if include_debug_conflict_score:
@@ -173,9 +169,7 @@ class HegelionOutput:
             antithesis=self.trace.antithesis,
             synthesis=self.trace.synthesis or "",
             contradictions=contradictions,
-            research_proposals=[
-                {"description": rp} for rp in self.trace.research_proposals
-            ],
+            research_proposals=[{"description": rp} for rp in self.trace.research_proposals],
             metadata={
                 "thesis_time_ms": self.metadata.thesis_time_ms,
                 "antithesis_time_ms": self.metadata.antithesis_time_ms,

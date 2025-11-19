@@ -139,9 +139,7 @@ async def run_dialectic(
     resolved_validate = settings.validate_results if validate is None else validate
     resolved_cache_enabled = settings.cache_enabled if use_cache is None else use_cache
     resolved_cache_ttl = (
-        cache_ttl_seconds
-        if cache_ttl_seconds is not None
-        else settings.cache_ttl_seconds
+        cache_ttl_seconds if cache_ttl_seconds is not None else settings.cache_ttl_seconds
     )
 
     # Resolve Personas
@@ -174,15 +172,11 @@ async def run_dialectic(
     cache_key: Optional[str] = None
 
     # Update cache key to include new params
-    persona_key_part = (
-        ",".join(p.name for p in resolved_personas) if resolved_personas else "none"
-    )
+    persona_key_part = ",".join(p.name for p in resolved_personas) if resolved_personas else "none"
 
     if resolved_cache_enabled:
         cache = ResultCache(
-            CacheConfig.from_env(
-                cache_dir=settings.cache_dir, ttl_seconds=resolved_cache_ttl
-            )
+            CacheConfig.from_env(cache_dir=settings.cache_dir, ttl_seconds=resolved_cache_ttl)
         )
         backend_name = resolved_backend.__class__.__name__
 

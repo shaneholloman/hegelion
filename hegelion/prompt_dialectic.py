@@ -82,9 +82,7 @@ Generate your ANTITHESIS critique now.""",
             expected_format="Text with embedded CONTRADICTION: and EVIDENCE: sections",
         )
 
-    def generate_council_prompts(
-        self, query: str, thesis: str
-    ) -> List[DialecticalPrompt]:
+    def generate_council_prompts(self, query: str, thesis: str) -> List[DialecticalPrompt]:
         """Generate prompts for multi-perspective council critique."""
 
         council_members = [
@@ -245,9 +243,7 @@ def create_dialectical_workflow(
 
     # Step 2: Antithesis (standard or council-based)
     if use_council:
-        council_prompts = dialectic.generate_council_prompts(
-            query, "{{thesis_from_step_1}}"
-        )
+        council_prompts = dialectic.generate_council_prompts(query, "{{thesis_from_step_1}}")
         for i, council_prompt in enumerate(council_prompts):
             workflow["steps"].append(
                 {

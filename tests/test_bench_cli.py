@@ -34,14 +34,10 @@ def sample_result() -> HegelionResult:
 
 def test_bench_help_runs() -> None:
     """Test that help command runs successfully."""
-    subprocess.run(
-        [sys.executable, "-m", "hegelion.scripts.hegelion_bench", "--help"], check=True
-    )
+    subprocess.run([sys.executable, "-m", "hegelion.scripts.hegelion_bench", "--help"], check=True)
 
 
-def test_bench_with_jsonl_file(
-    monkeypatch, tmp_path: Path, sample_result: HegelionResult
-) -> None:
+def test_bench_with_jsonl_file(monkeypatch, tmp_path: Path, sample_result: HegelionResult) -> None:
     """Test benchmark with JSONL prompts file."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Query 1"}\n{"prompt": "Query 2"}\n')
@@ -88,9 +84,7 @@ def test_bench_with_mixed_formats(
     mock_runner.assert_awaited_once()
 
 
-def test_bench_with_output_file(
-    monkeypatch, tmp_path: Path, sample_result: HegelionResult
-) -> None:
+def test_bench_with_output_file(monkeypatch, tmp_path: Path, sample_result: HegelionResult) -> None:
     """Test benchmark with --output file."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Test"}\n')
@@ -107,9 +101,7 @@ def test_bench_with_output_file(
     assert call_kwargs["output_file"] == output_file
 
 
-def test_bench_with_debug_flag(
-    monkeypatch, tmp_path: Path, sample_result: HegelionResult
-) -> None:
+def test_bench_with_debug_flag(monkeypatch, tmp_path: Path, sample_result: HegelionResult) -> None:
     """Test benchmark with --debug flag."""
     prompts_file = tmp_path / "prompts.jsonl"
     prompts_file.write_text('{"query": "Test"}\n')
@@ -201,10 +193,7 @@ def test_bench_empty_file(monkeypatch, tmp_path: Path, capsys) -> None:
     hegelion_bench.main([str(prompts_file), "--summary"])
 
     captured = capsys.readouterr()
-    assert (
-        "No results to summarize" in captured.out
-        or "Total queries processed: 0" in captured.out
-    )
+    assert "No results to summarize" in captured.out or "Total queries processed: 0" in captured.out
 
 
 def test_bench_without_output_prints_jsonl(

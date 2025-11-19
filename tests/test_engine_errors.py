@@ -30,19 +30,13 @@ class _FailingBackend:
         self.fail_phase = fail_phase
         self.call_count = 0
 
-    async def generate(
-        self, prompt, max_tokens=1000, temperature=0.7, system_prompt=None
-    ):
+    async def generate(self, prompt, max_tokens=1000, temperature=0.7, system_prompt=None):
         self.call_count += 1
 
         # Check for phase in prompt (case-insensitive)
         prompt_upper = prompt.upper()
 
-        if (
-            self.fail_phase == "thesis"
-            and "THESIS" in prompt_upper
-            and "PHASE" in prompt_upper
-        ):
+        if self.fail_phase == "thesis" and "THESIS" in prompt_upper and "PHASE" in prompt_upper:
             raise Exception("Thesis generation failed")
         if (
             self.fail_phase == "antithesis"
@@ -184,10 +178,7 @@ class TestErrorMetadata:
 
         result = await engine.process_query("Test query")
 
-        assert (
-            "errors" not in result.metadata
-            or len(result.metadata.get("errors", [])) == 0
-        )
+        assert "errors" not in result.metadata or len(result.metadata.get("errors", [])) == 0
 
 
 @pytest.mark.asyncio
@@ -239,9 +230,7 @@ class TestStreamingCallbacks:
         backend = DummyLLMBackend()
 
         # Add stream_generate method to backend
-        async def stream_generate(
-            prompt, max_tokens=1000, temperature=0.7, system_prompt=None
-        ):
+        async def stream_generate(prompt, max_tokens=1000, temperature=0.7, system_prompt=None):
             chunks = ["Hello", " ", "World"]
             for chunk in chunks:
                 yield chunk
@@ -283,9 +272,7 @@ class TestProgressCallbacks:
         def progress_callback(event, payload):
             events.append((event, payload))
 
-        _ = await engine.process_query(
-            "Test query", progress_callback=progress_callback
-        )
+        _ = await engine.process_query("Test query", progress_callback=progress_callback)
 
         # Should have phase_started events
         phase_starts = [e for e, p in events if e == "phase_started"]
@@ -305,9 +292,7 @@ class TestProgressCallbacks:
         def progress_callback(event, payload):
             events.append((event, payload))
 
-        _ = await engine.process_query(
-            "Test query", progress_callback=progress_callback
-        )
+        _ = await engine.process_query("Test query", progress_callback=progress_callback)
 
         # Should have phase_completed events
         phase_completes = [e for e, p in events if e == "phase_completed"]
@@ -333,9 +318,7 @@ class TestProgressCallbacks:
         async def progress_callback(event, payload):
             events.append((event, payload))
 
-        _ = await engine.process_query(
-            "Test query", progress_callback=progress_callback
-        )
+        _ = await engine.process_query("Test query", progress_callback=progress_callback)
 
         assert len(events) > 0
 
@@ -403,9 +386,7 @@ class TestConflictScoreComputation:
         # Should handle backend failure gracefully
         # _estimate_normative_conflict returns 0.0 on failure, but other components
         # (semantic distance, contradiction_score) may still contribute
-        score = await engine._compute_conflict(
-            "Thesis", "Antithesis", ["Contradiction"]
-        )
+        score = await engine._compute_conflict("Thesis", "Antithesis", ["Contradiction"])
         # Should return a valid score (may not be exactly 0.0 due to other components)
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0

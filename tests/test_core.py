@@ -32,9 +32,7 @@ class MockBackend:
         }
         self.call_count = 0
 
-    async def generate(
-        self, prompt, max_tokens=1000, temperature=0.7, system_prompt=None
-    ):
+    async def generate(self, prompt, max_tokens=1000, temperature=0.7, system_prompt=None):
         """Mock generate method."""
         self.call_count += 1
 
@@ -78,9 +76,7 @@ class TestRunDialectic:
 
         # Should have extracted contradictions
         assert len(result.contradictions) == 2
-        assert any(
-            "unsupported assumptions" in c["description"] for c in result.contradictions
-        )
+        assert any("unsupported assumptions" in c["description"] for c in result.contradictions)
 
         # Should have extracted research proposals
         assert len(result.research_proposals) >= 1
@@ -115,9 +111,7 @@ class TestRunDialectic:
         mock_backend = MockBackend()
 
         with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch(
-                "hegelion.core.resolve_backend_for_model", return_value=mock_backend
-            ):
+            with patch("hegelion.core.resolve_backend_for_model", return_value=mock_backend):
                 result = await run_dialectic(
                     "Test query", model="custom-model", max_tokens_per_phase=5000
                 )
@@ -185,9 +179,7 @@ class TestRunBenchmark:
         """Test run_benchmark with prompt file."""
         # Create temporary prompt file
         prompts_file = tmp_path / "prompts.jsonl"
-        prompts_file.write_text(
-            '{"prompt": "Query 1"}\n{"query": "Query 2"}\nSimple query 3\n'
-        )
+        prompts_file.write_text('{"prompt": "Query 1"}\n{"query": "Query 2"}\nSimple query 3\n')
 
         mock_backend = MockBackend()
 
@@ -288,9 +280,7 @@ class TestHighLevelAPIs:
     async def test_dialectic_uses_model_autodetect(self):
         mock_backend = MockBackend()
 
-        with patch(
-            "hegelion.core.resolve_backend_for_model", return_value=mock_backend
-        ):
+        with patch("hegelion.core.resolve_backend_for_model", return_value=mock_backend):
             with patch("hegelion.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 

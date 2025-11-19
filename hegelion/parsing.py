@@ -98,9 +98,7 @@ def extract_contradictions(text: str) -> List[str]:
         normalized = cleaned.upper()
         if normalized.startswith("EVIDENCE"):
             # Extract evidence text after colon
-            evidence_line = (
-                cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned
-            )
+            evidence_line = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned
             if evidence_line:
                 evidence_buffer.append(evidence_line)
         elif evidence_buffer:
@@ -234,9 +232,7 @@ def parse_conflict_value(response: str) -> float:
     return 0.0
 
 
-def conclusion_excerpt(
-    text: str, max_paragraphs: int = 2, max_chars: int = 1500
-) -> str:
+def conclusion_excerpt(text: str, max_paragraphs: int = 2, max_chars: int = 1500) -> str:
     """Extract a conclusion excerpt from text for conflict analysis."""
     paragraphs = [segment.strip() for segment in text.split("\n\n") if segment.strip()]
     if not paragraphs:

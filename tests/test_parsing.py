@@ -29,10 +29,7 @@ class TestContractionParsing:
         assert "The thesis assumes X without evidence" in contradictions[0]
         assert "Studies show that Y is actually the case" in contradictions[0]
         assert "The conclusion ignores important factor Z" in contradictions[1]
-        assert (
-            "Research demonstrates Z significantly impacts outcomes"
-            in contradictions[1]
-        )
+        assert "Research demonstrates Z significantly impacts outcomes" in contradictions[1]
 
     def test_extract_contradictions_without_evidence(self):
         """Test contradiction extraction without evidence."""

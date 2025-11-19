@@ -28,9 +28,7 @@ def sample_result() -> HegelionResult:
         antithesis="Sample antithesis",
         synthesis="Sample synthesis",
         contradictions=[{"description": "A contradiction", "evidence": "Evidence"}],
-        research_proposals=[
-            {"description": "A proposal", "testable_prediction": "Prediction"}
-        ],
+        research_proposals=[{"description": "A proposal", "testable_prediction": "Prediction"}],
         metadata=metadata,
         trace={
             "thesis": "Sample thesis",
@@ -41,15 +39,11 @@ def sample_result() -> HegelionResult:
 
 
 def test_cli_help_runs() -> None:
-    subprocess.run(
-        [sys.executable, "-m", "hegelion.scripts.hegelion_cli", "--help"], check=True
-    )
+    subprocess.run([sys.executable, "-m", "hegelion.scripts.hegelion_cli", "--help"], check=True)
 
 
 def test_bench_help_runs() -> None:
-    subprocess.run(
-        [sys.executable, "-m", "hegelion.scripts.hegelion_bench", "--help"], check=True
-    )
+    subprocess.run([sys.executable, "-m", "hegelion.scripts.hegelion_bench", "--help"], check=True)
 
 
 def test_cli_json_output(
@@ -171,9 +165,7 @@ def test_cli_missing_query_raises(monkeypatch: pytest.MonkeyPatch) -> None:
         hegelion_cli.main([])
 
 
-def test_cli_configuration_error_handling(
-    monkeypatch: pytest.MonkeyPatch, capsys
-) -> None:
+def test_cli_configuration_error_handling(monkeypatch: pytest.MonkeyPatch, capsys) -> None:
     """Test CLI handles ConfigurationError gracefully."""
     from hegelion.config import ConfigurationError
 

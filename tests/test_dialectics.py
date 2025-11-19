@@ -48,10 +48,7 @@ async def test_process_query_with_debug(engine: HegelionEngine) -> None:
     debug_info = result.metadata["debug"]
     assert "internal_conflict_score" in debug_info
     assert result.trace is not None
-    assert (
-        result.trace.get("internal_conflict_score")
-        == debug_info["internal_conflict_score"]
-    )
+    assert result.trace.get("internal_conflict_score") == debug_info["internal_conflict_score"]
 
 
 @pytest.mark.asyncio

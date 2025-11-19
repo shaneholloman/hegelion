@@ -406,9 +406,7 @@ class TestGetEngineSettingsFromEnv:
         settings = get_engine_settings()
 
         assert "~" not in settings.cache_dir
-        assert os.path.expanduser(
-            "~"
-        ) in settings.cache_dir or settings.cache_dir.startswith("/")
+        assert os.path.expanduser("~") in settings.cache_dir or settings.cache_dir.startswith("/")
 
 
 class TestConfigurationError:

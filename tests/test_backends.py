@@ -39,9 +39,7 @@ class TestOpenAILLMBackend:
         """Test basic text generation."""
         mock_client = AsyncMock()
         mock_response = MagicMock()
-        mock_response.choices = [
-            MagicMock(message=MagicMock(content="Generated text response"))
-        ]
+        mock_response.choices = [MagicMock(message=MagicMock(content="Generated text response"))]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
         with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client):
@@ -51,9 +49,7 @@ class TestOpenAILLMBackend:
                 base_url="https://api.openai.com/v1",
             )
 
-            result = await backend.generate(
-                "Test prompt", max_tokens=100, temperature=0.7
-            )
+            result = await backend.generate("Test prompt", max_tokens=100, temperature=0.7)
 
             assert result == "Generated text response"
             mock_client.chat.completions.create.assert_called_once()
@@ -159,12 +155,8 @@ class TestOpenAILLMBackend:
         mock_response.choices = [MagicMock(message=MagicMock(content="Response"))]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        with patch(
-            "hegelion.backends.AsyncOpenAI", return_value=mock_client
-        ) as mock_openai:
-            backend = OpenAILLMBackend(
-                model="gpt-4", api_key="test-key", organization="org-123"
-            )
+        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client) as mock_openai:
+            backend = OpenAILLMBackend(model="gpt-4", api_key="test-key", organization="org-123")
 
             await backend.generate("Test")
 
@@ -209,9 +201,7 @@ class TestAnthropicLLMBackend:
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
-            backend = AnthropicLLMBackend(
-                model="claude-3-opus-20240229", api_key="test-key"
-            )
+            backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
             result = await backend.generate("Test")
 
@@ -225,9 +215,7 @@ class TestAnthropicLLMBackend:
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
-            backend = AnthropicLLMBackend(
-                model="claude-3-opus-20240229", api_key="test-key"
-            )
+            backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
             await backend.generate("User prompt", system_prompt="System message")
 
@@ -257,9 +245,7 @@ class TestAnthropicLLMBackend:
         mock_client.messages.create = AsyncMock(return_value=mock_stream())
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
-            backend = AnthropicLLMBackend(
-                model="claude-3-opus-20240229", api_key="test-key"
-            )
+            backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
             collected = []
             async for chunk in backend.stream_generate("Test"):
@@ -284,9 +270,7 @@ class TestAnthropicLLMBackend:
         mock_client.messages.create = AsyncMock(return_value=mock_stream())
 
         with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
-            backend = AnthropicLLMBackend(
-                model="claude-3-opus-20240229", api_key="test-key"
-            )
+            backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
             collected = []
             async for chunk in backend.stream_generate("Test"):
@@ -327,13 +311,9 @@ class TestOllamaLLMBackend:
         mock_client = _create_mock_httpx_client(post_response=mock_response)
 
         with patch("httpx.AsyncClient", return_value=mock_client):
-            backend = OllamaLLMBackend(
-                model="llama3.3", base_url="http://localhost:11434"
-            )
+            backend = OllamaLLMBackend(model="llama3.3", base_url="http://localhost:11434")
 
-            result = await backend.generate(
-                "Test prompt", max_tokens=100, temperature=0.8
-            )
+            result = await backend.generate("Test prompt", max_tokens=100, temperature=0.8)
 
             assert result == "Ollama response text"
 
@@ -584,9 +564,7 @@ class TestCustomHTTPLLMBackend:
     async def test_generate_choices_field(self):
         """Test response with OpenAI-style 'choices' field."""
         mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "choices": [{"message": {"content": "From choices"}}]
-        }
+        mock_response.json.return_value = {"choices": [{"message": {"content": "From choices"}}]}
         mock_response.raise_for_status = MagicMock()
 
         mock_client = _create_mock_httpx_client(post_response=mock_response)

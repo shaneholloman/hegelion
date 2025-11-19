@@ -237,9 +237,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             response_parts = ["# COUNCIL ANTITHESIS PROMPTS\n"]
 
             for prompt_obj in council_prompts:
-                response_parts.append(
-                    f"## {prompt_obj.phase.replace('_', ' ').title()}"
-                )
+                response_parts.append(f"## {prompt_obj.phase.replace('_', ' ').title()}")
                 response_parts.append(prompt_obj.prompt)
                 response_parts.append(f"**Instructions:** {prompt_obj.instructions}")
                 response_parts.append("")

@@ -17,9 +17,7 @@ class _RecordingAsyncModel:
         self.last_prompt = None
         self.last_kwargs = None
 
-    async def generate_content(
-        self, prompt, **kwargs
-    ):  # pragma: no cover - exercised in tests
+    async def generate_content(self, prompt, **kwargs):  # pragma: no cover - exercised in tests
         self.last_prompt = prompt
         self.last_kwargs = kwargs
         return _DummyResponse(text="Generated from Google")
