@@ -123,6 +123,20 @@ class TestWorkflowHelpers:
         # Thesis + 3 Council + Synthesis = 5 steps
         assert len(workflow["steps"]) == 5
 
+        # Verify synthesis step references all council members
+        synthesis_step = workflow["steps"][-1]
+        assert synthesis_step["name"] == "Generate Synthesis"
+        synthesis_prompt_text = synthesis_step["prompt"]["prompt"]
+
+        # It should contain references to all council members variables
+        # Note: step numbers for council are 2, 3, 4
+        assert "### Council The Logician" in synthesis_prompt_text
+        assert "{{council_the_logician_from_step_2}}" in synthesis_prompt_text
+        assert "### Council The Empiricist" in synthesis_prompt_text
+        assert "{{council_the_empiricist_from_step_3}}" in synthesis_prompt_text
+        assert "### Council The Ethicist" in synthesis_prompt_text
+        assert "{{council_the_ethicist_from_step_4}}" in synthesis_prompt_text
+
     def test_create_dialectical_workflow_with_judge(self):
         """Test workflow with judge."""
         workflow = create_dialectical_workflow("test", use_judge=True)
