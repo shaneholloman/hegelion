@@ -168,6 +168,21 @@ When asking the same question ("What is a potential untapped resource for techno
 
 ---
 
+### 🧠 Why This Happens: The Structural Bias
+
+Why does Hegelion produce radically different answers?
+
+Standard LLMs optimize for **probability and helpfulness**, usually retrieving the most popular or exciting "correct" answer found in their training data (like Organoid Intelligence).
+
+Hegelion optimizes for **conflict and negation**.
+1.  **The Structure Forces Conflict**: The prompt explicitly demands an *Antithesis* phase where the model MUST attack its own initial idea.
+2.  **Safety in Physics**: To survive the "Council of Critics" (Logician, Empiricist), the model subconsciously gravitates towards topics with "hard walls" (like Thermodynamics or Economics) rather than speculative ones.
+3.  **Creativity via Destruction**: By forcing the model to destroy its first idea ("convert heat to electricity"), it is forced to invent a third way ("use heat as a service") that satisfies the constraints.
+
+**The format forces the content.** You don't get a summary; you get an evolution.
+
+---
+
 ### Quick Dialectical Analysis
 1. Call `dialectical_single_shot` tool
 2. Paste the returned prompt into your LLM
