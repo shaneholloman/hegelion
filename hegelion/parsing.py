@@ -13,6 +13,7 @@ def parse_contradiction_header(text: str) -> Optional[str]:
     Supports variations:
     - CONTRADICTION: description
     - **CONTRADICTION**: description
+    - **CONTRADICTION:** description
     - Contradiction 1: description
     - contradiction: description (case insensitive)
     """
@@ -20,14 +21,30 @@ def parse_contradiction_header(text: str) -> Optional[str]:
     if colon_index == -1:
         return None
 
-    # Strip markdown and normalize
-    prefix = strip_markdown_wrappers(text[:colon_index].strip()).upper()
+    # Strip markdown from the prefix only
+    prefix = text[:colon_index].strip()
+
+    # Remove leading and trailing markdown markers from the prefix
+    for marker in ["**", "__", "*", "_"]:
+        if prefix.startswith(marker):
+            prefix = prefix[len(marker):].strip()
+        if prefix.endswith(marker):
+            prefix = prefix[:-len(marker)].strip()
+
+    prefix = prefix.upper()
 
     # Remove numbering (e.g., "CONTRADICTION 1" -> "CONTRADICTION")
     prefix_parts = prefix.split()
     if prefix_parts and prefix_parts[0] == "CONTRADICTION":
         # Valid contradiction header
         detail = text[colon_index + 1 :].strip() or "Unspecified contradiction"
+
+        # Strip markdown from the description as well
+        for marker in ["**", "__", "*", "_"]:
+            if detail.startswith(marker):
+                detail = detail[len(marker):].strip()
+                break
+
         return detail
 
     return None
