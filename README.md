@@ -2,8 +2,6 @@
 
 > *“The truth is the whole. The whole, however, is merely the essential nature reaching its completeness through the process of its own development.”*  
 > — **G.W.F. Hegel**
->
-> **Hegelion** embodies the dialectical method—**Thesis**, **Antithesis**, **Synthesis**—transforming static AI responses into a dynamic evolution of thought. By challenging its own assumptions, it doesn't just answer; it *reason*.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
