@@ -1,195 +1,102 @@
 # Hegelion MCP Reference
 
-This reference walks through running the Hegelion Model Context Protocol (MCP) server, wiring it into Claude Desktop, and troubleshooting common issues. Use it alongside `README.md` and `HEGELION_SPEC.md` when embedding Hegelion into other MCP-capable clients.
+This reference walks through running the Hegelion Model Context Protocol (MCP) server, wiring it into Claude Desktop or Cursor, and choosing the right mode for your needs.
 
-## Overview
+## Choose Your Mode
 
-- **Command:** `hegelion-server` (installed via the `project.scripts` entry point) or `python -m hegelion.mcp_server` if you need an explicit module call.
-- **Tools exposed:**
-  - `run_dialectic` – single-query thesis → antithesis → synthesis loop with optional debug metrics.
-  - `run_benchmark` – batch runner for JSONL prompt files that returns one `HegelionResult` per line.
-- **Runtime requirements:** Python 3.10+, configured backend credentials via `.env` (Anthropic by default, GLM and other OpenAI-compatible providers supported).
+Hegelion offers two distinct MCP servers. You can run one or both.
 
-## Quick Start (Claude Desktop)
+| Mode | Server Name | Description | Best For |
+| --- | --- | --- | --- |
+| **Prompt-Driven** | `hegelion-prompt-server` | Generates reasoning *prompts* that your IDE's AI (Claude, GPT-4) executes. **No API keys required.** | **Cursor, Claude Desktop**, VS Code users who want to use their existing model. |
+| **Backend-Driven** | `hegelion-server` | Executes the reasoning loop on a background server using API keys you provide. | **Pipelines, Automation**, or offloading heavy reasoning to a different model (e.g. using O1 for reasoning while coding with Sonnet). |
 
-1. Ensure `hegelion` is installed (either from PyPI or via `uv sync`).
-2. Copy `env.example` to `.env` and fill in the provider keys you plan to use.
-3. Drop the sample config from `examples/mcp/claude_desktop_config.json` into your `claude_desktop_config.json` (or merge it with existing servers).
-4. Restart Claude Desktop. You should see "Hegelion" listed under available tools.
-5. Run a prompt such as "Can AI be genuinely creative?". The Hegelion MCP server will return the structured JSON described in `HEGELION_SPEC.md`.
+---
 
-## Configuration Notes
+## Quick Setup (Automated)
 
-| Setting | Description |
-| --- | --- |
-| `HEGELION_PROVIDER` | `anthropic`, `openai`, `google`, `ollama`, `custom_http`, or `auto`. Defaults to Anthropic. |
-| `HEGELION_MODEL` | Model identifier for the provider (`claude-4.5-sonnet-latest`, `GLM-4.6`, etc.). |
-| Provider-specific API keys | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, etc. The same values can be passed into Claude Desktop's MCP config if you don't want to rely on `.env`. |
-| Debug toggle | Pass `debug=true` in tool arguments to surface conflict scores in `metadata.debug`. |
+The easiest way to configure Hegelion for Cursor or Claude Desktop is to run the included setup script from your project root:
 
-## Tool Schemas & Payloads
-
-### `run_dialectic`
-
-**Input schema (canonical):**
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "query": {
-      "type": "string",
-      "description": "Question or topic to analyze dialectically"
-    },
-    "debug": {
-      "type": "boolean",
-      "description": "Include debug information and conflict metrics",
-      "default": false
-    },
-    "personas": {
-      "type": "string",
-      "description": "Critic persona preset (e.g., 'council', 'security', 'editorial', 'debate')",
-      "default": null
-    },
-    "iterations": {
-      "type": "integer",
-      "description": "Number of refinement loops (Synthesis -> new Thesis). Defaults to 1.",
-      "default": 1
-    },
-    "use_search": {
-      "type": "boolean",
-      "description": "Instruct the model to use search tools during critique to verify facts",
-      "default": false
-    }
-  },
-  "required": ["query"]
-}
+```bash
+# Detects your python environment and generates valid config files
+python scripts/setup_mcp.py
 ```
 
-**Friendly example call:**
+This will:
+1. Create a `mcp_config.json` compatible with Cursor.
+2. Output a configuration snippet for `claude_desktop_config.json`.
+
+---
+
+## Manual Setup
+
+### 1. Cursor Configuration (`mcp_config.json`)
+
+Place this in your project root. **Note:** Use absolute paths for robustness.
 
 ```json
 {
-  "query": "Can AI be genuinely creative?",
-  "personas": "council",
-  "debug": true
-}
-```
-
-**Representative response payload:**
-
-The MCP server wraps the result in a `TextContent` object whose `text` field is a single JSON object following the canonical `HegelionResult` schema:
-
-```json
-{
-  "query": "Can AI be genuinely creative?",
-  "mode": "synthesis",
-  "thesis": "THESIS: The Creative Machine ...",
-  "antithesis": "ANTITHESIS: The Sophisticated Mirror ...",
-  "synthesis": "SYNTHESIS: The Co-Creative Process ...",
-  "contradictions": [
-    {
-      "description": "The Redefinition Fallacy",
-      "evidence": "The thesis narrows 'creativity' to a computable procedure, ignoring intent and subjective urgency."
+  "mcpServers": {
+    "hegelion": {
+      "command": "/absolute/path/to/python",
+      "args": ["-m", "hegelion.prompt_mcp_server"],
+      "env": {
+        "PYTHONPATH": "/absolute/path/to/project_root"
+      }
     }
-  ],
-  "research_proposals": [
-    {
-      "description": "The Co-Creative Trace Analysis",
-      "testable_prediction": "Iterative human–AI dialogues produce artifacts judged more creative than single-pass outputs."
-    }
-  ],
-  "metadata": {
-    "thesis_time_ms": 1234.5,
-    "antithesis_time_ms": 2345.6,
-    "synthesis_time_ms": 3456.7,
-    "total_time_ms": 7036.8,
-    "backend_provider": "AnthropicLLMBackend",
-    "backend_model": "glm-4.6",
-    "debug": {
-      "internal_conflict_score": 0.95
-    }
-  },
-  "trace": {
-    "thesis": "... full phase output ...",
-    "antithesis": "... full phase output ...",
-    "synthesis": "... full phase output ...",
-    "contradictions_found": 3,
-    "research_proposals": ["..."],
-    "internal_conflict_score": 0.95
   }
 }
 ```
 
-### `run_benchmark`
+### 2. Claude Desktop (`claude_desktop_config.json`)
 
-**Input schema (canonical):**
+Locate your config file (macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`) and add:
 
 ```json
 {
-  "type": "object",
-  "properties": {
-    "prompts_file": {
-      "type": "string",
-      "description": "Path to JSONL file containing prompts (one per line)"
-    },
-    "debug": {
-      "type": "boolean",
-      "description": "Include debug information and conflict metrics",
-      "default": false
-    },
-    "personas": {
-      "type": "string",
-      "description": "Critic persona preset for all items in benchmark"
+  "mcpServers": {
+    "hegelion-prompt": {
+      "command": "/absolute/path/to/python",
+      "args": ["-m", "hegelion.prompt_mcp_server"],
+      "env": {
+        "PYTHONPATH": "/absolute/path/to/project_root"
+      }
     }
-  },
-  "required": ["prompts_file"]
+  }
 }
 ```
 
-**Friendly example call:**
+---
 
-```json
-{
-  "prompts_file": "benchmarks/examples_basic.jsonl",
-  "debug": false
-}
-```
+## Available Tools
 
-**Representative response payload:**
+### Prompt-Driven Server (`hegelion.prompt_mcp_server`)
 
-`run_benchmark` returns a single `TextContent` whose `text` field is **newline-delimited JSON** (JSONL). Each line is one `HegelionResult` object matching the schema above.
+These tools return **text prompts** that you (or your agent) execute immediately.
 
-Assistants should split on newlines and parse each line as independent JSON.
+*   `dialectical_single_shot`: Generates one massive prompt for Thesis → Antithesis → Synthesis.
+*   `dialectical_workflow`: Generates a JSON plan for step-by-step execution.
+*   `thesis_prompt`, `antithesis_prompt`, `synthesis_prompt`: Generates individual phase prompts.
 
-## Assistant Integration Patterns
+### Backend-Driven Server (`hegelion.mcp_server`)
 
-When integrating Hegelion as an MCP server in a general-purpose AI assistant, we recommend the following patterns:
+These tools perform the work **remotely** and return the final result.
 
-- Treat `run_dialectic` as the **single-query reasoning tool**.
-- Treat `run_benchmark` as a **batch evaluation tool** for pre-existing prompt sets.
-- For each tool call:
-  - Use the canonical input schemas above.
-  - Parse the `text` content as JSON (or JSONL for `run_benchmark`).
-  - Map fields as follows:
-    - `thesis`, `antithesis`, `synthesis` → the three core reasoning components.
-    - `contradictions[]` → structured critiques with `description` and optional `evidence`.
-    - `research_proposals[]` → structured proposals with `description` and optional `testable_prediction`.
-    - `metadata.backend_provider`, `metadata.backend_model` → backend identification.
-    - `metadata.thesis_time_ms`, `metadata.antithesis_time_ms`, `metadata.synthesis_time_ms`, `metadata.total_time_ms` → timing information.
-    - `metadata.debug` and `trace` → internal metrics and phase traces, present primarily when `debug=true`.
+*   `run_dialectic`: Runs the full loop. Requires `HEGELION_PROVIDER` and API keys in `.env`.
+*   `run_benchmark`: Runs a batch of prompts from a file.
 
-Downstream tools (e.g., custom evaluators, dashboards, or RAG pipelines) should treat `HegelionResult` as a stable contract.
+---
 
-## Troubleshooting Checklist
+## Troubleshooting
 
-- **Server not visible:** Verify `hegelion-server` is on `PATH` or provide the module invocation in the MCP config.
-- **Authentication errors:** Confirm the relevant API key is available to both the server process and the MPC client (Claude Desktop does not inherit `.env` by default).
-- **Timeouts:** Large benchmarks can take several minutes. Reduce prompt count or increase the MCP client timeout.
-- **Backend metadata says "Unknown":** Ensure the backend factory in `hegelion/config.py` reads your environment after you set provider/model (restart the MCP server if switching providers mid-session).
+### "Tool not found"
+- Did you restart your IDE (Cursor/Claude) after changing the config?
+- Are you looking for `run_dialectic` (backend) but only installed the prompt server? (Look for `dialectical_single_shot` instead).
 
-## Contributing / Testing
+### "Module not found: hegelion"
+- Ensure `PYTHONPATH` is set correctly in the `env` section of your JSON config.
+- Ensure you are using the python executable from your virtual environment (`.venv/bin/python`).
 
-- Use `uv run hegelion "<prompt>" --format json` to reproduce server outputs outside MCP.
-- Capture sanitized logs (see `README.md` → Verified Backends) before opening issues.
-- Planned enhancement: add an automated MCP smoke test that spins up `hegelion-server` under pytest and exercises `run_dialectic` via a mock MCP client.
+### "API Key missing"
+- The **Prompt-Driven** server does *not* need API keys.
+- The **Backend-Driven** server needs keys defined in `.env` or passed via the `env` block in the MCP config.

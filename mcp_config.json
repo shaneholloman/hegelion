@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "/Volumes/VIXinSSD/hegelion/.venv/bin/python",
+      "args": [
+        "-m",
+        "hegelion.prompt_mcp_server"
+      ],
+      "env": {
+        "PYTHONPATH": "/Volumes/VIXinSSD/hegelion"
+      }
+    },
+    "hegelion-backend": {
+      "command": "/Volumes/VIXinSSD/hegelion/.venv/bin/python",
+      "args": [
+        "-m",
+        "hegelion.mcp_server"
+      ],
+      "env": {
+        "PYTHONPATH": "/Volumes/VIXinSSD/hegelion"
+      }
+    }
+  }
+}
