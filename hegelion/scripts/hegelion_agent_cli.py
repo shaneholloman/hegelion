@@ -28,6 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--coding", action="store_true", help="Use coding-focused guidance")
     parser.add_argument("--format", choices=["json", "text"], default="text")
     parser.add_argument("--debug", action="store_true", help="Include debug output")
+    parser.add_argument("--log-file", help="Path to append raw agent traces (JSONL)", default=None)
     return parser
 
 
@@ -55,6 +56,15 @@ async def run(args: argparse.Namespace) -> int:
     )
 
     step = await agent.act(args.observation)
+
+    if args.log_file:
+        try:
+            log_path = Path(args.log_file)
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(step.result.to_dict(), ensure_ascii=False) + "\n")
+        except Exception as e:
+            print(f"Warning: Failed to write to log file {args.log_file}: {e}", file=sys.stderr)
 
     if args.format == "json":
         payload = {"action": step.action, "result": step.result.to_dict()}

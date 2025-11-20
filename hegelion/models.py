@@ -70,6 +70,21 @@ class HegelionResult:
             result["trace"] = self.trace
         return result
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> HegelionResult:
+        """Create a HegelionResult from a dictionary."""
+        return cls(
+            query=data.get("query", ""),
+            mode=data.get("mode", "synthesis"),
+            thesis=data.get("thesis", ""),
+            antithesis=data.get("antithesis", ""),
+            synthesis=data.get("synthesis", ""),
+            contradictions=data.get("contradictions", []),
+            research_proposals=data.get("research_proposals", []),
+            metadata=data.get("metadata", {}),
+            trace=data.get("trace"),
+        )
+
 
 @dataclass
 class HegelionTrace:

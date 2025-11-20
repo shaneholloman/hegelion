@@ -53,6 +53,7 @@ hegelion-server = "hegelion.mcp_server:main"
 hegelion-prompt-server = "hegelion.prompt_mcp_server:main"
 hegelion-setup-mcp = "hegelion.scripts.mcp_setup:main"
 hegelion-agent = "hegelion.scripts.hegelion_agent_cli:main"
+hegelion-dataset = "hegelion.scripts.hegelion_dataset:main"
 
 [project.urls]
 Homepage = "https://github.com/Hmbown/Hegelion"
