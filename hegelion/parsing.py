@@ -27,9 +27,9 @@ def parse_contradiction_header(text: str) -> Optional[str]:
     # Remove leading and trailing markdown markers from the prefix
     for marker in ["**", "__", "*", "_"]:
         if prefix.startswith(marker):
-            prefix = prefix[len(marker):].strip()
+            prefix = prefix[len(marker) :].strip()
         if prefix.endswith(marker):
-            prefix = prefix[:-len(marker)].strip()
+            prefix = prefix[: -len(marker)].strip()
 
     prefix = prefix.upper()
 
@@ -42,7 +42,7 @@ def parse_contradiction_header(text: str) -> Optional[str]:
         # Strip markdown from the description as well
         for marker in ["**", "__", "*", "_"]:
             if detail.startswith(marker):
-                detail = detail[len(marker):].strip()
+                detail = detail[len(marker) :].strip()
                 break
 
         return detail
