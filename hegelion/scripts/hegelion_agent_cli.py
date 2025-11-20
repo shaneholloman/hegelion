@@ -37,8 +37,13 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 
 async def run(args: argparse.Namespace) -> int:
     agent = (
-        HegelionAgent.for_coding(goal=args.goal, personas=args.personas, iterations=args.iterations,
-                                 use_search=args.use_search, debug=args.debug)
+        HegelionAgent.for_coding(
+            goal=args.goal,
+            personas=args.personas,
+            iterations=args.iterations,
+            use_search=args.use_search,
+            debug=args.debug,
+        )
         if args.coding
         else HegelionAgent(
             goal=args.goal,

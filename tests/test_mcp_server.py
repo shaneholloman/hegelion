@@ -250,9 +250,7 @@ class TestInputValidation:
                 return_value=type("Step", (), {"action": "do", "result": sample_result})
             )
 
-            await app.call_tool(
-                name="hegelion_agent_act", arguments={"observation": "obs"}
-            )
+            await app.call_tool(name="hegelion_agent_act", arguments={"observation": "obs"})
 
             kwargs = MockAgent.call_args[1]
             assert kwargs["debug"] is False

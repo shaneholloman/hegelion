@@ -28,7 +28,7 @@ Hegelion is a framework that upgrades AI reasoning by forcing language models th
 
 ## Quick Start (Recommended for Cursor / Claude)
 
-Hegelion works best as a **Model Context Protocol (MCP)** server. This lets you use it directly inside Cursor or Claude Desktop with your existing AI model (Claude 3.5, GPT-4o, etc.).
+Hegelion works best as a **Model Context Protocol (MCP)** server. This lets you use it directly inside Cursor or Claude Desktop with your existing AI model.
 
 ### 1. Install & Setup
 From your project root:

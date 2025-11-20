@@ -90,8 +90,8 @@ async def list_tools() -> list[Tool]:
                         "type": "boolean",
                         "default": False,
                     },
-            },
-            "required": ["prompts_file"],
+                },
+                "required": ["prompts_file"],
             },
         ),
         Tool(
