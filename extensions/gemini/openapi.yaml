@@ -6,8 +6,8 @@ info:
     single HTTP endpoint suitable for Google Gemini extensions or other agent marketplaces.
   version: "0.1.0"
 servers:
-  - url: https://hegelion-agent.up.railway.app/agent_act
-    description: Railway deployment (replace with your service URL)
+  - url: https://hegelion-agent-XXXX-uc.a.run.app/agent_act
+    description: Cloud Run deployment (replace with your service URL)
 paths:
   /agent_act:
     post:

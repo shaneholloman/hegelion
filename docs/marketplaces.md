@@ -4,10 +4,10 @@ Use this checklist to publish Hegelion beyond MCP-aware IDEs.
 
 ## Google Gemini Extensions (AI Studio)
 
-- Endpoint: Railway FastAPI service (`extensions/gemini/server`)
+- Endpoint: Cloud Run (or any HTTPS host) FastAPI service (`extensions/gemini/server`)
 - Spec: `extensions/gemini/openapi.yaml`
 - Submission: AI Studio → Extensions → “Import from OpenAPI”
-- Auth: Optional API key header that Railway validates before invoking the agent
+- Auth: Optional API key header validated in FastAPI (or use IAM)
 
 ## Cursor MCP Gallery
 
@@ -33,13 +33,13 @@ Use this checklist to publish Hegelion beyond MCP-aware IDEs.
 ## Hugging Face Tools / Agents
 
 - Option 1: Publish as a “Tool” on https://huggingface.co/tools
-  - Wrap the Railway endpoint using their Python SDK
+  - Wrap your hosted endpoint using their Python SDK
   - Provide README snippet + license
 - Option 2: Create a Space demonstrating the agent and link to PyPI package.
 
 ## LangChain / LlamaIndex Tool Registries
 
-- Package a simple tool definition referencing the Railway endpoint (or directly instantiate `HegelionAgent`)
+- Package a simple tool definition referencing your hosted endpoint (or directly instantiate `HegelionAgent`)
 - Submit to:
   - https://smith.langchain.com/hub (LangChain Hub)
   - https://docs.llamaindex.ai/en/stable/tool/index.html#tool-gallery (email form)
