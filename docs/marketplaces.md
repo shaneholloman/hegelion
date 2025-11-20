@@ -4,10 +4,10 @@ Use this checklist to publish Hegelion beyond MCP-aware IDEs.
 
 ## Google Gemini Extensions (AI Studio)
 
-- Endpoint: Cloud Run (or any HTTPS host) FastAPI service (`extensions/gemini/server`)
+- Endpoint: Prompt-driven FastAPI service (`extensions/gemini/server`) – no API keys, returns prompts only
 - Spec: `extensions/gemini/openapi.yaml`
 - Submission: AI Studio → Extensions → “Import from OpenAPI”
-- Auth: Optional API key header validated in FastAPI (or use IAM)
+- Auth: Optional header check in FastAPI (leave public for easiest onboarding)
 
 ## Cursor MCP Gallery
 

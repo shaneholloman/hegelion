@@ -4,9 +4,10 @@ This directory packages everything you need to expose Hegelion’s dialectical a
 
 ## Architecture Overview
 
-1. **FastAPI service (`server/app.py`)** – imports `HegelionAgent` and exposes `/agent_act`.
-2. **Containerized deployment (Dockerfile)** – runs anywhere that supports Python containers (Cloud Run, Render, Fly.io, Railway, etc.).
-3. **OpenAPI Spec (`openapi.yaml`)** – wire the HTTPS URL into Google Gemini or other marketplaces.
+1. **FastAPI service (`server/app.py`)** – calls the prompt-driven MCP logic (`dialectical_workflow`, `dialectical_single_shot`, `thesis/antithesis/synthesis`) and returns prompts/JSON.  
+   No API keys are needed because *the caller’s LLM* executes the prompts.
+2. **Containerized deployment (Dockerfile)** – run it on any platform with Python containers (Render free tier, Cloud Run, Fly.io, etc.).
+3. **OpenAPI Spec (`openapi.yaml`)** – register the HTTP tools with Google Gemini or other marketplaces.
 
 ## Local Development
 
@@ -18,39 +19,55 @@ cp env.sample .env   # fill in provider + API keys
 uvicorn extensions.gemini.server.app:app --reload
 ```
 
-## Deploy to Cloud Run
+### HTTP Endpoints
+
+| Route | Description | Returns |
+|-------|-------------|---------|
+| `POST /dialectical_workflow` | Structured JSON workflow (thesis → antithesis → synthesis, optional council/judge) | `{ "workflow": {...} }` |
+| `POST /dialectical_single_shot` | One massive prompt for end-to-end reasoning | `PromptResponse` |
+| `POST /thesis_prompt` / `antithesis_prompt` / `synthesis_prompt` | Phase-specific prompts with instructions and expected format | `PromptResponse` (council antithesis returns a list) |
+
+## Deploy to Render (free tier example)
 
 ```bash
-# Build container
-gcloud config set project HEGELION_PROJECT
-gcloud builds submit --tag gcr.io/HEGELION_PROJECT/hegelion-agent extensions/gemini/server
+# From repo root
+cd extensions/gemini/server
+render login               # if needed
 
-# Deploy (allow unauth so Gemini can call it)
-gcloud run deploy hegelion-agent \
-  --image gcr.io/HEGELION_PROJECT/hegelion-agent \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars HEGELION_PROVIDER=anthropic,HEGELION_MODEL=claude-3-5-sonnet-20241022
-
-# Add API keys if you want the backend to call Anthropic/OpenAI directly:
-gcloud run services update hegelion-agent \
-  --region us-central1 \
-  --update-env-vars ANTHROPIC_API_KEY=sk-ant-...
+# Render Web Service settings
+Build Command: pip install -r extensions/gemini/server/requirements.txt
+Start Command: uvicorn extensions.gemini.server.app:app --host 0.0.0.0 --port $PORT
+Root Directory: .
 ```
 
-Cloud Run will emit a URL like `https://hegelion-agent-abc123-uc.a.run.app`. Use that in the OpenAPI spec and Gemini extension registration.
+No environment variables are required—the service never calls external LLM APIs. Render will give you a URL like `https://hegelion-prompt.onrender.com`. Update `extensions/gemini/openapi.yaml` (or host the spec elsewhere) to point at that URL.
+
+## Deploy to Cloud Run (optional)
+
+If you prefer Google Cloud:
+
+```bash
+gcloud config set project HEGELION_PROJECT
+gcloud builds submit --tag gcr.io/HEGELION_PROJECT/hegelion-prompt extensions/gemini/server
+gcloud run deploy hegelion-prompt \
+  --image gcr.io/HEGELION_PROJECT/hegelion-prompt \
+  --region us-central1 \
+  --allow-unauthenticated
+```
+
+Cloud Run returns a URL (`https://hegelion-prompt-abc123-uc.a.run.app`)—use that in the OpenAPI spec.
 
 ## Register with Google Gemini
 
 1. Open [Google AI Studio Extensions](https://aistudio.google.com/app/extensions).
 2. Create a new extension “From OpenAPI”, pointing to `extensions/gemini/openapi.yaml` (host the raw file or paste the contents).
-3. Set auth = “API key” (Cloud Run can enforce this via a header check or IAM; leave blank if you want anyone to call it).
-4. Enable the extension inside your Gemini chat/app. Gemini will call your HTTPS URL whenever it needs adversarial planning.
+3. Authentication is optional; you can add a simple header check in FastAPI if needed, but by default the endpoint is public.
+4. Enable the extension inside Gemini/Claude/etc. The model will call your URL whenever it needs a prompt workflow.
 
 ## Applying the Same Package Elsewhere
 
-- **Cursor MCP Gallery / Claude Tool Hub** – submit the OpenAPI spec plus short description and point them at the Cloud Run (or other) URL.
-- **Hugging Face Agents / LangChain ToolHub** – wrap `agent_act` as a tool definition that forwards to your hosted endpoint.
+- **Cursor MCP Gallery / Claude Tool Hub** – submit the OpenAPI spec plus a short description and point them at your hosted prompt API.
+- **Hugging Face Agents / LangChain ToolHub** – wrap the dialetical workflow endpoint as a tool definition so any orchestrator can fetch prompts on demand.
 
 See `extensions/gemini/server/README.md` for deployment details and `docs/marketplaces.md` for other listing requirements.
 

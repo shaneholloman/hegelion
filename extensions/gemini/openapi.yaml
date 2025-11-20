@@ -1,122 +1,201 @@
 openapi: 3.0.3
 info:
-  title: Hegelion Agent API
+  title: Hegelion Prompt API
   description: >
-    Exposes the Hegelion dialectical agent (Thesis → Antithesis → Synthesis) as a
-    single HTTP endpoint suitable for Google Gemini extensions or other agent marketplaces.
-  version: "0.1.0"
+    Returns Hegelian Thesis → Antithesis → Synthesis prompts/workflows that any LLM can execute.
+    No API keys required—the caller runs the prompts with its own model.
+  version: "0.2.0"
 servers:
-  - url: https://hegelion-agent-XXXX-uc.a.run.app/agent_act
-    description: Cloud Run deployment (replace with your service URL)
+  - url: https://hegelion-prompt.example.com
+    description: Replace with your Render/Cloud Run URL
 paths:
-  /agent_act:
+  /dialectical_workflow:
     post:
-      summary: Run a dialectical agent step
-      operationId: agentAct
-      description: >
-        Runs the Hegelion agent loop (thesis → antithesis → synthesis) on the provided observation and
-        returns the vetted action along with the full reasoning trace.
+      summary: Generate a structured dialectical workflow
+      operationId: dialecticalWorkflow
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentActRequest'
+              $ref: "#/components/schemas/WorkflowRequest"
       responses:
         "200":
-          description: Action recommendation and dialectic trace
+          description: Workflow JSON describing thesis → antithesis → synthesis steps
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentActResponse'
+                $ref: "#/components/schemas/WorkflowResponse"
         "400":
-          description: Invalid request payload
+          $ref: "#/components/responses/BadRequest"
+  /dialectical_single_shot:
+    post:
+      summary: Generate one comprehensive dialectical prompt
+      operationId: dialecticalSingleShot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SingleShotRequest"
+      responses:
+        "200":
+          description: Prompt string that guides the LLM through all phases
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "500":
-          description: Agent execution error
+                $ref: "#/components/schemas/PromptResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /thesis_prompt:
+    post:
+      summary: Generate the thesis phase prompt
+      operationId: thesisPrompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThesisRequest"
+      responses:
+        "200":
+          description: Thesis prompt specification
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/PromptResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /antithesis_prompt:
+    post:
+      summary: Generate the antithesis (critique) prompt(s)
+      operationId: antithesisPrompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AntithesisRequest"
+      responses:
+        "200":
+          description: Either a single prompt or council prompts
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/PromptResponse"
+                  - $ref: "#/components/schemas/CouncilPromptResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /synthesis_prompt:
+    post:
+      summary: Generate the synthesis prompt
+      operationId: synthesisPrompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SynthesisRequest"
+      responses:
+        "200":
+          description: Synthesis prompt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromptResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
 components:
+  responses:
+    BadRequest:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
   schemas:
-    AgentActRequest:
+    WorkflowRequest:
       type: object
-      required:
-        - observation
-      properties:
-        observation:
-          type: string
-          description: Current observation or environment state that needs the next action.
-        goal:
-          type: string
-          description: Optional high-level mission or north star for the agent.
-        personas:
-          type: string
-          description: Named persona preset (e.g., "council", "logic", "ethics").
-        iterations:
-          type: integer
-          minimum: 1
-          default: 1
-          description: Number of refinement loops (Synthesis → new Thesis).
-        use_search:
-          type: boolean
-          default: false
-          description: Encourage the critics to invoke search tools.
-        coding:
-          type: boolean
-          default: false
-          description: Use the coding-optimized guidance (prefer concrete diffs/tests).
-        debug:
-          type: boolean
-          default: false
-          description: Include additional tracing metadata in the response.
-    AgentActResponse:
-      type: object
-      properties:
-        action:
-          type: string
-          description: Single vetted action that survived adversarial critique.
-        result:
-          $ref: '#/components/schemas/HegelionResult'
-    HegelionResult:
-      type: object
+      required: [query]
       properties:
         query:
           type: string
-        mode:
+        use_search:
+          type: boolean
+          default: false
+        use_council:
+          type: boolean
+          default: false
+        use_judge:
+          type: boolean
+          default: false
+    WorkflowResponse:
+      type: object
+      properties:
+        workflow:
+          type: object
+          description: JSON workflow with thesis/antithesis/synthesis steps
+    SingleShotRequest:
+      type: object
+      required: [query]
+      properties:
+        query:
           type: string
-          description: Always "synthesis" for agent actions.
+        use_search:
+          type: boolean
+          default: false
+        use_council:
+          type: boolean
+          default: false
+    ThesisRequest:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+    AntithesisRequest:
+      type: object
+      required: [query, thesis]
+      properties:
+        query:
+          type: string
+        thesis:
+          type: string
+        use_search:
+          type: boolean
+          default: false
+        use_council:
+          type: boolean
+          default: false
+    SynthesisRequest:
+      type: object
+      required: [query, thesis, antithesis]
+      properties:
+        query:
+          type: string
         thesis:
           type: string
         antithesis:
           type: string
-        synthesis:
+    PromptResponse:
+      type: object
+      properties:
+        phase:
           type: string
-        contradictions:
+        prompt:
+          type: string
+        instructions:
+          type: string
+        expected_format:
+          type: string
+    CouncilPromptResponse:
+      type: object
+      properties:
+        prompts:
           type: array
           items:
-            type: object
-            properties:
-              description:
-                type: string
-              evidence:
-                type: string
-        research_proposals:
-          type: array
-          items:
-            type: object
-            properties:
-              description:
-                type: string
-              testable_prediction:
-                type: string
-        metadata:
-          type: object
-          additionalProperties: true
+            $ref: "#/components/schemas/PromptResponse"
     ErrorResponse:
       type: object
       properties:

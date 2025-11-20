@@ -1,6 +1,6 @@
-# Railway Deployment (FastAPI)
+# Prompt-Driven FastAPI Service
 
-This folder packages a FastAPI server that exposes the `/agent_act` endpoint for Gemini extensions or any other marketplace that accepts an HTTP tool.
+This service wraps Hegelion’s **prompt MCP tools** (dialectical workflow, single-shot prompt, thesis/antithesis/synthesis). It never calls an LLM itself, so no API keys or paid plans are required.
 
 ## Local test
 
@@ -8,36 +8,43 @@ This folder packages a FastAPI server that exposes the `/agent_act` endpoint for
 cd extensions/gemini/server
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp env.sample .env   # fill in provider + API keys
 uvicorn extensions.gemini.server.app:app --reload
 ```
 
 Call it:
 
 ```bash
-curl -X POST http://127.0.0.1:8000/agent_act \
+curl -X POST http://127.0.0.1:8000/dialectical_workflow \
   -H "Content-Type: application/json" \
-  -d '{"observation":"CI fails on Python 3.12","goal":"Fix CI","coding":true}'
+  -d '{"query":"Is AI conscious?","use_council":true}'
 ```
 
-## Deploy to Cloud Run
+### Render (recommended free option)
+
+In the Render dashboard → “Create Web Service”:
+
+- **Repository root:** this repo
+- **Build Command:** `pip install -r extensions/gemini/server/requirements.txt`
+- **Start Command:** `uvicorn extensions.gemini.server.app:app --host 0.0.0.0 --port $PORT`
+- **Environment:** leave empty (no secrets needed)
+
+Render will give you a URL like `https://hegelion-prompt.onrender.com`.
+
+### Cloud Run (optional)
 
 ```bash
-PROJECT=hegelion-agent
+PROJECT=hegelion-prompt
 REGION=us-central1
 
 gcloud config set project $PROJECT
-gcloud builds submit --tag gcr.io/$PROJECT/hegelion-agent extensions/gemini/server
-gcloud run deploy hegelion-agent \
-  --image gcr.io/$PROJECT/hegelion-agent \
+gcloud builds submit --tag gcr.io/$PROJECT/hegelion-prompt extensions/gemini/server
+gcloud run deploy hegelion-prompt \
+  --image gcr.io/$PROJECT/hegelion-prompt \
   --region $REGION \
-  --allow-unauthenticated \
-  --set-env-vars HEGELION_PROVIDER=anthropic,HEGELION_MODEL=claude-3-5-sonnet-20241022
-# add API keys if desired:
-gcloud run services update hegelion-agent \
-  --region $REGION \
-  --update-env-vars ANTHROPIC_API_KEY=sk-ant-...
+  --allow-unauthenticated
 ```
 
-Cloud Run returns a URL like `https://hegelion-agent-abc123-uc.a.run.app`. Update the OpenAPI spec (or Gemini config) to use that URL.
+Cloud Run returns a URL like `https://hegelion-prompt-abc123-uc.a.run.app`.
+
+Use whichever URL you deploy in `extensions/gemini/openapi.yaml` (or host the spec elsewhere) when registering the Google Gemini extension.
 

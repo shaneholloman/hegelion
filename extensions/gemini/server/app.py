@@ -102,28 +102,50 @@ async def single_shot(request: SingleShotRequest) -> PromptResponse:
         use_search=request.use_search,
         use_council=request.use_council,
     )
-    return PromptResponse(prompt=prompt)
+    return PromptResponse(phase="single_shot", prompt=prompt)
 
 
 @app.post("/thesis_prompt", response_model=PromptResponse)
 async def thesis_prompt(request: ThesisRequest) -> PromptResponse:
     dialectic = PromptDrivenDialectic()
     prompt_obj = dialectic.generate_thesis_prompt(request.query)
-    return PromptResponse(prompt=prompt_obj.prompt)
+    return PromptResponse(
+        phase=prompt_obj.phase,
+        prompt=prompt_obj.prompt,
+        instructions=prompt_obj.instructions,
+        expected_format=prompt_obj.expected_format,
+    )
 
 
-@app.post("/antithesis_prompt", response_model=PromptResponse)
-async def antithesis_prompt(request: AntithesisRequest) -> PromptResponse:
+@app.post(
+    "/antithesis_prompt",
+    response_model=PromptResponse | CouncilPromptResponse,  # type: ignore[arg-type]
+)
+async def antithesis_prompt(request: AntithesisRequest):
     dialectic = PromptDrivenDialectic()
     try:
         if request.use_council:
             council = dialectic.generate_council_prompts(request.query, request.thesis)
-            rendered = "\n\n".join(f"## {prompt.phase}\n{prompt.prompt}" for prompt in council)
-            return PromptResponse(prompt=rendered)
+            return CouncilPromptResponse(
+                prompts=[
+                    PromptResponse(
+                        phase=prompt.phase,
+                        prompt=prompt.prompt,
+                        instructions=prompt.instructions,
+                        expected_format=prompt.expected_format,
+                    )
+                    for prompt in council
+                ]
+            )
         prompt_obj = dialectic.generate_antithesis_prompt(
             request.query, request.thesis, use_search_context=request.use_search
         )
-        return PromptResponse(prompt=prompt_obj.prompt)
+        return PromptResponse(
+            phase=prompt_obj.phase,
+            prompt=prompt_obj.prompt,
+            instructions=prompt_obj.instructions,
+            expected_format=prompt_obj.expected_format,
+        )
     except Exception as exc:  # pragma: no cover
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -134,4 +156,9 @@ async def synthesis_prompt(request: SynthesisRequest) -> PromptResponse:
     prompt_obj = dialectic.generate_synthesis_prompt(
         request.query, request.thesis, request.antithesis
     )
-    return PromptResponse(prompt=prompt_obj.prompt)
+    return PromptResponse(
+        phase=prompt_obj.phase,
+        prompt=prompt_obj.prompt,
+        instructions=prompt_obj.instructions,
+        expected_format=prompt_obj.expected_format,
+    )
