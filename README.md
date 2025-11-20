@@ -52,6 +52,35 @@ This framework moves beyond simple Q&A to facilitate complex, multi-layered anal
 
 ---
 
+## See It In Action: Transforming AI Reasoning
+
+We asked the same model (GLM-4.6) a complex philosophical question:
+*"If AI achieves zero-marginal-cost production for all goods, does the concept of 'Economic Value' collapse or transform?"*
+
+### Without Hegelion
+The model provided a competent, standard analysis:
+> "It collapses for a world of things but transforms into a world of meaning... moving from an economics of production to an economics of curation."
+*(A logical, textbook response constrained by existing economic frameworks.)*
+
+### With Hegelion
+Forced through a dialectical loop, the system uncovered **6 contradictions** in its own initial thinking. The synthesis transcended the binary of "collapse vs. transformation" to identify a fundamental **re-ontologization** of value:
+
+> **The Economy of Intention**
+> Value shifts from **possession** to **influence**.
+>
+> "The ultimate scarcity is the **priority of action** of the omnipotent production system itself. The economy ceases to be about the allocation of goods and becomes the allocation of the AI's **Intention**."
+>
+> *— Hegelion Synthesis*
+
+**Key Differentiators:**
+*   **Paradigm Shift:** Instead of predicting a service economy, it identified a "Governance of Intention" where political and economic power fuse.
+*   **Rigorous Critique:** It challenged the "Zero Cost" premise, identifying the **opportunity cost of AI attention** as the new scarce resource.
+*   **Actionable Science:** Beyond theory, the system proposed a **multi-agent simulation** to empirically observe the emergence of "influence tokens" as a post-scarcity currency.
+
+[**View the full dialectical transcript →**](examples/zero_marginal_cost_example.md)
+
+---
+
 ## Value Proposition
 
 - **Deeper Insights:** Move beyond simple Q&A to complex, multi-layered analysis.
