@@ -8,124 +8,188 @@
 [![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion)
 [![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
 
-**Agent Protocol for Smarter AI (Thesis → Antithesis → Synthesis)**
+## Model-Agnostic Hegelion: Works with Any LLM
 
-Hegelion is an **agent-first protocol**: every action is stress-tested by an adversarial dialectic to reduce hallucinations. MCP/CLI are delivery layers—the brain lives here.
+This version of Hegelion works with **whatever LLM is currently calling the MCP server** instead of making its own API calls. Perfect for:
 
-> Start here: `pip install hegelion` · `hegelion-setup-mcp` · run your first agent step.
+- **Cursor**
+- **Claude Desktop**
+- **VS Code**
+- **Antigravity** or other MCP-compatible environments
 
----
+## 🎯 **The Problem This Solves**
 
-## Table of Contents
+Instead of configuring API keys and making external calls, users can:
 
-- [The Agent Protocol: How It Works](#the-agent-protocol-how-it-works)
-- [Quick Start: Agent First](#quick-start-agent-first)
-- [Python SDK & Agent Integration](#python-sdk--agent-integration)
-- [Key Features](#key-features)
-- [Value Proposition](#value-proposition)
-- [Documentation](#documentation)
-- [Contributing & License](#contributing--license)
+1. Use Hegelion with their existing LLM setup
+2. Experience dialectical reasoning with any model
+3. No additional configuration or costs
+4. Works instantly in any MCP environment
 
----
+## 🛠️ **How It Works**
 
-## The Agent Protocol: How It Works
+The `hegelion-prompt-server` returns **structured prompts** instead of making API calls:
 
-Hegelion transforms the way LLMs process information by imposing a structured "Brain" over the raw model. Instead of generating a single, linear response, the Agent Protocol enforces a recursive reasoning loop:
-
-### 1. The Dialectical Loop
-The core engine drives every query through a three-step evolutionary process:
--   **Thesis:** The model generates an initial solution or argument.
--   **Antithesis:** The system challenges the thesis, actively searching for flaws, edge cases, and contradictions.
--   **Synthesis:** The model resolves the conflict, producing a refined insight that is more robust than the original thought.
-
-### 2. Council of Critics
-To ensure rigor, the protocol employs a "Council of Critics"—specialized personas (e.g., Logic, Facts, Ethics) that audit the reasoning at each step. This adversarial review process uncovers hidden assumptions and reduces hallucinations before the user ever sees the result.
-
----
-
-## Quick Start: Agent First
-
-### 1) Install (choose one)
-- **pip:** `pip install hegelion`
-- **uvx (no env overlap):** `uvx hegelion hegelion-setup-mcp`
-- **pipx:** `pipx install hegelion`
-
-### 2) Configure Cursor / Claude Desktop
-```bash
-hegelion-setup-mcp --write ~/.mcp_config.json
-```
-This writes both prompt and backend servers. Run without `--write` to print a snippet to paste into Cursor “Global MCP Settings” or `claude_desktop_config.json`.
-
-### 3) First agent step (no code required)
-```bash
-hegelion-agent "CI fails on Python 3.12" --goal "Fix CI" --coding --iterations 2
-```
-See thesis/antithesis/synthesis plus a single vetted action.
-
----
-
-## Python SDK & Agent Integration
-
-Hegelion is a library first. You can integrate the dialectical agent directly into your Python applications to build self-correcting autonomous systems.
-
-### Agent Wrapper (Reflexion-style loop)
-
+### Single-Shot Dialectic (Powerful Models)
 ```python
-from hegelion.agent import HegelionAgent
-
-# Initialize the agent with a goal and a Council of Critics
-agent = HegelionAgent(goal="Ship the feature safely", personas="council", iterations=2)
-
-# The agent thinks before it acts
-step = agent.act_sync("Tests are flaky after enabling caching; what should we do next?")
-print("Action:", step.action)
+# For models that can handle complex reasoning
+prompt = await dialectical_single_shot(
+    query="Can AI be genuinely creative?",
+    use_search=True,
+    use_council=True
+)
+# Returns one comprehensive prompt that guides the LLM through:
+# THESIS → ANTITHESIS → SYNTHESIS
 ```
 
-The agent calls the full **Thesis → Antithesis → Synthesis** loop before acting. This means every action is vetted by contradiction-hunting critics, significantly reducing the risk of hallucinations and unsafe plans.
+### Step-by-Step Workflow (Any Model)
+```python
+# For systematic execution
+workflow = await dialectical_workflow(
+    query="Should we implement universal basic income?", 
+    use_council=True,
+    use_judge=True,
+    format="workflow"
+)
+# Returns structured steps that can be executed sequentially
+```
 
-### CLI for Coding Tasks
-For quick, code-focused reasoning tasks:
+### Manual Step Control
+```python
+# For maximum control
+step1 = await thesis_prompt(query="Your question")
+step2 = await antithesis_prompt(query="Your question", thesis="<result from step1>")  
+step3 = await synthesis_prompt(query="Your question", thesis="<step1>", antithesis="<step2>")
+```
 
+## 📋 **Available Tools**
+
+### `dialectical_workflow`
+Returns a structured workflow for step-by-step execution:
+- **Input**: query, options (search, council, judge)
+- **Output**: JSON workflow with step-by-step prompts
+- **Best for**: Systematic execution, complex queries
+
+### `dialectical_single_shot`  
+Returns one comprehensive prompt for powerful models:
+- **Input**: query, options (search, council)
+- **Output**: Single prompt with complete instructions
+- **Best for**: Large context models capable of multi-step reasoning
+
+### `thesis_prompt` / `antithesis_prompt` / `synthesis_prompt`
+Individual step prompts for manual control:
+- **Best for**: Custom workflows, experimentation
+
+## 🎭 **Feature Support**
+
+All Phase 2 features work in prompt-driven mode:
+
+- **🔍 Search Grounding**: Prompts include instructions to use available search tools
+- **👥 Council Critiques**: Generates Logician + Empiricist + Ethicist perspectives
+- **⚖️ Quality Evaluation**: Includes structured evaluation prompts
+- **📊 Structured Output**: Guides LLM to return properly formatted results
+
+## 🔧 **Setup**
+
+### Automated Setup (Recommended)
+
+Run:
 ```bash
-python -m hegelion.scripts.hegelion_agent_cli "CI fails on Python 3.12" --goal "Fix CI" --coding --iterations 2
+hegelion-setup-mcp
+```
+Copy the output to your `claude_desktop_config.json` or Cursor MCP settings.
+
+### Manual Setup
+
+If you prefer to configure it manually:
+
+#### Claude Desktop
+```json
+{
+  "mcpServers": {
+    "hegelion-prompt": {
+      "command": "hegelion-prompt-server",
+      "args": []
+    }
+  }
+}
 ```
 
+#### Cursor/VS Code
+1. Install Hegelion MCP extension (or configure via command)
+2. Configure to use `hegelion-prompt-server`
+3. Works with any model you have configured
+
+## 💡 **Usage Examples**
+
+### Example Output: "Untapped Resource for Technological Advancement"
+
+> **Query:** "What is a potential untapped resource for technological advancement?"
+
+<details open>
+<summary><b>🔍 Phase 1: The Thesis</b></summary>
+
+**Proposal:** *Industrial Waste Heat for Compute*  
+Use waste heat from factories to power "thermo-computational" networks, turning entropy into zero-cost energy.
+</details>
+
+<details open>
+<summary><b>⚔️ Phase 2: The Antithesis (Council of Critics)</b></summary>
+
+- **The Logician**: *Thermodynamic Limit Conflict.* Carnot efficiency limits make converting low-grade heat to electricity fundamentally unviable.
+- **The Empiricist**: *Spatial Mismatch.* Factories are hot/dirty environments; data centers require cool/clean ones. The engineering overhead outweighs the gain.
+- **The Ethicist**: *Perverse Incentives.* Monetizing waste encourages industries to *remain* inefficient to sell their "fuel."
+</details>
+
+<details open>
+<summary><b>✨ Phase 3: The Synthesis</b></summary>
+
+**Resolution:** *Latent Heat Storage as a Service*  
+The breakthrough isn't **converting** heat (inefficient), but leveraging the **demand** for heat. 
+
+Instead of making electricity from heat, we place compute nodes inside water heaters and district heating systems. The "waste" heat from the computer becomes the useful product (hot water), achieving 100% system efficiency and resolving the "Perverse Incentive" by replacing fossil fuel heating with compute-generated heat.
+
+*   **Research Proposal**: Micro-Fluidic Compute Heaters
+*   **Prediction**: Decentralized compute heaters can reduce household energy consumption by 15%.
+</details>
+
 ---
 
-## Key Features
+### Quick Dialectical Analysis
+1. Call `dialectical_single_shot` tool
+2. Paste the returned prompt into your LLM
+3. Get complete thesis → antithesis → synthesis
 
--   **Adversarial Critics (Logic):** Multi-perspective analysis (Logic, Facts, Ethics) stress-tests every assertion.
--   **Zero-Config MCP (Interface):** Connects instantly to Cursor and Claude Desktop without complex setup.
--   **Dialectical Loop (Logic):** Automated Thesis → Antithesis → Synthesis workflow for self-improving answers.
--   **Structured Output (Interface):** Returns JSON results with identified contradictions and research proposals.
--   **Search Grounding (Logic):** Prompts include instructions to use available search tools for evidence.
--   **Iterative Refinement (Logic):** Run multiple rounds where Synthesis becomes the new Thesis.
+### Structured Workflow
+1. Call `dialectical_workflow` tool
+2. Execute each step from the JSON workflow
+3. Use outputs from previous steps as inputs to next steps
 
----
+### Council-Enhanced Analysis
+1. Use `use_council=true` in any tool
+2. Get multi-perspective critiques (Logic, Empirical, Ethical)
+3. Comprehensive analysis from multiple expert viewpoints
 
-## Value Proposition
+## 🚀 **Benefits**
 
--   **Deeper Insights:** Move beyond simple Q&A to complex, multi-layered analysis.
--   **Uncover Assumptions:** The dialectical process surfaces hidden biases and logical gaps.
--   **Model Agnostic:** Works with your existing tools (Cursor, Claude Desktop) or as a standalone library.
+- **Zero Configuration**: No API keys or backend setup needed
+- **Model Flexibility**: Works with any modern LLM capable of instruction following
+- **Cost Efficiency**: Uses your existing LLM setup, no additional charges  
+- **Instant Access**: Experience dialectical reasoning immediately
+- **Full Feature Set**: All Phase 2 capabilities (search, council, judge) available
+
+This approach makes Hegelion truly accessible to any user with any LLM setup!
 
 ---
 
 ## Documentation
 
--   [Quick Start (docs/QUICKSTART.md)](docs/QUICKSTART.md) — detailed setup guide
--   [User Guide (docs/USER_GUIDE.md)](docs/USER_GUIDE.md) — advanced usage and options
+-   [Quick Start (docs/QUICKSTART.md)](docs/QUICKSTART.md)
+-   [User Guide (docs/USER_GUIDE.md)](docs/USER_GUIDE.md)
 -   [Model-Agnostic Prompt Server (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)
 -   [MCP Reference (docs/MCP.md)](docs/MCP.md)
--   [Examples (examples/README.md)](examples/README.md)
--   [Agent Protocol (agents.md)](agents.md)
--   [Gemini Extension & Marketplaces (extensions/gemini/README.md)](extensions/gemini/README.md)
--   [Marketplace Checklist (docs/marketplaces.md)](docs/marketplaces.md)
+-   [Contributing (CONTRIBUTING.md)](CONTRIBUTING.md)
 
----
-
-## Contributing & License
-
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+## License
 
 Hegelion is licensed under the [MIT License](LICENSE).

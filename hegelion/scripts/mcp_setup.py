@@ -83,7 +83,7 @@ def print_setup_instructions(dry_run=False):
     print("MCP CONFIGURATION SNIPPET")
     print("=" * 60)
     print("Copy the snippet below into your 'Global MCP Settings' (Cursor)")
-    print("or 'claude_desktop_config.json' (Claude Desktop):")
+    print("or your MCP configuration file:")
     print("-" * 60)
     print(json_output)
     print("-" * 60)

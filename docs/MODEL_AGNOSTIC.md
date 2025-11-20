@@ -2,7 +2,7 @@
 
 This version of Hegelion works with **whatever LLM is currently calling the MCP server** instead of making its own API calls. Perfect for:
 
-- **Cursor** with Gemini 3, Claude 3.5, or any model
+- **Cursor** with Gemini 3, Claude, or any model
 - **Claude Desktop** using its native model
 - **VS Code** with any configured LLM
 - **Antigravity** or other MCP-compatible environments
@@ -11,7 +11,7 @@ This version of Hegelion works with **whatever LLM is currently calling the MCP 
 
 Instead of configuring API keys and making external calls, users can:
 1. Use Hegelion with their existing LLM setup
-2. Experience dialectical reasoning with Gemini 3, Claude 3.5, etc.
+2. Experience dialectical reasoning with Gemini 3, Claude, etc.
 3. No additional configuration or costs
 4. Works instantly in any MCP environment
 
@@ -63,7 +63,7 @@ Returns a structured workflow for step-by-step execution:
 Returns one comprehensive prompt for powerful models:
 - **Input**: query, options (search, council)
 - **Output**: Single prompt with complete instructions
-- **Best for**: Gemini 3, Claude 3.5, GPT-4+ models
+- **Best for**: Gemini 3, Claude, GPT-4+ models
 
 ### `thesis_prompt` / `antithesis_prompt` / `synthesis_prompt`
 Individual step prompts for manual control:
@@ -127,7 +127,7 @@ If you prefer to configure it manually:
 ## 🚀 **Benefits**
 
 - **Zero Configuration**: No API keys or backend setup needed
-- **Model Flexibility**: Works with Gemini 3, Claude 3.5, GPT-4+, local models
+- **Model Flexibility**: Works with Gemini 3, Claude, GPT-4+, local models
 - **Cost Efficiency**: Uses your existing LLM setup, no additional charges  
 - **Instant Access**: Experience dialectical reasoning immediately
 - **Full Feature Set**: All Phase 2 capabilities (search, council, judge) available

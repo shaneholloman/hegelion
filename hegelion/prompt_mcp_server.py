@@ -72,7 +72,7 @@ async def list_tools() -> list[Tool]:
             description=(
                 "Generate a single comprehensive prompt for dialectical reasoning that can be "
                 "executed by any capable LLM in one go. The LLM performs thesis → antithesis → synthesis "
-                "and returns structured results. Great for powerful models like Gemini 3, Claude 3.5, etc."
+                "and returns structured results. Great for any powerful model with large context."
             ),
             inputSchema={
                 "type": "object",
