@@ -69,3 +69,4 @@ hegelion.egg-info/
 .genkit/
 # Explicitly ignore Firebase debug log
 firebase-debug.log
+mcp_config.json

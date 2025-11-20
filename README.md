@@ -5,130 +5,83 @@
 [![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion)
 [![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
 
-**Dialectical Reasoning Framework for Large Language Models**
+**Agent Protocol for Smarter AI (Thesis → Antithesis → Synthesis)**
 
-Hegelion is a framework that upgrades AI reasoning by forcing language models through a structured, dialectical process. It stress-tests assertions, uncovers hidden assumptions, and produces significantly more robust and well-reasoned insights.
+Hegelion is an **agent-first protocol**: every action is stress-tested by an adversarial dialectic to reduce hallucinations. MCP/CLI are delivery layers—the brain lives here.
 
-> Get started: [Quick Start](docs/QUICKSTART.md) · [User Guide](docs/USER_GUIDE.md) · [MCP Setup](docs/MODEL_AGNOSTIC.md) · [Examples](examples/README.md)
+> Start here: `pip install hegelion` · `hegelion-setup-mcp` · run your first agent step.
 
 ---
 
 ## Table of Contents
 
-- [Quick Start](#quick-start-recommended-for-cursor--claude)
-- [Two Ways to Use Hegelion](#two-ways-to-use-hegelion)
-- [Value Proposition](#value-proposition)
+- [The Agent Protocol: How It Works](#the-agent-protocol-how-it-works)
+- [Quick Start: Agent First](#quick-start-agent-first)
+- [Python SDK & Agent Integration](#python-sdk--agent-integration)
 - [Key Features](#key-features)
+- [Value Proposition](#value-proposition)
 - [Documentation](#documentation)
-- [Advanced Usage](#advanced-usage-training-data--agents)
-- [New in Version 0.4.0](#new-in-version-040)
 - [Contributing & License](#contributing--license)
 
 ---
 
-## Quick Start (Recommended for Cursor / Claude)
+## The Agent Protocol: How It Works
 
-Hegelion works best as a **Model Context Protocol (MCP)** server. This lets you use it directly inside Cursor or Claude Desktop with your existing AI model.
+Hegelion transforms the way LLMs process information by imposing a structured "Brain" over the raw model. Instead of generating a single, linear response, the Agent Protocol enforces a recursive reasoning loop:
 
-### 1. Install & Setup
-From your project root:
+### 1. The Dialectical Loop
+The core engine drives every query through a three-step evolutionary process:
+-   **Thesis:** The model generates an initial solution or argument.
+-   **Antithesis:** The system challenges the thesis, actively searching for flaws, edge cases, and contradictions.
+-   **Synthesis:** The model resolves the conflict, producing a refined insight that is more robust than the original thought.
 
+### 2. Council of Critics
+To ensure rigor, the protocol employs a "Council of Critics"—specialized personas (e.g., Logic, Facts, Ethics) that audit the reasoning at each step. This adversarial review process uncovers hidden assumptions and reduces hallucinations before the user ever sees the result.
+
+---
+
+## Quick Start: Agent First
+
+### 1) Install (choose one)
+- **pip:** `pip install hegelion`
+- **uvx (no env overlap):** `uvx hegelion hegelion-setup-mcp`
+- **pipx:** `pipx install hegelion`
+
+### 2) Configure Cursor / Claude Desktop
 ```bash
-# 1. Install the package
-pip install hegelion
-
-# 2. Run the setup script
-python scripts/setup_mcp.py
+hegelion-setup-mcp --write ~/.mcp_config.json
 ```
+This writes both prompt and backend servers. Run without `--write` to print a snippet to paste into Cursor “Global MCP Settings” or `claude_desktop_config.json`.
 
-### 2. Configure Your Editor
-The script will generate a `mcp_config.json` file.
-*   **If tools don't appear immediately:** The script will also print a JSON snippet. **Copy and paste** that snippet into your **Global MCP Settings** (Cursor) or `claude_desktop_config.json`.
-
-### 3. Use It
-Ask your AI:
-> *"Run a dialectical analysis on 'Will AI replace programmers?' using the prompt server."*
-
----
-
-## Two Ways to Use Hegelion
-
-Hegelion supports two distinct usage patterns depending on your needs:
-
-### 1. Prompt-Driven (Model Agnostic) - **Default**
-**Best for:** Interactive use in Cursor, Claude Desktop, VS Code.
-
-- **Why:** Zero configuration. No API keys needed.
-- **How it works:** The server generates structured reasoning **prompts** that your current AI session executes.
-- **Tool Name:** `hegelion` (via `hegelion-prompt-server`)
-
-### 2. Backend-Driven (Automated)
-**Best for:** Python scripts, CI/CD pipelines, and Batch Benchmarking.
-
-- **Why:** Automate testing across multiple models in the background.
-- **How it works:** The server makes API calls to OpenAI/Anthropic/Google using keys in your `.env` file.
-- **Tool Name:** `hegelion-backend` (via `hegelion-server`)
-
----
-
-## Value Proposition
-
-- **Deeper Insights:** Move beyond simple Q&A to complex, multi-layered analysis.
-- **Uncover Assumptions:** The dialectical process surfaces hidden biases and logical gaps.
-- **Model Agnostic:** Works with your existing tools (Cursor, Claude Desktop) or as a standalone library.
-
----
-
-## Key Features
-
-- **Dialectical Loop:** Automated Thesis → Antithesis → Synthesis workflow.
-- **Council of Critics:** Multi-perspective analysis (Logic, Facts, Ethics) or custom personas.
-- **Structured Output:** JSON results with identified contradictions and research proposals.
-- **Search Grounding:** Prompts include instructions to use available search tools for evidence.
-- **Iterative Refinement:** Run multiple rounds where Synthesis becomes the new Thesis.
-
----
-
-## Documentation
-
-- [Quick Start (docs/QUICKSTART.md)](docs/QUICKSTART.md) — detailed setup guide
-- [User Guide (docs/USER_GUIDE.md)](docs/USER_GUIDE.md) — advanced usage and options
-- [Model-Agnostic Prompt Server (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)
-- [MCP Reference (docs/MCP.md)](docs/MCP.md)
-- [Examples (examples/README.md)](examples/README.md)
-- [Agent Protocol (agents.md)](agents.md)
-
----
-
-## Advanced Usage: Training Data & Agents
-
-- **Export preference data (DPO/RLAIF):**
-
-```python
-from hegelion.datasets import export_training_data
-
-# hegelion_results: List[HegelionResult] from run_dialectic/run_benchmark
-export_training_data(
-    hegelion_results,
-    "hegelion_dpo.jsonl",
-    format="dpo",  # or "instruction"
-    rejected_source="both",  # thesis vs antithesis pairs
-)
+### 3) First agent step (no code required)
+```bash
+hegelion-agent "CI fails on Python 3.12" --goal "Fix CI" --coding --iterations 2
 ```
+See thesis/antithesis/synthesis plus a single vetted action.
 
-- **Agent wrapper (Reflexion-style loop):**
+---
+
+## Python SDK & Agent Integration
+
+Hegelion is a library first. You can integrate the dialectical agent directly into your Python applications to build self-correcting autonomous systems.
+
+### Agent Wrapper (Reflexion-style loop)
 
 ```python
 from hegelion.agent import HegelionAgent
 
+# Initialize the agent with a goal and a Council of Critics
 agent = HegelionAgent(goal="Ship the feature safely", personas="council", iterations=2)
+
+# The agent thinks before it acts
 step = agent.act_sync("Tests are flaky after enabling caching; what should we do next?")
 print("Action:", step.action)
 ```
 
-The agent calls the full thesis → antithesis → synthesis loop before acting, so actions are vetted by contradiction-hunting critics to reduce hallucinations and unsafe plans. See `agents.md` for the protocol.
+The agent calls the full **Thesis → Antithesis → Synthesis** loop before acting. This means every action is vetted by contradiction-hunting critics, significantly reducing the risk of hallucinations and unsafe plans.
 
-- **CLI (coding-focused):**
+### CLI for Coding Tasks
+For quick, code-focused reasoning tasks:
 
 ```bash
 python -m hegelion.scripts.hegelion_agent_cli "CI fails on Python 3.12" --goal "Fix CI" --coding --iterations 2
@@ -136,20 +89,33 @@ python -m hegelion.scripts.hegelion_agent_cli "CI fails on Python 3.12" --goal "
 
 ---
 
-## New in Version 0.4.0
+## Key Features
 
-- **Adversarial Agent Protocol**
-  - Added `HegelionAgent` (`hegelion/agent.py`) with async `act` / sync `act_sync` and a `for_coding(...)` convenience for code-focused agents.
-  - New `hegelion_agent_act` MCP tool and `hegelion_agent_cli` CLI, both running a full thesis → antithesis → synthesis pass before acting to reduce hallucinations.
-  - Documented the agent loop and protocol in `agents.md`.
+-   **Adversarial Critics (Logic):** Multi-perspective analysis (Logic, Facts, Ethics) stress-tests every assertion.
+-   **Zero-Config MCP (Interface):** Connects instantly to Cursor and Claude Desktop without complex setup.
+-   **Dialectical Loop (Logic):** Automated Thesis → Antithesis → Synthesis workflow for self-improving answers.
+-   **Structured Output (Interface):** Returns JSON results with identified contradictions and research proposals.
+-   **Search Grounding (Logic):** Prompts include instructions to use available search tools for evidence.
+-   **Iterative Refinement (Logic):** Run multiple rounds where Synthesis becomes the new Thesis.
 
-- **Training Data Export (RLAIF / DPO)**
-  - Added `hegelion.datasets.to_dpo_dataset`, `to_instruction_tuning_dataset`, and `export_training_data` to turn `HegelionResult` objects into preference pairs or instruction-tuning examples.
-  - This is the first step toward using Hegelion as a synthetic preference-data generator for RLHF/RLAIF; a fuller training guide is planned for a future release.
+---
 
-- **MCP & Setup Improvements**
-  - New `scripts/setup_mcp.py` to generate `mcp_config.json` and print a copy‑paste snippet for global MCP settings.
-  - README / MCP docs updated to emphasize the prompt-driven (no-API) server and the backend/agent tools that use configured providers.
+## Value Proposition
+
+-   **Deeper Insights:** Move beyond simple Q&A to complex, multi-layered analysis.
+-   **Uncover Assumptions:** The dialectical process surfaces hidden biases and logical gaps.
+-   **Model Agnostic:** Works with your existing tools (Cursor, Claude Desktop) or as a standalone library.
+
+---
+
+## Documentation
+
+-   [Quick Start (docs/QUICKSTART.md)](docs/QUICKSTART.md) — detailed setup guide
+-   [User Guide (docs/USER_GUIDE.md)](docs/USER_GUIDE.md) — advanced usage and options
+-   [Model-Agnostic Prompt Server (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)
+-   [MCP Reference (docs/MCP.md)](docs/MCP.md)
+-   [Examples (examples/README.md)](examples/README.md)
+-   [Agent Protocol (agents.md)](agents.md)
 
 ---
 

@@ -15,16 +15,16 @@ Hegelion offers two distinct MCP servers. You can run one or both.
 
 ## Quick Setup (Automated)
 
-The easiest way to configure Hegelion for Cursor or Claude Desktop is to run the included setup script from your project root:
+The easiest way to configure Hegelion for Cursor or Claude Desktop is to run the setup command from your terminal:
 
 ```bash
 # Detects your python environment and generates valid config files
-python scripts/setup_mcp.py
+hegelion-setup-mcp
 ```
 
-This will:
-1. Create a `mcp_config.json` compatible with Cursor.
-2. Output a configuration snippet for `claude_desktop_config.json`.
+This will output a configuration snippet that you can copy directly into your:
+1. **Cursor:** `Global MCP Settings`
+2. **Claude Desktop:** `claude_desktop_config.json`
 
 ---
 

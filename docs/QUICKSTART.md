@@ -21,33 +21,15 @@ pip install hegelion
 uv pip install hegelion
 ```
 
-2) Register the prompt server in your MCP config
+2) Generate the MCP configuration
 
-Claude Desktop example (`claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "hegelion-prompt": {
-      "command": "uv",
-      "args": ["run", "hegelion-prompt-server"]
-    }
-  }
-}
+```bash
+hegelion-setup-mcp
 ```
 
-Cursor example (use `Settings → Model Context Protocol → Add Server`):
-
-```json
-{
-  "mcpServers": {
-    "hegelion-prompt": {
-      "command": "uv",
-      "args": ["run", "hegelion-prompt-server"]
-    }
-  }
-}
-```
+Copy the output snippet into your editor's config:
+- **Claude Desktop:** `claude_desktop_config.json`
+- **Cursor:** `Settings → Features → MCP`
 
 3) Ask your AI to run a dialectic
 

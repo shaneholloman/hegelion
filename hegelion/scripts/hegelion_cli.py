@@ -18,6 +18,7 @@ if __package__ is None or __package__ == "":  # pragma: no cover - direct execut
 from hegelion.config import ConfigurationError, get_config, set_config_value
 from hegelion.core import run_dialectic
 from hegelion.models import HegelionResult
+from hegelion.scripts.mcp_setup import print_setup_instructions
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -27,7 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "query",
         nargs="?",
-        help="Question or topic to analyze dialectically (optional when using --interactive or --demo)",
+        help="Question or topic to analyze dialectically (optional when using --interactive or --demo).",
     )
     parser.add_argument(
         "--debug",
@@ -280,6 +281,11 @@ def print_interactive_help() -> None:
 async def _run(args: argparse.Namespace) -> None:
     if args.interactive:
         await interactive_session()
+        return
+
+    if args.query == "setup-mcp":
+        print_setup_instructions()
+        print("\nTip: use the dedicated 'hegelion-setup-mcp' command for streamlined setup.")
         return
 
     if args.demo:

@@ -80,7 +80,17 @@ All Phase 2 features work in prompt-driven mode:
 
 ## 🔧 **Setup**
 
-### Claude Desktop
+### Automated Setup (Recommended)
+Run:
+```bash
+hegelion-setup-mcp
+```
+Copy the output to your `claude_desktop_config.json` or Cursor MCP settings.
+
+### Manual Setup
+If you prefer to configure it manually:
+
+#### Claude Desktop
 ```json
 {
   "mcpServers": {
@@ -92,7 +102,7 @@ All Phase 2 features work in prompt-driven mode:
 }
 ```
 
-### Cursor/VS Code
+#### Cursor/VS Code
 1. Install Hegelion MCP extension (or configure via command)
 2. Configure to use `hegelion-prompt-server`
 3. Works with any model you have configured
