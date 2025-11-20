@@ -24,7 +24,7 @@ curl -X POST http://127.0.0.1:8000/dialectical_workflow \
 In the Render dashboard → “Create Web Service”:
 
 - **Repository root:** this repo
-- **Build Command:** `cd extensions/gemini/server && pip install -r requirements.txt`
+- **Build Command:** `cd extensions/gemini/server && pip install --no-cache-dir -r requirements.txt`
 - **Start Command:** `uvicorn extensions.gemini.server.app:app --host 0.0.0.0 --port $PORT`
 - **Environment:** leave empty (no secrets needed)
 
