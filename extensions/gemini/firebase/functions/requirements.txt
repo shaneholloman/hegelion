@@ -1,3 +1,0 @@
-functions-framework==3.5.0
-hegelion>=0.3.0
-

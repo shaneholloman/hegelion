@@ -92,7 +92,7 @@ def print_setup_instructions(dry_run=False):
         print(f"\nNOTE: Detected source installation at {project_root}")
         print("Added PYTHONPATH to ensure the server runs correctly.")
     else:
-        print(f"\nNOTE: Detected installed package.")
+        print("\nNOTE: Detected installed package.")
 
 
 def _write_config(target: Path, snippet: dict) -> None:
