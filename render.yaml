@@ -2,7 +2,7 @@ services:
   - type: web
     name: hegelion-prompt
     runtime: python
-    buildCommand: pip install -r extensions/gemini/server/requirements.txt
+    buildCommand: cd extensions/gemini/server && pip install -r requirements.txt
     startCommand: PYTHONPATH="$PYTHONPATH:/opt/render/project/src" uvicorn extensions.gemini.server.app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
