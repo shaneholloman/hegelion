@@ -244,15 +244,22 @@ def create_dialectical_workflow(
     # Step 2: Antithesis (standard or council-based)
     if use_council:
         council_prompts = dialectic.generate_council_prompts(query, "{{thesis_from_step_1}}")
+        antithesis_refs = []
         for i, council_prompt in enumerate(council_prompts):
+            step_num = 2 + i
             workflow["steps"].append(
                 {
-                    "step": 2 + i,
+                    "step": step_num,
                     "name": f"Council Critique: {council_prompt.phase}",
                     "prompt": council_prompt.__dict__,
                 }
             )
+            antithesis_refs.append(
+                f"### {council_prompt.phase.replace('_', ' ').title()}\n{{{{{council_prompt.phase}_from_step_{step_num}}}}}"
+            )
+
         antithesis_step = 2 + len(council_prompts)
+        antithesis_output_ref = "\n\n".join(antithesis_refs)
     else:
         workflow["steps"].append(
             {
@@ -264,6 +271,7 @@ def create_dialectical_workflow(
             }
         )
         antithesis_step = 3
+        antithesis_output_ref = "{{antithesis_from_step_2}}"
 
     # Step 3: Synthesis
     workflow["steps"].append(
@@ -271,7 +279,7 @@ def create_dialectical_workflow(
             "step": antithesis_step,
             "name": "Generate Synthesis",
             "prompt": dialectic.generate_synthesis_prompt(
-                query, "{{thesis_from_step_1}}", "{{antithesis_from_step_2}}"
+                query, "{{thesis_from_step_1}}", antithesis_output_ref
             ).__dict__,
         }
     )
@@ -285,7 +293,7 @@ def create_dialectical_workflow(
                 "prompt": dialectic.generate_judge_prompt(
                     query,
                     "{{thesis_from_step_1}}",
-                    "{{antithesis_from_step_2}}",
+                    antithesis_output_ref,
                     f"{{synthesis_from_step_{antithesis_step}}}",
                 ).__dict__,
             }
