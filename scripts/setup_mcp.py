@@ -14,22 +14,27 @@ import os
 from pathlib import Path
 import argparse
 
+
 def get_python_path():
     """Get the absolute path to the current python interpreter."""
     return sys.executable
+
 
 def get_project_root():
     """Get the absolute path to the project root."""
     # Assuming this script is in scripts/setup_mcp.py
     return Path(__file__).parent.parent.absolute()
 
+
 def check_installation():
     """Verify that hegelion can be imported."""
     try:
         import hegelion
+
         return True
     except ImportError:
         return False
+
 
 def generate_cursor_config(python_path, project_root):
     """Generate the mcp_config.json for Cursor."""
@@ -38,22 +43,21 @@ def generate_cursor_config(python_path, project_root):
             "hegelion": {
                 "command": python_path,
                 "args": ["-m", "hegelion.prompt_mcp_server"],
-                "env": {
-                    "PYTHONPATH": str(project_root)
-                }
+                "env": {"PYTHONPATH": str(project_root)},
             },
             "hegelion-backend": {
                 "command": python_path,
                 "args": ["-m", "hegelion.mcp_server"],
                 "env": {
                     "PYTHONPATH": str(project_root),
-                    # "HEGELION_PROVIDER": "anthropic", 
+                    # "HEGELION_PROVIDER": "anthropic",
                     # "ANTHROPIC_API_KEY": "..."
-                }
-            }
+                },
+            },
         }
     }
     return config
+
 
 def generate_claude_config(python_path, project_root):
     """Generate a snippet for claude_desktop_config.json."""
@@ -62,23 +66,24 @@ def generate_claude_config(python_path, project_root):
             "hegelion-prompt": {
                 "command": python_path,
                 "args": ["-m", "hegelion.prompt_mcp_server"],
-                "env": {
-                    "PYTHONPATH": str(project_root)
-                }
+                "env": {"PYTHONPATH": str(project_root)},
             }
         }
     }
     return config
 
+
 def main():
     parser = argparse.ArgumentParser(description="Setup Hegelion MCP configuration")
-    parser.add_argument("--cursor", action="store_true", default=True, help="Generate mcp_config.json for Cursor")
+    parser.add_argument(
+        "--cursor", action="store_true", default=True, help="Generate mcp_config.json for Cursor"
+    )
     parser.add_argument("--dry-run", action="store_true", help="Print config to stdout only")
     args = parser.parse_args()
 
     python_path = get_python_path()
     project_root = get_project_root()
-    
+
     print(f"Detected Python: {python_path}")
     print(f"Detected Project Root: {project_root}")
     print("-" * 40)
@@ -103,15 +108,16 @@ def main():
         print(f"✅ Wrote local config to: {cursor_config_path}")
 
     # Print Copy-Paste Snippets
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("GLOBAL CONFIGURATION (RECOMMENDED)")
-    print("="*60)
+    print("=" * 60)
     print("If the tools do not appear, copy the snippet below into your")
     print("Cursor 'Global MCP Settings' or 'claude_desktop_config.json':\n")
-    
+
     snippet = cursor_config["mcpServers"]
     print(json.dumps(snippet, indent=2))
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
+
 
 if __name__ == "__main__":
     main()
