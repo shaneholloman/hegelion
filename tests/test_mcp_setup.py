@@ -54,7 +54,9 @@ def test_is_installed_in_site_packages_detects_site(monkeypatch: pytest.MonkeyPa
     assert mcp_setup.is_installed_in_site_packages() is True
 
 
-def test_print_setup_instructions_mentions_py_path(monkeypatch: pytest.MonkeyPatch, capsys, tmp_path):
+def test_print_setup_instructions_mentions_py_path(
+    monkeypatch: pytest.MonkeyPatch, capsys, tmp_path
+):
     monkeypatch.setattr(mcp_setup, "get_python_path", lambda: "/bin/python")
     monkeypatch.setattr(mcp_setup, "is_installed_in_site_packages", lambda: False)
     monkeypatch.setattr(mcp_setup, "get_project_root", lambda: tmp_path)

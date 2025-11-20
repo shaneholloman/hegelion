@@ -116,6 +116,8 @@ python -m hegelion.scripts.hegelion_agent_cli "CI fails on Python 3.12" --goal "
 -   [MCP Reference (docs/MCP.md)](docs/MCP.md)
 -   [Examples (examples/README.md)](examples/README.md)
 -   [Agent Protocol (agents.md)](agents.md)
+-   [Gemini Extension & Marketplaces (extensions/gemini/README.md)](extensions/gemini/README.md)
+-   [Marketplace Checklist (docs/marketplaces.md)](docs/marketplaces.md)
 
 ---
 

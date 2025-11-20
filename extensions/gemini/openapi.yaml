@@ -1,0 +1,125 @@
+openapi: 3.0.3
+info:
+  title: Hegelion Agent API
+  description: >
+    Exposes the Hegelion dialectical agent (Thesis → Antithesis → Synthesis) as a
+    single HTTP endpoint suitable for Google Gemini extensions or other agent marketplaces.
+  version: "0.1.0"
+servers:
+  - url: https://REGION-PROJECT_ID.cloudfunctions.net/agent_act
+    description: Firebase-hosted Cloud Function (replace REGION and PROJECT_ID)
+paths:
+  /agent_act:
+    post:
+      summary: Run a dialectical agent step
+      operationId: agentAct
+      description: >
+        Runs the Hegelion agent loop (thesis → antithesis → synthesis) on the provided observation and
+        returns the vetted action along with the full reasoning trace.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentActRequest'
+      responses:
+        "200":
+          description: Action recommendation and dialectic trace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentActResponse'
+        "400":
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Agent execution error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    AgentActRequest:
+      type: object
+      required:
+        - observation
+      properties:
+        observation:
+          type: string
+          description: Current observation or environment state that needs the next action.
+        goal:
+          type: string
+          description: Optional high-level mission or north star for the agent.
+        personas:
+          type: string
+          description: Named persona preset (e.g., "council", "logic", "ethics").
+        iterations:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Number of refinement loops (Synthesis → new Thesis).
+        use_search:
+          type: boolean
+          default: false
+          description: Encourage the critics to invoke search tools.
+        coding:
+          type: boolean
+          default: false
+          description: Use the coding-optimized guidance (prefer concrete diffs/tests).
+        debug:
+          type: boolean
+          default: false
+          description: Include additional tracing metadata in the response.
+    AgentActResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Single vetted action that survived adversarial critique.
+        result:
+          $ref: '#/components/schemas/HegelionResult'
+    HegelionResult:
+      type: object
+      properties:
+        query:
+          type: string
+        mode:
+          type: string
+          description: Always "synthesis" for agent actions.
+        thesis:
+          type: string
+        antithesis:
+          type: string
+        synthesis:
+          type: string
+        contradictions:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              evidence:
+                type: string
+        research_proposals:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              testable_prediction:
+                type: string
+        metadata:
+          type: object
+          additionalProperties: true
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+

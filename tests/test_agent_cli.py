@@ -105,4 +105,3 @@ async def test_run_json_output_uses_coding_agent(monkeypatch: pytest.MonkeyPatch
     payload = json.loads(captured.out)
     assert payload["action"] == "add tests"
     assert payload["result"]["query"] == "Investigate outage"
-
