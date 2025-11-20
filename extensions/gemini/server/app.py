@@ -1,43 +1,21 @@
-"""FastAPI wrapper to expose the Hegelion agent over HTTP."""
+"""FastAPI wrapper that exposes prompt-driven dialectical tools."""
 
 from __future__ import annotations
-
-import os
-from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from hegelion.agent import HegelionAgent
-
-DEFAULT_ITERATIONS = int(os.getenv("HEGELION_DEFAULT_ITERATIONS", "1"))
-
-
-class AgentActRequest(BaseModel):
-    """Request payload for /agent_act."""
-
-    observation: str = Field(..., description="Current state that needs the next action.")
-    goal: Optional[str] = Field(None, description="Optional high-level mission.")
-    personas: Optional[str] = Field(None, description="Critic preset, e.g., council.")
-    iterations: Optional[int] = Field(
-        None, ge=1, description="Refinement loops (Synthesis → new Thesis)."
-    )
-    use_search: bool = Field(False, description="Encourage critics to call tools / search.")
-    coding: bool = Field(False, description="Use the coding-specific agent wrapper.")
-    debug: bool = Field(False, description="Include debug traces in the dialectic.")
-
-
-class AgentActResponse(BaseModel):
-    """Response payload returned by /agent_act."""
-
-    action: str
-    result: dict
+from hegelion.prompt_dialectic import (
+    PromptDrivenDialectic,
+    create_dialectical_workflow,
+    create_single_shot_dialectic_prompt,
+)
 
 
 app = FastAPI(
-    title="Hegelion Agent API",
-    description="Dialects-first agent: Thesis → Antithesis → Synthesis before acting.",
+    title="Hegelion Prompt API",
+    description="Returns prompt scaffolds for Hegelion's Thesis → Antithesis → Synthesis workflow.",
     version="0.1.0",
 )
 
@@ -50,17 +28,49 @@ app.add_middleware(
 )
 
 
-def build_agent(payload: AgentActRequest) -> HegelionAgent:
-    base_kwargs = {
-        "goal": payload.goal,
-        "personas": payload.personas,
-        "iterations": payload.iterations or DEFAULT_ITERATIONS,
-        "use_search": payload.use_search,
-        "debug": payload.debug,
-    }
-    if payload.coding:
-        return HegelionAgent.for_coding(**base_kwargs)
-    return HegelionAgent(**base_kwargs)
+class WorkflowRequest(BaseModel):
+    query: str = Field(..., description="Question or topic to analyze.")
+    use_search: bool = False
+    use_council: bool = False
+    use_judge: bool = False
+
+
+class WorkflowResponse(BaseModel):
+    workflow: dict
+
+
+class SingleShotRequest(BaseModel):
+    query: str
+    use_search: bool = False
+    use_council: bool = False
+
+
+class PromptResponse(BaseModel):
+    phase: str | None = None
+    prompt: str
+    instructions: str | None = None
+    expected_format: str | None = None
+
+
+class CouncilPromptResponse(BaseModel):
+    prompts: list[PromptResponse]
+
+
+class ThesisRequest(BaseModel):
+    query: str
+
+
+class AntithesisRequest(BaseModel):
+    query: str
+    thesis: str
+    use_search: bool = False
+    use_council: bool = False
+
+
+class SynthesisRequest(BaseModel):
+    query: str
+    thesis: str
+    antithesis: str
 
 
 @app.get("/health")
@@ -70,14 +80,58 @@ async def health() -> dict:
     return {"status": "ok"}
 
 
-@app.post("/agent_act", response_model=AgentActResponse)
-async def agent_act(request: AgentActRequest) -> AgentActResponse:
-    """Run a full dialectical step and return the survived action."""
+@app.post("/dialectical_workflow", response_model=WorkflowResponse)
+async def dialectical_workflow(request: WorkflowRequest) -> WorkflowResponse:
+    """Return a structured workflow that any LLM can execute."""
 
+    workflow = create_dialectical_workflow(
+        query=request.query,
+        use_search=request.use_search,
+        use_council=request.use_council,
+        use_judge=request.use_judge,
+    )
+    return WorkflowResponse(workflow=workflow)
+
+
+@app.post("/dialectical_single_shot", response_model=PromptResponse)
+async def single_shot(request: SingleShotRequest) -> PromptResponse:
+    """Return one massive prompt for models that can handle the full loop."""
+
+    prompt = create_single_shot_dialectic_prompt(
+        query=request.query,
+        use_search=request.use_search,
+        use_council=request.use_council,
+    )
+    return PromptResponse(prompt=prompt)
+
+
+@app.post("/thesis_prompt", response_model=PromptResponse)
+async def thesis_prompt(request: ThesisRequest) -> PromptResponse:
+    dialectic = PromptDrivenDialectic()
+    prompt_obj = dialectic.generate_thesis_prompt(request.query)
+    return PromptResponse(prompt=prompt_obj.prompt)
+
+
+@app.post("/antithesis_prompt", response_model=PromptResponse)
+async def antithesis_prompt(request: AntithesisRequest) -> PromptResponse:
+    dialectic = PromptDrivenDialectic()
     try:
-        agent = build_agent(request)
-        step = await agent.act(request.observation)
-    except Exception as exc:  # pragma: no cover - surfaced to client
-        raise HTTPException(status_code=500, detail=f"Agent failure: {exc}") from exc
+        if request.use_council:
+            council = dialectic.generate_council_prompts(request.query, request.thesis)
+            rendered = "\n\n".join(f"## {prompt.phase}\n{prompt.prompt}" for prompt in council)
+            return PromptResponse(prompt=rendered)
+        prompt_obj = dialectic.generate_antithesis_prompt(
+            request.query, request.thesis, use_search_context=request.use_search
+        )
+        return PromptResponse(prompt=prompt_obj.prompt)
+    except Exception as exc:  # pragma: no cover
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return AgentActResponse(action=step.action, result=step.result.to_dict())
+
+@app.post("/synthesis_prompt", response_model=PromptResponse)
+async def synthesis_prompt(request: SynthesisRequest) -> PromptResponse:
+    dialectic = PromptDrivenDialectic()
+    prompt_obj = dialectic.generate_synthesis_prompt(
+        request.query, request.thesis, request.antithesis
+    )
+    return PromptResponse(prompt=prompt_obj.prompt)

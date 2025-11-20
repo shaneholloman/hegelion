@@ -74,13 +74,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     print(f"Loading results from {args.input_file}...")
     results = load_results(args.input_file)
-    
+
     if not results:
         print("No valid results found in input file.", file=sys.stderr)
         return 1
 
     print(f"Found {len(results)} results. Converting to {args.format} format...")
-    
+
     try:
         export_training_data(
             results,
@@ -97,4 +97,3 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
