@@ -10,7 +10,6 @@ It detects the current Python interpreter to ensure paths are absolute and corre
 
 import sys
 import json
-import os
 from pathlib import Path
 import argparse
 
@@ -29,9 +28,9 @@ def get_project_root():
 def check_installation():
     """Verify that hegelion can be imported."""
     try:
-        import hegelion
+        import importlib.util
 
-        return True
+        return importlib.util.find_spec("hegelion") is not None
     except ImportError:
         return False
 
