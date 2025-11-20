@@ -130,8 +130,11 @@ class TestWorkflowHelpers:
 
         # It should contain references to all council members variables
         # Note: step numbers for council are 2, 3, 4
+        assert "### Council The Logician" in synthesis_prompt_text
         assert "{{council_the_logician_from_step_2}}" in synthesis_prompt_text
+        assert "### Council The Empiricist" in synthesis_prompt_text
         assert "{{council_the_empiricist_from_step_3}}" in synthesis_prompt_text
+        assert "### Council The Ethicist" in synthesis_prompt_text
         assert "{{council_the_ethicist_from_step_4}}" in synthesis_prompt_text
 
     def test_create_dialectical_workflow_with_judge(self):
