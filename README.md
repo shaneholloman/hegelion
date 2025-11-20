@@ -15,16 +15,13 @@ Hegelion is a framework that upgrades AI reasoning by forcing language models th
 
 ## Table of Contents
 
+- [Quick Start](#quick-start-recommended-for-cursor--claude)
+- [Two Ways to Use Hegelion](#two-ways-to-use-hegelion)
 - [Value Proposition](#value-proposition)
 - [Key Features](#key-features)
-- [Two Ways to Use Hegelion](#two-ways-to-use-hegelion)
 - [Documentation](#documentation)
-- [Quick Start](#quick-start)
-- [Supported Backends](#supported-backends)
-- [Who is this for?](#who-is-this-for)
-- [Common Use Cases](#common-use-cases)
-- [FAQ](#faq)
-- [New in Version 0.3.0](#new-in-version-030)
+- [Advanced Usage](#advanced-usage-training-data--agents)
+- [New in Version 0.4.0](#new-in-version-040)
 - [Contributing & License](#contributing--license)
 
 ---
@@ -99,6 +96,60 @@ Hegelion supports two distinct usage patterns depending on your needs:
 - [Model-Agnostic Prompt Server (docs/MODEL_AGNOSTIC.md)](docs/MODEL_AGNOSTIC.md)
 - [MCP Reference (docs/MCP.md)](docs/MCP.md)
 - [Examples (examples/README.md)](examples/README.md)
+- [Agent Protocol (agents.md)](agents.md)
+
+---
+
+## Advanced Usage: Training Data & Agents
+
+- **Export preference data (DPO/RLAIF):**
+
+```python
+from hegelion.datasets import export_training_data
+
+# hegelion_results: List[HegelionResult] from run_dialectic/run_benchmark
+export_training_data(
+    hegelion_results,
+    "hegelion_dpo.jsonl",
+    format="dpo",  # or "instruction"
+    rejected_source="both",  # thesis vs antithesis pairs
+)
+```
+
+- **Agent wrapper (Reflexion-style loop):**
+
+```python
+from hegelion.agent import HegelionAgent
+
+agent = HegelionAgent(goal="Ship the feature safely", personas="council", iterations=2)
+step = agent.act_sync("Tests are flaky after enabling caching; what should we do next?")
+print("Action:", step.action)
+```
+
+The agent calls the full thesis → antithesis → synthesis loop before acting, so actions are vetted by contradiction-hunting critics to reduce hallucinations and unsafe plans. See `agents.md` for the protocol.
+
+- **CLI (coding-focused):**
+
+```bash
+python -m hegelion.scripts.hegelion_agent_cli "CI fails on Python 3.12" --goal "Fix CI" --coding --iterations 2
+```
+
+---
+
+## New in Version 0.4.0
+
+- **Adversarial Agent Protocol**
+  - Added `HegelionAgent` (`hegelion/agent.py`) with async `act` / sync `act_sync` and a `for_coding(...)` convenience for code-focused agents.
+  - New `hegelion_agent_act` MCP tool and `hegelion_agent_cli` CLI, both running a full thesis → antithesis → synthesis pass before acting to reduce hallucinations.
+  - Documented the agent loop and protocol in `agents.md`.
+
+- **Training Data Export (RLAIF / DPO)**
+  - Added `hegelion.datasets.to_dpo_dataset`, `to_instruction_tuning_dataset`, and `export_training_data` to turn `HegelionResult` objects into preference pairs or instruction-tuning examples.
+  - This is the first step toward using Hegelion as a synthetic preference-data generator for RLHF/RLAIF; a fuller training guide is planned for a future release.
+
+- **MCP & Setup Improvements**
+  - New `scripts/setup_mcp.py` to generate `mcp_config.json` and print a copy‑paste snippet for global MCP settings.
+  - README / MCP docs updated to emphasize the prompt-driven (no-API) server and the backend/agent tools that use configured providers.
 
 ---
 

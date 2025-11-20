@@ -38,10 +38,11 @@ class TestListTools:
         """Test that list_tools returns correct tools."""
         tools = await app.list_tools()
 
-        assert len(tools) == 2
+        assert len(tools) == 3
         tool_names = [tool.name for tool in tools]
         assert "run_dialectic" in tool_names
         assert "run_benchmark" in tool_names
+        assert "hegelion_agent_act" in tool_names
 
     async def test_run_dialectic_tool_schema(self):
         """Test run_dialectic tool schema."""
@@ -74,6 +75,20 @@ class TestListTools:
         assert "properties" in schema
         assert "prompts_file" in schema["properties"]
         assert "debug" in schema["properties"]
+
+    async def test_agent_tool_schema(self):
+        """Test agent tool schema."""
+        tools = await app.list_tools()
+        agent_tool = next(t for t in tools if t.name == "hegelion_agent_act")
+
+        assert agent_tool.description
+        assert "adversarial" in agent_tool.description.lower()
+
+        schema = agent_tool.inputSchema
+        assert schema["type"] == "object"
+        assert "observation" in schema["required"]
+        props = schema["properties"]
+        assert "goal" in props and "personas" in props
 
 
 @pytest.mark.asyncio
@@ -140,6 +155,31 @@ class TestCallTool:
                 payload = json.loads(line)
                 assert payload["query"] == "Test Query"
 
+    async def test_agent_tool_execution(self, sample_result: HegelionResult):
+        """Test hegelion_agent_act tool execution."""
+
+        class FakeStep:
+            def __init__(self, action, result):
+                self.action = action
+                self.result = result
+
+        with patch("hegelion.mcp_server.HegelionAgent") as MockAgent:
+            instance = MockAgent.return_value
+            instance.act = AsyncMock(return_value=FakeStep("do x", sample_result))
+
+            result = await app.call_tool(
+                name="hegelion_agent_act",
+                arguments={"observation": "see", "goal": "do"},
+            )
+
+            assert len(result) == 1
+            payload = json.loads(result[0].text)
+            assert payload["action"] == "do x"
+            assert payload["result"]["query"] == "Test Query"
+
+            MockAgent.assert_called_once()
+            instance.act.assert_awaited_once()
+
     async def test_run_benchmark_with_debug(self, tmp_path: Path, sample_result: HegelionResult):
         """Test run_benchmark tool with debug flag."""
         prompts_file = tmp_path / "prompts.jsonl"
@@ -201,6 +241,21 @@ class TestInputValidation:
                 iterations=1,
                 use_search=False,
             )
+
+    async def test_agent_debug_defaults_to_false(self, sample_result: HegelionResult):
+        """Test agent tool debug default."""
+        with patch("hegelion.mcp_server.HegelionAgent") as MockAgent:
+            instance = MockAgent.return_value
+            instance.act = AsyncMock(
+                return_value=type("Step", (), {"action": "do", "result": sample_result})
+            )
+
+            await app.call_tool(
+                name="hegelion_agent_act", arguments={"observation": "obs"}
+            )
+
+            kwargs = MockAgent.call_args[1]
+            assert kwargs["debug"] is False
 
     async def test_run_benchmark_debug_defaults_to_false(
         self, tmp_path: Path, sample_result: HegelionResult

@@ -11,6 +11,7 @@ from mcp.types import TextContent, Tool
 
 
 from .core import run_dialectic, run_benchmark
+from .agent import HegelionAgent
 
 app = Server("hegelion-server")
 
@@ -89,8 +90,52 @@ async def list_tools() -> list[Tool]:
                         "type": "boolean",
                         "default": False,
                     },
+            },
+            "required": ["prompts_file"],
+            },
+        ),
+        Tool(
+            name="hegelion_agent_act",
+            description=(
+                "Adversarial reflexive agent step: thesis → antithesis → synthesis before acting. "
+                "Reduces hallucinations by forcing critique of the proposed action."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "observation": {
+                        "type": "string",
+                        "description": "Current observation/state for the agent",
+                    },
+                    "goal": {
+                        "type": "string",
+                        "description": "Optional high-level goal for context",
+                    },
+                    "personas": {
+                        "type": "string",
+                        "description": "Critic persona preset (e.g., 'council', 'security').",
+                    },
+                    "iterations": {
+                        "type": "integer",
+                        "description": "Refinement loops (synthesis -> new thesis)",
+                        "default": 1,
+                    },
+                    "use_search": {
+                        "type": "boolean",
+                        "description": "Instruct the model to use search tools during critique.",
+                        "default": False,
+                    },
+                    "action_guidance": {
+                        "type": "string",
+                        "description": "Extra guidance for the action (e.g., coding focus).",
+                    },
+                    "debug": {
+                        "type": "boolean",
+                        "description": "Include debug information",
+                        "default": False,
+                    },
                 },
-                "required": ["prompts_file"],
+                "required": ["observation"],
             },
         ),
     ]
@@ -142,6 +187,32 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         payload = "\n".join(lines)
 
         return [TextContent(type="text", text=payload)]
+
+    elif name == "hegelion_agent_act":
+        observation = arguments["observation"]
+        goal = arguments.get("goal")
+        personas = arguments.get("personas")
+        iterations = arguments.get("iterations", 1)
+        use_search = arguments.get("use_search", False)
+        action_guidance = arguments.get("action_guidance")
+        debug = arguments.get("debug", False)
+
+        agent = HegelionAgent(
+            goal=goal,
+            personas=personas,
+            iterations=iterations,
+            use_search=use_search,
+            action_guidance=action_guidance,
+            debug=debug,
+        )
+        step = await agent.act(observation)
+
+        payload = {
+            "action": step.action,
+            "result": step.result.to_dict(),
+        }
+
+        return [TextContent(type="text", text=json.dumps(payload, ensure_ascii=False, indent=2))]
 
     else:
         raise ValueError(f"Unknown tool: {name}")
