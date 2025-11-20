@@ -6,8 +6,8 @@ info:
     single HTTP endpoint suitable for Google Gemini extensions or other agent marketplaces.
   version: "0.1.0"
 servers:
-  - url: https://REGION-PROJECT_ID.cloudfunctions.net/agent_act
-    description: Firebase-hosted Cloud Function (replace REGION and PROJECT_ID)
+  - url: https://hegelion-agent.up.railway.app/agent_act
+    description: Railway deployment (replace with your service URL)
 paths:
   /agent_act:
     post:

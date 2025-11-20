@@ -4,41 +4,43 @@ This directory packages everything you need to expose Hegelion’s dialectical a
 
 ## Architecture Overview
 
-1. **Firebase Cloud Function (Python 3.11)** – wraps `HegelionAgent` in an HTTPS endpoint (`POST /agent_act`).
-2. **OpenAPI Spec (`openapi.yaml`)** – describes the endpoint for Google AI Studio or other registries.
-3. **Deployment Scripts** – Firebase configuration plus instructions for local testing and secret management.
+1. **FastAPI service (`server/app.py`)** – imports `HegelionAgent` and exposes `/agent_act`.
+2. **Railway deployment (free tier friendly)** – builds from `requirements.txt`, runs `uvicorn`.
+3. **OpenAPI Spec (`openapi.yaml`)** – points Gemini / other marketplaces at the Railway URL.
 
-## Quick Start
+## Quick Start (Railway)
 
 ```bash
-cd extensions/gemini/firebase
-cp .firebaserc.example .firebaserc   # set your Firebase project ID
+cd extensions/gemini/server
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r functions/requirements.txt
-firebase emulators:start --only functions   # optional local test
-firebase deploy --only functions:agent_act
+pip install -r requirements.txt
+cp env.sample .env   # fill in provider + API keys
+uvicorn extensions.gemini.server.app:app --reload
 ```
 
-### Configure Secrets
-
-The function relies on the same environment variables as the CLI (`HEGELION_PROVIDER`, `HEGELION_MODEL`, `ANTHROPIC_API_KEY`, etc). Use Firebase’s secret manager:
+Ready to deploy?
 
 ```bash
-firebase functions:secrets:set ANTHROPIC_API_KEY
-firebase deploy --only functions:agent_act
+railway init
+railway variables set HEGELION_PROVIDER=anthropic
+railway variables set HEGELION_MODEL=claude-3-5-sonnet-20241022
+railway variables set ANTHROPIC_API_KEY=sk-ant-...
+railway up --service hegelion-agent \
+  --build-cmd "pip install -r requirements.txt" \
+  --start-cmd "uvicorn extensions.gemini.server.app:app --host 0.0.0.0 --port \$PORT"
 ```
 
 ## Register with Google Gemini
 
 1. Open [Google AI Studio Extensions](https://aistudio.google.com/app/extensions).
-2. Create a new extension “From OpenAPI”, pointing to `extensions/gemini/openapi.yaml` (host it on GitHub raw or Cloud Storage).
-3. Set auth = “API key” (Gemini will prompt for the key—use a short token you verify in Firebase, or leave open if you already gate access).
-4. Enable the extension inside your Gemini app / chat. Gemini will now call `agent_act` when it needs adversarial planning.
+2. Create a new extension “From OpenAPI”, pointing to `extensions/gemini/openapi.yaml` (host the raw file or paste the contents).
+3. Set auth = “API key” (Railway lets you enforce this by checking headers before running the agent).
+4. Enable the extension inside your Gemini chat/app. Gemini will call your Railway URL whenever it needs adversarial planning.
 
 ## Applying the Same Package Elsewhere
 
-- **Cursor MCP Gallery / Claude Tool Hub** – submit the OpenAPI spec plus short description and point them at the Firebase HTTPS endpoint.
-- **Hugging Face Agents / LangChain ToolHub** – wrap `agent_act` as a tool definition that forwards to the Firebase URL.
+- **Cursor MCP Gallery / Claude Tool Hub** – submit the OpenAPI spec plus short description and point them at the Railway URL.
+- **Hugging Face Agents / LangChain ToolHub** – wrap `agent_act` as a tool definition that forwards to the Railway endpoint.
 
-See `extensions/gemini/firebase/README.md` for detailed Firebase deployment notes and `docs/marketplaces.md` for other listings.
+See `extensions/gemini/server/README.md` for deployment details and `docs/marketplaces.md` for other listing requirements.
 

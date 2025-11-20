@@ -4,10 +4,10 @@ Use this checklist to publish Hegelion beyond MCP-aware IDEs.
 
 ## Google Gemini Extensions (AI Studio)
 
-- Endpoint: Firebase Cloud Function (`extensions/gemini/firebase`)
+- Endpoint: Railway FastAPI service (`extensions/gemini/server`)
 - Spec: `extensions/gemini/openapi.yaml`
 - Submission: AI Studio → Extensions → “Import from OpenAPI”
-- Auth: Optional API key header checked in Firebase
+- Auth: Optional API key header that Railway validates before invoking the agent
 
 ## Cursor MCP Gallery
 
@@ -28,18 +28,18 @@ Use this checklist to publish Hegelion beyond MCP-aware IDEs.
   - One-liner value prop (“Adversarial dialectic agent”)
   - GitHub repo link + docs (link to `docs/MCP.md`)
   - Contact email for verification
-- Optional: include Firebase-hosted OpenAPI endpoint to showcase Gemini compatibility.
+- Optional: include the Railway-hosted OpenAPI endpoint to showcase Gemini compatibility.
 
 ## Hugging Face Tools / Agents
 
 - Option 1: Publish as a “Tool” on https://huggingface.co/tools
-  - Wrap Firebase endpoint using their Python SDK
+  - Wrap the Railway endpoint using their Python SDK
   - Provide README snippet + license
 - Option 2: Create a Space demonstrating the agent and link to PyPI package.
 
 ## LangChain / LlamaIndex Tool Registries
 
-- Package a simple tool definition referencing the Firebase endpoint (or directly instantiate `HegelionAgent`)
+- Package a simple tool definition referencing the Railway endpoint (or directly instantiate `HegelionAgent`)
 - Submit to:
   - https://smith.langchain.com/hub (LangChain Hub)
   - https://docs.llamaindex.ai/en/stable/tool/index.html#tool-gallery (email form)
