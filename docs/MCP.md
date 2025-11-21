@@ -2,13 +2,15 @@
 
 This reference walks through running the Hegelion Model Context Protocol (MCP) server, wiring it into Claude Desktop or Cursor, and choosing the right mode for your needs.
 
+**TL;DR:** Most users should start with the prompt-driven server `hegelion-prompt-server` (zero API keys, returns prompts only). Switch to the backend server `hegelion-server` only if you want Hegelion to call models with your keys.
+
 ## Choose Your Mode
 
 Hegelion offers two distinct MCP servers. You can run one or both.
 
 | Mode | Server Name | Description | Best For |
 | --- | --- | --- | --- |
-| **Prompt-Driven** | `hegelion-prompt-server` | Generates reasoning *prompts* that your IDE's AI (Claude, GPT-4) executes. **No API keys required.** | **Cursor, Claude Desktop**, VS Code users who want to use their existing model. |
+| **Prompt-Driven (default)** | `hegelion-prompt-server` | Generates reasoning *prompts* that your IDE's AI (Claude, GPT-4) executes. **No API keys required.** | **Cursor, Claude Desktop**, VS Code users who want to use their existing model. |
 | **Backend-Driven** | `hegelion-server` | Executes the reasoning loop on a background server using API keys you provide. | **Pipelines, Automation**, or offloading heavy reasoning to a different model (e.g. using O1 for reasoning while coding with Sonnet). |
 
 ---
@@ -72,7 +74,7 @@ Locate your config file (macOS: `~/Library/Application Support/Claude/claude_des
 
 ### Prompt-Driven Server (`hegelion.prompt_mcp_server`)
 
-These tools return **text prompts** that you (or your agent) execute immediately.
+These tools return **text prompts** that you (or your agent) execute immediately. They never call external APIs, so they work online or offline with whatever model your IDE is already using.
 
 *   `dialectical_single_shot`: Generates one massive prompt for Thesis → Antithesis → Synthesis.
 *   `dialectical_workflow`: Generates a JSON plan for step-by-step execution.
