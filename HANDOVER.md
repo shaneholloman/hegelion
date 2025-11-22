@@ -8,7 +8,7 @@
 - **Action:** Check progress with `wc -l hegelion_kimi_training_data.jsonl`. The script automatically handles resuming if interrupted (run the same command).
 
 ## 2. Training Pipeline (Mac/MLX)
-- **Goal:** Train `mlx-community/Meta-Llama-3-8B-Instruct-4bit` on this data using Shannon Control Unit (SCU) optimization.
+- **Goal:** Train `mlx-community/OLMo-7B-0724-hf-4bit` on this data using Shannon Control Unit (SCU) optimization.
 - **Script:** `hegelion/training/mlx_scu_trainer.py`
 - **Status:** Prototype exists. Tested with dummy data.
 - **Next Step:** Once data generation reaches ~1000 samples:
@@ -17,7 +17,7 @@
     3. Run training:
        ```bash
        uv run python -m hegelion.training.mlx_scu_trainer \
-         --model mlx-community/Meta-Llama-3-8B-Instruct-4bit \
+         --model mlx-community/OLMo-7B-0724-hf-4bit \
          --data hegelion_kimi_training_data.jsonl \
          --adapter_path adapters/hegelion_mlx_scu \
          --iters 100 --batch_size 1
