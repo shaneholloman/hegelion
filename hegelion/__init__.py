@@ -5,7 +5,7 @@ A Python package that generates structured thesis-antithesis-synthesis responses
 using Large Language Models, making reasoning patterns and contradictions explicit.
 """
 
-from .core import (
+from .core.core import (
     run_dialectic,
     run_benchmark,
     run_dialectic_sync,
@@ -15,9 +15,9 @@ from .core import (
     dialectic_sync,
     quickstart_sync,
 )
-from .models import HegelionResult
-from .datasets import export_training_data, to_dpo_dataset, to_instruction_tuning_dataset
-from .agent import HegelionAgent
+from .core.models import HegelionResult
+from .training.datasets import export_training_data, to_dpo_dataset, to_instruction_tuning_dataset
+from .core.agent import HegelionAgent
 
 __version__ = "0.3.0"
 __author__ = "Hegelion Contributors"

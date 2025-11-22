@@ -4,8 +4,8 @@ import time
 from pathlib import Path
 
 
-from hegelion.cache import CacheConfig, ResultCache, compute_cache_key
-from hegelion.models import HegelionResult
+from hegelion.core.cache import CacheConfig, ResultCache, compute_cache_key
+from hegelion.core.models import HegelionResult
 
 
 class TestCacheKeyComputation:

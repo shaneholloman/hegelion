@@ -1,6 +1,6 @@
 """Test edge cases for improved parsing of LLM output variations."""
 
-from hegelion.parsing import (
+from hegelion.core.parsing import (
     extract_contradictions,
     extract_research_proposals,
     parse_contradiction_header,

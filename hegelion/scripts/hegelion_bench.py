@@ -13,7 +13,7 @@ from typing import Optional, Sequence
 if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from hegelion.core import run_benchmark
+from hegelion import run_benchmark
 
 
 def build_parser() -> argparse.ArgumentParser:

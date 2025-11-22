@@ -13,7 +13,7 @@ if __package__ is None or __package__ == "":  # pragma: no cover - direct execut
 
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from hegelion.models import HegelionResult
+from hegelion import HegelionResult
 
 
 def build_parser() -> argparse.ArgumentParser:

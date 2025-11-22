@@ -1,7 +1,7 @@
 import pytest
 
-from hegelion.agent import HegelionAgent, default_action_extractor
-from hegelion.models import HegelionResult
+from hegelion.core.agent import HegelionAgent, default_action_extractor
+from hegelion.core.models import HegelionResult
 
 
 def make_result(synthesis: str = "Action: run tests") -> HegelionResult:
@@ -29,7 +29,7 @@ def test_act_sync_builds_query_and_history(monkeypatch):
         captured["query"] = query
         return make_result("Action: ship")
 
-    monkeypatch.setattr("hegelion.agent.run_dialectic_sync", fake_run_dialectic_sync)
+    monkeypatch.setattr("hegelion.core.agent.run_dialectic_sync", fake_run_dialectic_sync)
 
     agent = HegelionAgent.for_coding(goal="Fix CI")
     step = agent.act_sync("CI fails on Python 3.12")
@@ -49,7 +49,7 @@ async def test_act_async_uses_adversarial_prompt(monkeypatch):
         captured["query"] = query
         return make_result("Action -> add tests")
 
-    monkeypatch.setattr("hegelion.agent.run_dialectic", fake_run_dialectic)
+    monkeypatch.setattr("hegelion.core.agent.run_dialectic", fake_run_dialectic)
 
     agent = HegelionAgent(goal="Reduce regressions", action_guidance="Prefer tests")
     step = await agent.act("Validate new cache layer")

@@ -8,8 +8,8 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Sequence
 
-from hegelion.models import HegelionResult
-from hegelion.datasets import export_training_data
+from hegelion import HegelionResult
+from hegelion.training.datasets import export_training_data
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -1,321 +1,81 @@
-"""Tests for MCP server functionality."""
+"""Tests for model-agnostic MCP server."""
 
 import json
-from pathlib import Path
-from unittest.mock import AsyncMock, patch
-
 import pytest
-
-from hegelion.mcp_server import app
-from hegelion.models import HegelionResult
-
-
-@pytest.fixture
-def sample_result() -> HegelionResult:
-    """Sample result for testing."""
-    return HegelionResult(
-        query="Test Query",
-        mode="synthesis",
-        thesis="Thesis text",
-        antithesis="Antithesis text",
-        synthesis="Synthesis text",
-        contradictions=[{"description": "Contradiction 1"}],
-        research_proposals=[{"description": "Proposal 1"}],
-        metadata={
-            "thesis_time_ms": 100.0,
-            "antithesis_time_ms": 200.0,
-            "synthesis_time_ms": 300.0,
-            "total_time_ms": 600.0,
-        },
-    )
+from hegelion.mcp.server import app
 
 
 @pytest.mark.asyncio
-class TestListTools:
-    """Tests for tool listing."""
+class TestPromptMCPServer:
 
-    async def test_list_tools_returns_tools(self):
-        """Test that list_tools returns correct tools."""
+    async def test_list_tools(self):
+        """Test that all prompt tools are listed."""
         tools = await app.list_tools()
+        tool_names = [t.name for t in tools]
 
-        assert len(tools) == 3
-        tool_names = [tool.name for tool in tools]
-        assert "run_dialectic" in tool_names
-        assert "run_benchmark" in tool_names
-        assert "hegelion_agent_act" in tool_names
+        assert "dialectical_workflow" in tool_names
+        assert "dialectical_single_shot" in tool_names
+        assert "thesis_prompt" in tool_names
+        assert "antithesis_prompt" in tool_names
+        assert "synthesis_prompt" in tool_names
 
-    async def test_run_dialectic_tool_schema(self):
-        """Test run_dialectic tool schema."""
-        tools = await app.list_tools()
-        dialectic_tool = next(t for t in tools if t.name == "run_dialectic")
+    async def test_dialectical_workflow_tool(self):
+        """Test dialectical workflow tool execution."""
+        args = {"query": "test query"}
+        result = await app.call_tool("dialectical_workflow", args)
 
-        assert dialectic_tool.description
-        assert "thesis" in dialectic_tool.description.lower()
-        assert "antithesis" in dialectic_tool.description.lower()
-        assert "synthesis" in dialectic_tool.description.lower()
+        assert len(result) == 1
+        assert result[0].type == "text"
 
-        schema = dialectic_tool.inputSchema
-        assert schema["type"] == "object"
-        assert "query" in schema["required"]
-        assert "properties" in schema
-        assert "query" in schema["properties"]
-        assert "debug" in schema["properties"]
+        workflow = json.loads(result[0].text)
+        assert workflow["query"] == "test query"
+        assert len(workflow["steps"]) >= 3
 
-    async def test_run_benchmark_tool_schema(self):
-        """Test run_benchmark tool schema."""
-        tools = await app.list_tools()
-        benchmark_tool = next(t for t in tools if t.name == "run_benchmark")
+    async def test_dialectical_single_shot_tool(self):
+        """Test single shot prompt tool."""
+        args = {"query": "test query", "use_council": True}
+        result = await app.call_tool("dialectical_single_shot", args)
 
-        assert benchmark_tool.description
-        assert "jsonl" in benchmark_tool.description.lower()
+        assert len(result) == 1
+        prompt = result[0].text
+        assert "test query" in prompt
+        assert "THE LOGICIAN" in prompt
 
-        schema = benchmark_tool.inputSchema
-        assert schema["type"] == "object"
-        assert "prompts_file" in schema["required"]
-        assert "properties" in schema
-        assert "prompts_file" in schema["properties"]
-        assert "debug" in schema["properties"]
+    async def test_thesis_prompt_tool(self):
+        """Test thesis prompt tool."""
+        args = {"query": "test query"}
+        result = await app.call_tool("thesis_prompt", args)
 
-    async def test_agent_tool_schema(self):
-        """Test agent tool schema."""
-        tools = await app.list_tools()
-        agent_tool = next(t for t in tools if t.name == "hegelion_agent_act")
+        assert len(result) == 1
+        content = result[0].text
+        assert "THESIS PROMPT" in content
+        assert "test query" in content
 
-        assert agent_tool.description
-        assert "adversarial" in agent_tool.description.lower()
+    async def test_antithesis_prompt_tool(self):
+        """Test antithesis prompt tool."""
+        args = {"query": "test query", "thesis": "some thesis"}
+        result = await app.call_tool("antithesis_prompt", args)
 
-        schema = agent_tool.inputSchema
-        assert schema["type"] == "object"
-        assert "observation" in schema["required"]
-        props = schema["properties"]
-        assert "goal" in props and "personas" in props
+        content = result[0].text
+        assert "ANTITHESIS PROMPT" in content
+        assert "test query" in content
+        assert "some thesis" in content
 
+    async def test_antithesis_council_prompt_tool(self):
+        """Test antithesis prompt tool with council."""
+        args = {"query": "test query", "thesis": "some thesis", "use_council": True}
+        result = await app.call_tool("antithesis_prompt", args)
 
-@pytest.mark.asyncio
-class TestCallTool:
-    """Tests for tool execution."""
+        content = result[0].text
+        assert "COUNCIL ANTITHESIS PROMPTS" in content
+        assert "The Logician" in content
 
-    async def test_run_dialectic_tool_execution(self, sample_result: HegelionResult):
-        """Test run_dialectic tool execution."""
-        with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
-            mock_run.return_value = sample_result
+    async def test_synthesis_prompt_tool(self):
+        """Test synthesis prompt tool."""
+        args = {"query": "test query", "thesis": "T", "antithesis": "A"}
+        result = await app.call_tool("synthesis_prompt", args)
 
-            # MCP server call_tool is called with name and arguments
-            result = await app.call_tool(name="run_dialectic", arguments={"query": "Test query"})
-
-            assert len(result) == 1
-            assert result[0].type == "text"
-            payload = json.loads(result[0].text)
-            assert payload["query"] == "Test Query"
-            mock_run.assert_awaited_once_with(
-                query="Test query",
-                debug=False,
-                personas=None,
-                iterations=1,
-                use_search=False,
-            )
-
-    async def test_run_dialectic_with_debug(self, sample_result: HegelionResult):
-        """Test run_dialectic tool with debug flag."""
-        with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
-            mock_run.return_value = sample_result
-
-            _ = await app.call_tool(
-                name="run_dialectic", arguments={"query": "Test", "debug": True}
-            )
-
-            mock_run.assert_awaited_once_with(
-                query="Test",
-                debug=True,
-                personas=None,
-                iterations=1,
-                use_search=False,
-            )
-
-    async def test_run_benchmark_tool_execution(
-        self, tmp_path: Path, sample_result: HegelionResult
-    ):
-        """Test run_benchmark tool execution."""
-        prompts_file = tmp_path / "prompts.jsonl"
-        prompts_file.write_text('{"query": "Q1"}\n{"query": "Q2"}\n')
-
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
-            mock_run.return_value = [sample_result, sample_result]
-
-            result = await app.call_tool(
-                name="run_benchmark", arguments={"prompts_file": str(prompts_file)}
-            )
-
-            assert len(result) == 1
-            assert result[0].type == "text"
-            # Should be JSONL (newline-delimited JSON)
-            lines = result[0].text.strip().split("\n")
-            assert len(lines) == 2
-            for line in lines:
-                payload = json.loads(line)
-                assert payload["query"] == "Test Query"
-
-    async def test_agent_tool_execution(self, sample_result: HegelionResult):
-        """Test hegelion_agent_act tool execution."""
-
-        class FakeStep:
-            def __init__(self, action, result):
-                self.action = action
-                self.result = result
-
-        with patch("hegelion.mcp_server.HegelionAgent") as MockAgent:
-            instance = MockAgent.return_value
-            instance.act = AsyncMock(return_value=FakeStep("do x", sample_result))
-
-            result = await app.call_tool(
-                name="hegelion_agent_act",
-                arguments={"observation": "see", "goal": "do"},
-            )
-
-            assert len(result) == 1
-            payload = json.loads(result[0].text)
-            assert payload["action"] == "do x"
-            assert payload["result"]["query"] == "Test Query"
-
-            MockAgent.assert_called_once()
-            instance.act.assert_awaited_once()
-
-    async def test_run_benchmark_with_debug(self, tmp_path: Path, sample_result: HegelionResult):
-        """Test run_benchmark tool with debug flag."""
-        prompts_file = tmp_path / "prompts.jsonl"
-        prompts_file.write_text('{"query": "Test"}\n')
-
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
-            mock_run.return_value = [sample_result]
-
-            await app.call_tool(
-                name="run_benchmark",
-                arguments={"prompts_file": str(prompts_file), "debug": True},
-            )
-
-            call_kwargs = mock_run.call_args[1]
-            assert call_kwargs["debug"] is True
-
-    async def test_run_benchmark_nonexistent_file_raises(self, tmp_path: Path):
-        """Test that run_benchmark raises error for nonexistent file."""
-        nonexistent = tmp_path / "nonexistent.jsonl"
-
-        with pytest.raises(ValueError) as exc_info:
-            await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(nonexistent)})
-
-        assert "not found" in str(exc_info.value).lower()
-
-    async def test_unknown_tool_raises(self):
-        """Test that unknown tool raises error."""
-        with pytest.raises(ValueError) as exc_info:
-            await app.call_tool(name="unknown_tool", arguments={})
-
-        assert "Unknown tool" in str(exc_info.value)
-
-
-@pytest.mark.asyncio
-class TestInputValidation:
-    """Tests for input validation."""
-
-    async def test_run_dialectic_missing_query_raises(self):
-        """Test that run_dialectic requires query field."""
-        with pytest.raises(KeyError):
-            await app.call_tool(name="run_dialectic", arguments={})
-
-    async def test_run_benchmark_missing_prompts_file_raises(self):
-        """Test that run_benchmark requires prompts_file field."""
-        with pytest.raises(KeyError):
-            await app.call_tool(name="run_benchmark", arguments={})
-
-    async def test_run_dialectic_debug_defaults_to_false(self, sample_result: HegelionResult):
-        """Test that debug defaults to False."""
-        with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
-            mock_run.return_value = sample_result
-
-            await app.call_tool(name="run_dialectic", arguments={"query": "Test"})
-
-            mock_run.assert_awaited_once_with(
-                query="Test",
-                debug=False,
-                personas=None,
-                iterations=1,
-                use_search=False,
-            )
-
-    async def test_agent_debug_defaults_to_false(self, sample_result: HegelionResult):
-        """Test agent tool debug default."""
-        with patch("hegelion.mcp_server.HegelionAgent") as MockAgent:
-            instance = MockAgent.return_value
-            instance.act = AsyncMock(
-                return_value=type("Step", (), {"action": "do", "result": sample_result})
-            )
-
-            await app.call_tool(name="hegelion_agent_act", arguments={"observation": "obs"})
-
-            kwargs = MockAgent.call_args[1]
-            assert kwargs["debug"] is False
-
-    async def test_run_benchmark_debug_defaults_to_false(
-        self, tmp_path: Path, sample_result: HegelionResult
-    ):
-        """Test that debug defaults to False for benchmark."""
-        prompts_file = tmp_path / "prompts.jsonl"
-        prompts_file.write_text('{"query": "Test"}\n')
-
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
-            mock_run.return_value = [sample_result]
-
-            await app.call_tool(name="run_benchmark", arguments={"prompts_file": str(prompts_file)})
-
-            call_kwargs = mock_run.call_args[1]
-            assert call_kwargs["debug"] is False
-
-
-@pytest.mark.asyncio
-class TestErrorHandling:
-    """Tests for error handling in MCP server."""
-
-    async def test_run_dialectic_backend_error(self):
-        """Test handling of backend errors in run_dialectic."""
-        from hegelion.config import ConfigurationError
-
-        with patch("hegelion.mcp_server.run_dialectic", new_callable=AsyncMock) as mock_run:
-            mock_run.side_effect = ConfigurationError("No API key")
-
-            with pytest.raises(ConfigurationError):
-                await app.call_tool(name="run_dialectic", arguments={"query": "Test"})
-
-    async def test_run_benchmark_file_error(self, tmp_path: Path):
-        """Test handling of file errors in run_benchmark."""
-        prompts_file = tmp_path / "prompts.jsonl"
-        prompts_file.write_text('{"query": "Test"}\n')
-
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
-            mock_run.side_effect = FileNotFoundError("File not found")
-
-            with pytest.raises(FileNotFoundError):
-                await app.call_tool(
-                    name="run_benchmark", arguments={"prompts_file": str(prompts_file)}
-                )
-
-    async def test_run_benchmark_jsonl_output_format(
-        self, tmp_path: Path, sample_result: HegelionResult
-    ):
-        """Test that run_benchmark returns proper JSONL format."""
-        prompts_file = tmp_path / "prompts.jsonl"
-        prompts_file.write_text('{"query": "Q1"}\n{"query": "Q2"}\n')
-
-        with patch("hegelion.mcp_server.run_benchmark", new_callable=AsyncMock) as mock_run:
-            mock_run.return_value = [sample_result, sample_result]
-
-            result = await app.call_tool(
-                name="run_benchmark", arguments={"prompts_file": str(prompts_file)}
-            )
-
-            # Should be newline-delimited JSON
-            text = result[0].text
-            lines = text.strip().split("\n")
-            assert len(lines) == 2
-            # Each line should be valid JSON
-            for line in lines:
-                json.loads(line)  # Should not raise
+        content = result[0].text
+        assert "SYNTHESIS PROMPT" in content
+        assert "T" in content
+        assert "A" in content

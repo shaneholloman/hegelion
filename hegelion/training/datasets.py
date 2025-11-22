@@ -8,7 +8,7 @@ from AI Feedback) and DPO (Direct Preference Optimization) datasets.
 from typing import List, Literal
 import json
 from pathlib import Path
-from .models import HegelionResult
+from hegelion.core.models import HegelionResult
 
 
 def to_dpo_dataset(

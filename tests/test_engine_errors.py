@@ -5,8 +5,8 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from hegelion.backends import DummyLLMBackend
-from hegelion.engine import (
+from hegelion.core.backends import DummyLLMBackend
+from hegelion.core.engine import (
     HegelionEngine,
     ThesisPhaseError,
 )
@@ -400,7 +400,7 @@ class TestEmbedderFallback:
         """Test fallback embedder when sentence-transformers is unavailable."""
         backend = DummyLLMBackend()
 
-        with patch("hegelion.engine.SentenceTransformer", None):
+        with patch("hegelion.core.engine.SentenceTransformer", None):
             engine = HegelionEngine(
                 backend=backend,
                 model="test-model",
@@ -420,7 +420,7 @@ class TestEmbedderFallback:
         def failing_import(*args, **kwargs):
             raise ImportError("sentence-transformers not available")
 
-        with patch("hegelion.engine.SentenceTransformer") as mock_st:
+        with patch("hegelion.core.engine.SentenceTransformer") as mock_st:
             mock_st.side_effect = failing_import
             engine = HegelionEngine(
                 backend=backend,
@@ -436,7 +436,7 @@ class TestEmbedderFallback:
         """Test that fallback embedder produces deterministic results."""
         backend = DummyLLMBackend()
 
-        with patch("hegelion.engine.SentenceTransformer", None):
+        with patch("hegelion.core.engine.SentenceTransformer", None):
             engine = HegelionEngine(
                 backend=backend,
                 model="test-model",

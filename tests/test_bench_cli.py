@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from hegelion.models import HegelionResult
+from hegelion.core.models import HegelionResult
 from hegelion.scripts import hegelion_bench
 
 

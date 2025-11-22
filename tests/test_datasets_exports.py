@@ -2,12 +2,12 @@ import json
 
 import pytest
 
-from hegelion.datasets import (
+from hegelion.training.datasets import (
     export_training_data,
     to_dpo_dataset,
     to_instruction_tuning_dataset,
 )
-from hegelion.models import HegelionResult
+from hegelion.core.models import HegelionResult
 
 
 def sample_result() -> HegelionResult:

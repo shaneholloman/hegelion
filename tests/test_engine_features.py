@@ -3,9 +3,9 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from hegelion.engine import HegelionEngine
-from hegelion.models import HegelionResult
-from hegelion.personas import SECURITY_ENGINEER, LOGICIAN, EMPIRICIST, get_personas
+from hegelion.core.engine import HegelionEngine
+from hegelion.core.models import HegelionResult
+from hegelion.core.personas import SECURITY_ENGINEER, LOGICIAN, EMPIRICIST, get_personas
 
 
 @pytest.mark.asyncio

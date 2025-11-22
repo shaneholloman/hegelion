@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from hegelion.backends import (
+from hegelion.core.backends import (
     AnthropicLLMBackend,
     BackendNotAvailableError,
     CustomHTTPLLMBackend,
@@ -42,7 +42,7 @@ class TestOpenAILLMBackend:
         mock_response.choices = [MagicMock(message=MagicMock(content="Generated text response"))]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncOpenAI", return_value=mock_client):
             backend = OpenAILLMBackend(
                 model="gpt-4",
                 api_key="test-key",
@@ -65,7 +65,7 @@ class TestOpenAILLMBackend:
         mock_response.choices = [MagicMock(message=MagicMock(content="Response"))]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncOpenAI", return_value=mock_client):
             backend = OpenAILLMBackend(model="gpt-4", api_key="test-key")
 
             await backend.generate("User prompt", system_prompt="System instruction")
@@ -85,7 +85,7 @@ class TestOpenAILLMBackend:
         mock_response.choices = [MagicMock(message=MagicMock(content=None))]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncOpenAI", return_value=mock_client):
             backend = OpenAILLMBackend(model="gpt-4", api_key="test-key")
 
             result = await backend.generate("Test")
@@ -109,7 +109,7 @@ class TestOpenAILLMBackend:
 
         mock_client.chat.completions.create = AsyncMock(return_value=mock_stream())
 
-        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncOpenAI", return_value=mock_client):
             backend = OpenAILLMBackend(model="gpt-4", api_key="test-key")
 
             collected = []
@@ -133,7 +133,7 @@ class TestOpenAILLMBackend:
 
         mock_client.chat.completions.create = AsyncMock(return_value=mock_stream())
 
-        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncOpenAI", return_value=mock_client):
             backend = OpenAILLMBackend(model="gpt-4", api_key="test-key")
 
             collected = []
@@ -144,7 +144,7 @@ class TestOpenAILLMBackend:
 
     async def test_backend_not_available_error(self):
         """Test error when openai package is missing."""
-        with patch("hegelion.backends.AsyncOpenAI", None):
+        with patch("hegelion.core.backends.AsyncOpenAI", None):
             with pytest.raises(BackendNotAvailableError):
                 OpenAILLMBackend(model="gpt-4", api_key="test-key")
 
@@ -155,7 +155,7 @@ class TestOpenAILLMBackend:
         mock_response.choices = [MagicMock(message=MagicMock(content="Response"))]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncOpenAI", return_value=mock_client) as mock_openai:
+        with patch("hegelion.core.backends.AsyncOpenAI", return_value=mock_client) as mock_openai:
             backend = OpenAILLMBackend(model="gpt-4", api_key="test-key", organization="org-123")
 
             await backend.generate("Test")
@@ -176,7 +176,7 @@ class TestAnthropicLLMBackend:
         mock_response.content = [MagicMock(type="text", text="Claude response text")]
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncAnthropic", return_value=mock_client):
             backend = AnthropicLLMBackend(
                 model="claude-3-opus-20240229",
                 api_key="test-key",
@@ -200,7 +200,7 @@ class TestAnthropicLLMBackend:
         ]
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncAnthropic", return_value=mock_client):
             backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
             result = await backend.generate("Test")
@@ -214,7 +214,7 @@ class TestAnthropicLLMBackend:
         mock_response.content = [MagicMock(type="text", text="Response")]
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncAnthropic", return_value=mock_client):
             backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
             await backend.generate("User prompt", system_prompt="System message")
@@ -244,7 +244,7 @@ class TestAnthropicLLMBackend:
 
         mock_client.messages.create = AsyncMock(return_value=mock_stream())
 
-        with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncAnthropic", return_value=mock_client):
             backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
             collected = []
@@ -269,7 +269,7 @@ class TestAnthropicLLMBackend:
 
         mock_client.messages.create = AsyncMock(return_value=mock_stream())
 
-        with patch("hegelion.backends.AsyncAnthropic", return_value=mock_client):
+        with patch("hegelion.core.backends.AsyncAnthropic", return_value=mock_client):
             backend = AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
             collected = []
@@ -280,13 +280,13 @@ class TestAnthropicLLMBackend:
 
     async def test_backend_not_available_error(self):
         """Test error when anthropic package is missing."""
-        with patch("hegelion.backends.AsyncAnthropic", None):
+        with patch("hegelion.core.backends.AsyncAnthropic", None):
             with pytest.raises(BackendNotAvailableError):
                 AnthropicLLMBackend(model="claude-3-opus-20240229", api_key="test-key")
 
     async def test_base_url_parameter(self):
         """Test base_url parameter is passed."""
-        with patch("hegelion.backends.AsyncAnthropic") as mock_anthropic:
+        with patch("hegelion.core.backends.AsyncAnthropic") as mock_anthropic:
             _ = AnthropicLLMBackend(
                 model="claude-3-opus-20240229",
                 api_key="test-key",

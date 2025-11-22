@@ -2,7 +2,7 @@
 
 import json
 
-from hegelion.models import (
+from hegelion.core.models import (
     ContradictionResult,
     HegelionResult,
     ResearchProposal,

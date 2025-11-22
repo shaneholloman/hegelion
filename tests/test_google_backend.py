@@ -2,8 +2,8 @@ import asyncio
 import sys
 import pytest
 
-from hegelion import config
-from hegelion.backends import GoogleLLMBackend
+from hegelion.core import config
+from hegelion.core.backends import GoogleLLMBackend
 
 
 class _DummyResponse:
@@ -34,7 +34,7 @@ class _StubGenAI:
 
 def test_google_backend_generates_text(monkeypatch):
     stub = _StubGenAI()
-    monkeypatch.setattr(sys.modules["hegelion.backends"], "genai", stub)
+    monkeypatch.setattr(sys.modules["hegelion.core.backends"], "genai", stub)
 
     backend = GoogleLLMBackend(
         model="gemini-2.5-pro",
@@ -75,6 +75,7 @@ def test_google_backend_missing_key_raises(monkeypatch):
         monkeypatch.delenv(env_name, raising=False)
 
     config.get_backend_from_env.cache_clear()
+    config.get_config.cache_clear()
 
     with pytest.raises(config.ConfigurationError):
         config.get_backend_from_env()

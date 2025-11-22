@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from hegelion.models import HegelionResult
+from hegelion.core.models import HegelionResult
 from hegelion.scripts import hegelion_cli, hegelion_bench
 
 
@@ -167,7 +167,7 @@ def test_cli_missing_query_raises(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_cli_configuration_error_handling(monkeypatch: pytest.MonkeyPatch, capsys) -> None:
     """Test CLI handles ConfigurationError gracefully."""
-    from hegelion.config import ConfigurationError
+    from hegelion.core.config import ConfigurationError
 
     def failing_runner(*args, **kwargs):
         raise ConfigurationError("No API key configured")

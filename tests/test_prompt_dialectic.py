@@ -1,7 +1,7 @@
 """Tests for model-agnostic prompt generation."""
 
 import pytest
-from hegelion.prompt_dialectic import (
+from hegelion.core.prompt_dialectic import (
     PromptDrivenDialectic,
     DialecticalPrompt,
     create_dialectical_workflow,

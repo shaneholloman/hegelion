@@ -5,13 +5,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from hegelion.backends import (
+from hegelion.core.backends import (
     AnthropicLLMBackend,
     CustomHTTPLLMBackend,
     OllamaLLMBackend,
     OpenAILLMBackend,
 )
-from hegelion.config import (
+from hegelion.core.config import (
     ConfigurationError,
     get_backend_from_env,
     get_config,
@@ -76,7 +76,7 @@ class TestResolveBackendForModel:
         """Test resolving Google backend for Gemini models."""
         monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
 
-        with patch("hegelion.config.GoogleLLMBackend") as mock_google:
+        with patch("hegelion.core.config.GoogleLLMBackend") as mock_google:
             mock_google.return_value = MagicMock()
             get_config.cache_clear()
             _ = resolve_backend_for_model("gemini-2.5-pro")
@@ -88,7 +88,7 @@ class TestResolveBackendForModel:
         """Test resolving Google backend for g-* models."""
         monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
 
-        with patch("hegelion.config.GoogleLLMBackend") as mock_google:
+        with patch("hegelion.core.config.GoogleLLMBackend") as mock_google:
             mock_google.return_value = MagicMock()
             get_config.cache_clear()
             _ = resolve_backend_for_model("g-2.0-flash")
@@ -188,7 +188,7 @@ class TestGetBackendFromEnv:
         get_config.cache_clear()
         get_backend_from_env.cache_clear()
 
-        with patch("hegelion.config.GoogleLLMBackend") as mock_google:
+        with patch("hegelion.core.config.GoogleLLMBackend") as mock_google:
             mock_google.return_value = MagicMock()
             _ = get_backend_from_env()
 
@@ -298,7 +298,7 @@ class TestGetEngineSettingsFromEnv:
         get_config.cache_clear()
         settings = get_engine_settings()
 
-        assert settings.model == "claude-4.5-sonnet-latest"
+        assert settings.model == "claude-sonnet-4-5-20250929"
         assert settings.synthesis_threshold == 0.85
         assert settings.max_tokens_per_phase == 10_000
         assert settings.validate_results is True

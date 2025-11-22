@@ -8,21 +8,20 @@ from hegelion.scripts import mcp_setup
 def test_generate_config_includes_servers(tmp_path):
     cfg = mcp_setup.generate_config("/bin/python", tmp_path, is_installed=False)
     servers = cfg["mcpServers"]
-    assert "hegelion" in servers and "hegelion-backend" in servers
-    assert servers["hegelion"]["args"] == ["-m", "hegelion.prompt_mcp_server"]
+    assert "hegelion" in servers
+    assert "hegelion-backend" not in servers
+    assert servers["hegelion"]["args"] == ["-m", "hegelion.mcp.server"]
 
 
 def test_generate_config_sets_pythonpath_when_source(tmp_path):
     cfg = mcp_setup.generate_config("/bin/python", tmp_path, is_installed=False)
     env = cfg["mcpServers"]["hegelion"]["env"]
     assert env["PYTHONPATH"] == str(tmp_path)
-    assert cfg["mcpServers"]["hegelion-backend"]["env"]["PYTHONPATH"] == str(tmp_path)
 
 
 def test_generate_config_omits_env_when_installed(tmp_path):
     cfg = mcp_setup.generate_config("/bin/python", tmp_path, is_installed=True)
     assert "env" not in cfg["mcpServers"]["hegelion"]
-    assert "env" not in cfg["mcpServers"]["hegelion-backend"]
 
 
 def test_write_config_merges(tmp_path):
@@ -64,5 +63,5 @@ def test_print_setup_instructions_mentions_py_path(
     mcp_setup.print_setup_instructions()
 
     captured = capsys.readouterr()
-    assert "hegelion-backend" in captured.out
+    assert "hegelion" in captured.out
     assert "Added PYTHONPATH" in captured.out

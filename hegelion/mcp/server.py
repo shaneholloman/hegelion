@@ -14,12 +14,12 @@ import json
 from mcp.server import Server
 from mcp.types import TextContent, Tool
 
-from .prompt_dialectic import (
+from hegelion.core.prompt_dialectic import (
     create_dialectical_workflow,
     create_single_shot_dialectic_prompt,
 )
 
-app = Server("hegelion-prompt-server")
+app = Server("hegelion-server")
 
 
 @app.list_tools()
@@ -207,7 +207,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         return [TextContent(type="text", text=prompt)]
 
     elif name == "thesis_prompt":
-        from .prompt_dialectic import PromptDrivenDialectic
+        from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
         query = arguments["query"]
         dialectic = PromptDrivenDialectic()
@@ -223,7 +223,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         return [TextContent(type="text", text=response)]
 
     elif name == "antithesis_prompt":
-        from .prompt_dialectic import PromptDrivenDialectic
+        from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
         query = arguments["query"]
         thesis = arguments["thesis"]
@@ -255,7 +255,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         return [TextContent(type="text", text=response)]
 
     elif name == "synthesis_prompt":
-        from .prompt_dialectic import PromptDrivenDialectic
+        from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
         query = arguments["query"]
         thesis = arguments["thesis"]

@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from hegelion.backends import DummyLLMBackend
-from hegelion.engine import HegelionEngine
+from hegelion.core.backends import DummyLLMBackend
+from hegelion.core.engine import HegelionEngine
 
 
 class _TestEmbedder:

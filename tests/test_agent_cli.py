@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from hegelion.models import HegelionResult
+from hegelion.core.models import HegelionResult
 from hegelion.scripts import hegelion_agent_cli
 
 

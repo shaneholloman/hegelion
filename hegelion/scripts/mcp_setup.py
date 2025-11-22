@@ -53,18 +53,13 @@ def generate_config(python_path, project_root, is_installed):
         "mcpServers": {
             "hegelion": {
                 "command": python_path,
-                "args": ["-m", "hegelion.prompt_mcp_server"],
-            },
-            "hegelion-backend": {
-                "command": python_path,
-                "args": ["-m", "hegelion.mcp_server"],
+                "args": ["-m", "hegelion.mcp.server"],
             },
         }
     }
 
     if env:
         config["mcpServers"]["hegelion"]["env"] = env
-        config["mcpServers"]["hegelion-backend"]["env"] = env.copy()
 
     return config
 

@@ -2,8 +2,8 @@
 
 import pytest
 
-from hegelion.models import HegelionResult
-from hegelion.validation import ResultValidationError, validate_hegelion_result
+from hegelion.core.models import HegelionResult
+from hegelion.core.validation import ResultValidationError, validate_hegelion_result
 
 
 class TestValidationSuccessCases:

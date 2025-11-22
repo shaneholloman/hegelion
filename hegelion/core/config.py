@@ -55,6 +55,8 @@ class Config:
     anthropic_base_url: str
     google_key: str | None
     google_base_url: str | None
+    moonshot_key: str | None
+    moonshot_base_url: str
     ollama_url: str
     custom_base_url: str | None
     custom_api_key: str | None
@@ -101,7 +103,7 @@ def get_config() -> Config:
     """Return the global, mutable configuration object."""
     return Config(
         provider=os.getenv("HEGELION_PROVIDER", "anthropic").lower(),
-        model=os.getenv("HEGELION_MODEL", "claude-4.5-sonnet-latest"),
+        model=os.getenv("HEGELION_MODEL", "claude-sonnet-4-5-20250929"),
         synthesis_threshold=_get_env_float("HEGELION_SYNTHESIS_THRESHOLD", 0.85),
         max_tokens_per_phase=_get_env_int("HEGELION_MAX_TOKENS_PER_PHASE", 10_000),
         validate_results=_get_env_bool("HEGELION_VALIDATE_RESULTS", True),
@@ -115,6 +117,8 @@ def get_config() -> Config:
         anthropic_base_url=os.getenv("ANTHROPIC_BASE_URL", DEFAULT_ANTHROPIC_BASE_URL),
         google_key=os.getenv("GOOGLE_API_KEY"),
         google_base_url=os.getenv("GOOGLE_API_BASE_URL"),
+        moonshot_key=os.getenv("MOONSHOT_API_KEY"),
+        moonshot_base_url=os.getenv("MOONSHOT_BASE_URL", "https://api.moonshot.ai/v1"),
         ollama_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         custom_base_url=os.getenv("CUSTOM_API_BASE_URL"),
         custom_api_key=os.getenv("CUSTOM_API_KEY"),
@@ -128,7 +132,7 @@ def set_config_value(key: str, value: Any) -> None:
     if hasattr(config, key):
         setattr(config, key, value)
         # When backend-related config changes, we must clear the backend cache
-        if key in {"provider", "model", "openai_key", "anthropic_key", "google_key"}:
+        if key in {"provider", "model", "openai_key", "anthropic_key", "google_key", "moonshot_key"}:
             get_backend_from_env.cache_clear()
     else:
         raise AttributeError(f"'{type(config).__name__}' has no attribute '{key}'")
@@ -152,7 +156,7 @@ def resolve_backend_for_model(model: str) -> LLMBackend:
         if not config.openai_key:
             raise ConfigurationError("OPENAI_API_KEY must be set.")
         return OpenAILLMBackend(
-            model=model,
+            model=model if model != "gpt-5.1-chat-latest" else "gpt-5.1-chat-latest", # Ensure we use the exact model string
             api_key=config.openai_key,
             base_url=config.openai_base_url,
             organization=config.openai_org,
@@ -162,7 +166,18 @@ def resolve_backend_for_model(model: str) -> LLMBackend:
         if not config.google_key:
             raise ConfigurationError("GOOGLE_API_KEY must be set.")
         return GoogleLLMBackend(
-            model=model, api_key=config.google_key, base_url=config.google_base_url
+            model=model if "gemini" in model else "gemini-3-pro-preview", # Default to new model if generic g- prefix
+            api_key=config.google_key, 
+            base_url=config.google_base_url
+        )
+
+    if "kimi" in lowered:
+        if not config.moonshot_key:
+            raise ConfigurationError("MOONSHOT_API_KEY must be set for Kimi models.")
+        return OpenAILLMBackend(
+            model=model,
+            api_key=config.moonshot_key,
+            base_url=config.moonshot_base_url,
         )
 
     if lowered.startswith("local-"):
@@ -197,6 +212,13 @@ def get_backend_from_env() -> LLMBackend:
             model=config.model,
             api_key=config.google_key,
             base_url=config.google_base_url,
+        )
+
+    if config.provider in {"moonshot", "kimi", "auto"} and config.moonshot_key:
+        return OpenAILLMBackend(
+            model=config.model,
+            api_key=config.moonshot_key,
+            base_url=config.moonshot_base_url,
         )
 
     if config.provider == "ollama":

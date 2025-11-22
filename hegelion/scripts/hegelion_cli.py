@@ -15,9 +15,9 @@ from importlib import resources
 if __package__ is None or __package__ == "":  # pragma: no cover - direct execution fallback
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from hegelion.config import ConfigurationError, get_config, set_config_value
-from hegelion.core import run_dialectic
-from hegelion.models import HegelionResult
+from hegelion.core.config import ConfigurationError, get_config, set_config_value
+from hegelion import run_dialectic
+from hegelion import HegelionResult
 from hegelion.scripts.mcp_setup import print_setup_instructions
 
 

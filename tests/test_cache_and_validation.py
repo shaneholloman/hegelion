@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from hegelion.core import run_dialectic
-from hegelion.validation import ResultValidationError, validate_hegelion_result
+from hegelion.core.validation import ResultValidationError, validate_hegelion_result
 from test_core import MockBackend, MockSettings
 
 
@@ -18,7 +18,7 @@ async def test_run_dialectic_cache_hits(tmp_path: Path):
     settings.cache_dir = str(tmp_path)
     settings.cache_ttl_seconds = 60
 
-    with patch("hegelion.core.get_engine_settings", return_value=settings):
+    with patch("hegelion.core.core.get_engine_settings", return_value=settings):
         first = await run_dialectic("Cache me", backend=backend, model="mock-model")
         first_calls = backend.call_count
         assert first_calls >= 3  # thesis, antithesis, synthesis (+conflict classifier)
@@ -30,7 +30,7 @@ async def test_run_dialectic_cache_hits(tmp_path: Path):
 
 
 def test_validate_hegelion_result_rejects_invalid_payload():
-    from hegelion.models import HegelionResult
+    from hegelion.core.models import HegelionResult
 
     bogus = HegelionResult(
         query="",

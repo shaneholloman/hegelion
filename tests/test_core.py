@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from hegelion.core import run_dialectic, run_benchmark, dialectic, quickstart
-from hegelion.models import HegelionResult
+from hegelion.core.models import HegelionResult
 
 
 class MockBackend:
@@ -55,8 +55,8 @@ class TestRunDialectic:
         """Test basic run_dialectic functionality."""
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await run_dialectic("Test query")
@@ -90,8 +90,8 @@ class TestRunDialectic:
         """Test run_dialectic with debug mode."""
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await run_dialectic("Test query", debug=True)
@@ -110,8 +110,8 @@ class TestRunDialectic:
         """Test run_dialectic with custom parameters."""
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.resolve_backend_for_model", return_value=mock_backend):
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.resolve_backend_for_model", return_value=mock_backend):
                 result = await run_dialectic(
                     "Test query", model="custom-model", max_tokens_per_phase=5000
                 )
@@ -124,8 +124,8 @@ class TestRunDialectic:
         """Test that run_dialectic results are JSON serializable."""
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await run_dialectic("Test query")
@@ -163,8 +163,8 @@ class TestRunBenchmark:
         mock_backend = MockBackend()
         prompts = ["Query 1", "Query 2"]
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts)
@@ -183,8 +183,8 @@ class TestRunBenchmark:
 
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts_file)
@@ -201,8 +201,8 @@ class TestRunBenchmark:
         output_file = tmp_path / "output.jsonl"
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 _ = await run_benchmark(prompts, output_file=output_file)
@@ -225,7 +225,7 @@ class TestRunBenchmark:
         """Test run_benchmark with empty prompts."""
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
             results = await run_benchmark([])
 
         # Should return empty list
@@ -236,7 +236,7 @@ class TestRunBenchmark:
         nonexistent_file = Path("/nonexistent/path.jsonl")
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
             with pytest.raises(FileNotFoundError):
                 await run_benchmark(nonexistent_file)
 
@@ -245,8 +245,8 @@ class TestRunBenchmark:
         prompts = ["Query 1"]
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts, debug=True)
@@ -264,8 +264,8 @@ class TestRunBenchmark:
             {"prompt": "Query 2"},
         ]
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 results = await run_benchmark(prompts)
@@ -280,8 +280,8 @@ class TestHighLevelAPIs:
     async def test_dialectic_uses_model_autodetect(self):
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.resolve_backend_for_model", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.resolve_backend_for_model", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await dialectic("Test query", model="claude-4.5-sonnet")
@@ -292,8 +292,8 @@ class TestHighLevelAPIs:
     async def test_quickstart_defaults_to_env(self):
         mock_backend = MockBackend()
 
-        with patch("hegelion.core.get_backend_from_env", return_value=mock_backend):
-            with patch("hegelion.core.get_engine_settings") as mock_settings:
+        with patch("hegelion.core.core.get_backend_from_env", return_value=mock_backend):
+            with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
                 result = await quickstart("Test query")
@@ -305,7 +305,7 @@ class TestHighLevelAPIs:
 class TestSynchronousWrappers:
     """Test synchronous wrapper functions."""
 
-    @patch("hegelion.core.asyncio.run")
+    @patch("hegelion.core.core.asyncio.run")
     def test_run_dialectic_sync(self, mock_run):
         """Test synchronous run_dialectic wrapper."""
         mock_run.return_value = "test_result"
@@ -317,7 +317,7 @@ class TestSynchronousWrappers:
         assert result == "test_result"
         mock_run.assert_called_once()
 
-    @patch("hegelion.core.asyncio.run")
+    @patch("hegelion.core.core.asyncio.run")
     def test_run_benchmark_sync(self, mock_run):
         """Test synchronous run_benchmark wrapper."""
         mock_run.return_value = "test_results"
@@ -329,7 +329,7 @@ class TestSynchronousWrappers:
         assert result == "test_results"
         mock_run.assert_called_once()
 
-    @patch("hegelion.core.asyncio.run")
+    @patch("hegelion.core.core.asyncio.run")
     def test_dialectic_sync(self, mock_run):
         """Test synchronous dialectic wrapper."""
         mock_run.return_value = "test_result"
@@ -341,7 +341,7 @@ class TestSynchronousWrappers:
         assert result == "test_result"
         mock_run.assert_called_once()
 
-    @patch("hegelion.core.asyncio.run")
+    @patch("hegelion.core.core.asyncio.run")
     def test_quickstart_sync(self, mock_run):
         """Test synchronous quickstart wrapper."""
         mock_run.return_value = "test_result"

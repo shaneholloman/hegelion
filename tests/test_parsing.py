@@ -1,6 +1,6 @@
 """Tests for Hegelion parsing utilities."""
 
-from hegelion.parsing import (
+from hegelion.core.parsing import (
     extract_contradictions,
     extract_research_proposals,
     parse_conflict_value,

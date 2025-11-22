@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from hegelion.backends import DummyLLMBackend
-from hegelion.engine import HegelionEngine
-from hegelion.parsing import extract_contradictions
+from hegelion.core.backends import DummyLLMBackend
+from hegelion.core.engine import HegelionEngine
+from hegelion.core.parsing import extract_contradictions
 
 PRIVACY_SECURITY_THESIS = """
 Security must be prioritized over privacy when public safety is at stake. Governments owe citizens

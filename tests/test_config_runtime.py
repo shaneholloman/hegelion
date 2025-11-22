@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from hegelion.config import get_config, set_config_value
+from hegelion.core.config import get_config, set_config_value
 
 
 def test_set_config_value_updates_config():
@@ -34,10 +34,10 @@ def test_set_config_value_clears_backend_cache():
     """Test that changing backend settings clears the backend cache."""
     get_config.cache_clear()
 
-    with patch("hegelion.config.get_backend_from_env") as mock_backend_func:
+    with patch("hegelion.core.config.get_backend_from_env") as mock_backend_func:
         # Mock the cache_clear method on the function
         mock_backend_func.cache_clear = patch(
-            "hegelion.config.get_backend_from_env.cache_clear"
+            "hegelion.core.config.get_backend_from_env.cache_clear"
         ).start()
 
         try:
