@@ -218,7 +218,7 @@ async def run_dialectic(
         from .search_providers import search_for_context
         from .council import DialecticalCouncil
         from .judge import judge_dialectic
-        
+
         result = await _run_enhanced_dialectic(
             engine=engine,
             query=query,
@@ -244,7 +244,6 @@ async def run_dialectic(
             progress_callback=progress_callback,
         )
 
-
     if resolved_validate:
         validate_hegelion_result(result)
 
@@ -268,7 +267,7 @@ async def _run_enhanced_dialectic(
     progress_callback=None,
 ) -> HegelionResult:
     """Run enhanced Phase 2 dialectical reasoning.
-    
+
     Args:
         engine: Hegelion engine instance
         query: Query to analyze
@@ -279,7 +278,7 @@ async def _run_enhanced_dialectic(
         min_judge_score: Minimum judge score
         council_members: Specific council members
         max_iterations: Maximum quality iterations
-        
+
     Returns:
         Enhanced HegelionResult
     """
@@ -287,22 +286,22 @@ async def _run_enhanced_dialectic(
     from .council import DialecticalCouncil
     from .judge import judge_dialectic
     import time
-    
+
     for iteration in range(max_iterations):
         try:
             start_time = time.time()
-            
+
             # Step 1: Standard thesis generation
             if progress_callback:
                 progress_callback("thesis", {"iteration": iteration + 1})
-                
+
             thesis_result = await engine.process_query(
                 query,
                 debug=debug,
                 stream_callback=stream_callback,
                 progress_callback=progress_callback,
             )
-            
+
             # Step 2: Search grounding (if enabled)
             search_context = []
             if use_search:
@@ -311,26 +310,26 @@ async def _run_enhanced_dialectic(
                 search_context = await search_for_context(query, max_results=5)
                 if debug and search_context:
                     print(f"🔍 Found {len(search_context)} search results for grounding")
-            
+
             # Step 3: Enhanced antithesis
             if use_council:
                 if progress_callback:
                     progress_callback("council", {"members": council_members or "all"})
-                    
+
                 council = DialecticalCouncil(engine.backend)
                 council_results = await council.generate_council_antithesis(
                     query=query,
                     thesis=thesis_result.thesis,
                     search_context=search_context if search_context else None,
-                    selected_members=council_members
+                    selected_members=council_members,
                 )
                 enhanced_antithesis = council.synthesize_council_input(council_results)
-                
+
                 # Store council info for trace
                 thesis_result.metadata.council_perspectives = len(council_results)
-                if debug and hasattr(thesis_result, 'trace') and thesis_result.trace:
+                if debug and hasattr(thesis_result, "trace") and thesis_result.trace:
                     thesis_result.trace.council_critiques = [
-                        f"{name}: {critique.member.expertise}" 
+                        f"{name}: {critique.member.expertise}"
                         for name, critique in council_results.items()
                     ]
             else:
@@ -338,32 +337,33 @@ async def _run_enhanced_dialectic(
                 enhanced_antithesis = await _generate_search_enhanced_antithesis(
                     engine.backend, query, thesis_result.thesis, search_context
                 )
-            
+
             # Step 4: Update the result with enhanced antithesis
             thesis_result.antithesis = enhanced_antithesis
-            
+
             # Re-extract contradictions from enhanced antithesis
             from .parsing import extract_contradictions, extract_research_proposals
+
             thesis_result.contradictions = extract_contradictions(enhanced_antithesis)
-            
+
             # Step 5: Enhanced synthesis with all context
             synthesis_prompt = _build_enhanced_synthesis_prompt(
                 query=query,
                 thesis=thesis_result.thesis,
                 antithesis=enhanced_antithesis,
                 contradictions=thesis_result.contradictions,
-                search_context=search_context
+                search_context=search_context,
             )
-            
+
             enhanced_synthesis = await engine.backend.generate(synthesis_prompt)
             thesis_result.synthesis = enhanced_synthesis
             thesis_result.research_proposals = extract_research_proposals(enhanced_synthesis)
-            
+
             # Step 6: Judge quality (if enabled)
             if use_judge:
                 if progress_callback:
                     progress_callback("judge", {"min_score": min_judge_score})
-                    
+
                 try:
                     judge_result = await judge_dialectic(
                         backend=engine.backend,
@@ -371,26 +371,30 @@ async def _run_enhanced_dialectic(
                         thesis=thesis_result.thesis,
                         antithesis=enhanced_antithesis,
                         synthesis=enhanced_synthesis,
-                        min_score=min_judge_score
+                        min_score=min_judge_score,
                     )
-                    
+
                     # Store judge info in metadata
-                    if not hasattr(thesis_result.metadata, 'debug') or not thesis_result.metadata.debug:
+                    if (
+                        not hasattr(thesis_result.metadata, "debug")
+                        or not thesis_result.metadata.debug
+                    ):
                         from .models import HegelionDebugInfo
+
                         thesis_result.metadata.debug = HegelionDebugInfo()
-                    
+
                     thesis_result.metadata.debug.judge_score = judge_result.score
                     thesis_result.metadata.debug.judge_reasoning = judge_result.reasoning
                     thesis_result.metadata.debug.critique_validity = judge_result.critique_validity
-                    
+
                     if debug:
                         print(f"⚖️ Judge Score: {judge_result.score}/10")
                         print(f"✅ Critique Validity: {judge_result.critique_validity}")
-                        
+
                     # Success! Return result
                     thesis_result.mode = "enhanced_synthesis"
                     return thesis_result
-                    
+
                 except ValueError as e:
                     # Quality below threshold, retry if iterations remaining
                     if iteration < max_iterations - 1:
@@ -400,6 +404,7 @@ async def _run_enhanced_dialectic(
                     else:
                         # Last iteration, let it through but log warning
                         import logging
+
                         logging.warning(f"Final iteration below quality threshold: {e}")
                         thesis_result.mode = "enhanced_synthesis"
                         return thesis_result
@@ -407,27 +412,26 @@ async def _run_enhanced_dialectic(
                 # No judging, return enhanced result
                 thesis_result.mode = "enhanced_synthesis"
                 return thesis_result
-                
+
         except Exception as e:
             if iteration < max_iterations - 1:
                 if debug:
                     print(f"🔄 Iteration {iteration + 1} failed, retrying: {e}")
                 continue
             else:
-                raise RuntimeError(f"Enhanced dialectic failed after {max_iterations} iterations: {e}")
-    
+                raise RuntimeError(
+                    f"Enhanced dialectic failed after {max_iterations} iterations: {e}"
+                )
+
     raise RuntimeError("Should not reach here")
 
 
 async def _generate_search_enhanced_antithesis(
-    backend, 
-    query: str, 
-    thesis: str, 
-    search_context: List[str]
+    backend, query: str, thesis: str, search_context: List[str]
 ) -> str:
     """Generate antithesis with search context."""
     from .prompts import ANTITHESIS_PROMPT
-    
+
     # Enhanced antithesis prompt with search context
     context_section = ""
     if search_context:
@@ -438,33 +442,23 @@ SEARCH CONTEXT (for fact-checking and grounding):
 
 Use this context to ground your critique in real-world information."""
 
-    enhanced_prompt = ANTITHESIS_PROMPT.format(
-        query=query,
-        thesis=thesis
-    ) + context_section
-    
+    enhanced_prompt = ANTITHESIS_PROMPT.format(query=query, thesis=thesis) + context_section
+
     return await backend.generate(enhanced_prompt)
 
 
 def _build_enhanced_synthesis_prompt(
-    query: str,
-    thesis: str,
-    antithesis: str,
-    contradictions: List[dict],
-    search_context: List[str]
+    query: str, thesis: str, antithesis: str, contradictions: List[dict], search_context: List[str]
 ) -> str:
     """Build enhanced synthesis prompt with all context."""
     from .prompts import SYNTHESIS_PROMPT
-    
+
     contradictions_str = "\n".join(f"- {c['description']}: {c['evidence']}" for c in contradictions)
-    
+
     base_prompt = SYNTHESIS_PROMPT.format(
-        query=query,
-        thesis=thesis,
-        antithesis=antithesis,
-        contradictions=contradictions_str
+        query=query, thesis=thesis, antithesis=antithesis, contradictions=contradictions_str
     )
-    
+
     if search_context:
         base_prompt += f"""
 
@@ -472,7 +466,7 @@ ADDITIONAL CONTEXT FROM SEARCH:
 {chr(10).join(f"- {context}" for context in search_context)}
 
 Your synthesis should integrate insights from this real-world information."""
-    
+
     return base_prompt
 
 
