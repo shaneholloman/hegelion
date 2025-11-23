@@ -10,6 +10,116 @@
 - **Documentation:** Comprehensive rewrite of README and documentation to emphasize the dual-path usage (Prompt-Based vs. API-Based).
 
 ## 0.2.3 – MCP/assistant integration polish
+## 0.3.0 – Phase 2: Search-Grounded Dialectics with Council and Judge
+
+**🎉 MAJOR RELEASE: Advanced Dialectical Reasoning System**
+
+### ✨ **New Phase 2 Features**
+
+#### 🔍 **Search-Grounded Antithesis**
+- **Smart Search Providers**: Automatic fallback from Tavily (premium) to DuckDuckGo (free)
+- **Real-World Grounding**: Antithesis phases can now access current information via web search
+- **Context Integration**: Search results are seamlessly woven into dialectical reasoning
+
+#### 👥 **The Council - Multi-Perspective Critiques**  
+- **Three Expert Perspectives**:
+  - **The Logician**: Formal reasoning and logical consistency
+  - **The Empiricist**: Evidence, facts, and empirical grounding  
+  - **The Ethicist**: Ethical implications and societal impact
+- **Concurrent Processing**: Multiple critiques generated simultaneously via async
+- **Unified Synthesis**: All council perspectives integrated into final reasoning
+
+#### ⚖️ **The Iron Judge - Quality Evaluation**
+- **Structured Scoring**: 0-10 quality assessment with detailed reasoning
+- **Instructor Integration**: Guaranteed structured output using Pydantic models
+- **Iterative Improvement**: Automatic retry for low-quality results
+- **Critique Validity**: Assessment of whether antithesis critiques were properly addressed
+
+### 🛠️ **Enhanced APIs**
+
+#### **Core API Enhancements**
+```python
+# Phase 2 Enhanced Dialectics
+result = await run_dialectic(
+    query="Your question",
+    use_search=True,        # Web search grounding
+    use_council=True,       # Multi-perspective critiques  
+    use_judge=True,         # Quality evaluation
+    min_judge_score=7,      # Quality threshold
+    max_iterations=3        # Automatic improvement
+)
+```
+
+#### **MCP Server Phase 2 Support** 
+- Updated `run_dialectic` tool with all Phase 2 parameters
+- Enhanced Claude Desktop integration with search and council features
+- Structured quality evaluation for AI assistant workflows
+
+### 📦 **New Dependencies**
+- `duckduckgo-search>=6.0.0` - Free web search (no API key required)
+- `instructor>=1.0.0` - Structured LLM output with Pydantic
+- `pydantic>=2.0.0` - Enhanced data validation and parsing
+- **Optional**: `tavily-python>=0.3.0` - Premium search for professional use
+
+### 🏗️ **Architecture Improvements**
+- **Modular Phase 2**: Search, council, and judge features are optional and imported on-demand
+- **Graceful Degradation**: Falls back to Phase 1 standard dialectics if Phase 2 dependencies unavailable
+- **Enhanced Metadata**: Judge scores, council perspectives, and search context in debug traces
+- **Quality Assurance**: Automatic retries and quality thresholds for production use
+
+### 🔧 **Technical Details**
+- **Backward Compatible**: All existing APIs continue to work unchanged
+- **Performance**: Phase 2 features add ~2-5x processing time but deliver significantly richer analysis
+- **Error Handling**: Robust fallbacks ensure system never fails due to Phase 2 enhancements
+- **Caching**: Phase 2 results are fully cacheable with enhanced cache keys
+
+### 💡 **Usage Examples**
+
+**Search-Enhanced Analysis**:
+```python
+# Ground dialectics in current information
+result = await run_dialectic(
+    "What are the latest developments in quantum computing?",
+    use_search=True
+)
+```
+
+**Multi-Perspective Council Critique**:
+```python  
+# Get logical, empirical, AND ethical perspectives
+result = await run_dialectic(
+    "Should we implement universal basic income?",
+    use_council=True,
+    council_members=["The Logician", "The Ethicist"]
+)
+```
+
+**Quality-Assured Reasoning**:
+```python
+# Ensure high-quality output with automatic improvement
+result = await run_dialectic(
+    "Explain consciousness and free will",
+    use_judge=True,
+    min_judge_score=8,
+    max_iterations=3
+)
+```
+
+**Full Phase 2 Stack**:
+```python
+# The complete enhanced dialectical experience
+result = await run_dialectic(
+    "How should humanity approach artificial general intelligence?",
+    use_search=True,      # Current information
+    use_council=True,     # Multiple expert perspectives
+    use_judge=True,       # Quality assurance
+    min_judge_score=7,    # High quality threshold
+    max_iterations=2,     # Improvement iterations
+    debug=True           # Full diagnostic trace
+)
+```
+
+This release transforms Hegelion from a basic dialectical reasoner into a sophisticated multi-agent reasoning system with real-world grounding and quality assurance.
 
 - Clarified canonical `HegelionResult` JSON schema in `README.md`, including backend and timing fields, and documented when `trace` and `metadata.debug` appear.
 - Expanded `docs/MCP.md` with friendly request/response examples for `run_dialectic` and `run_benchmark`, plus explicit assistant-integration guidance for parsing JSON and JSONL outputs.

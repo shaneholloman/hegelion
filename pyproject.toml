@@ -33,9 +33,17 @@ dependencies = [
     "scikit-learn>=1.2.0",
     "datasets>=4.4.1",
     "psutil>=5.9.0",
+    # Phase 2 dependencies
+    "duckduckgo-search>=6.0.0",
+    "instructor>=1.0.0",
+    "pydantic>=2.0.0"
+
 ]
 
 [project.optional-dependencies]
+search = [
+    "tavily-python>=0.3.0"
+]
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
