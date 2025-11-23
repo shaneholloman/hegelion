@@ -78,6 +78,7 @@ mcp_config.json
 data/*
 adapters/
 artifacts/
+PROGRESS_REPORT.md
 hegelion/training/wrappers/__pycache__/
 
 # Website build artifacts
