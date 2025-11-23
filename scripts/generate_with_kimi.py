@@ -15,13 +15,16 @@ import sys
 # Try to import OpenAI
 try:
     from openai import OpenAI
+
     HAS_OPENAI = True
 except ImportError:
     HAS_OPENAI = False
     print("⚠ OpenAI package not found. Installing...")
     import subprocess
+
     subprocess.run([sys.executable, "-m", "pip", "install", "openai", "-q"], check=True)
     from openai import OpenAI
+
     HAS_OPENAI = True
 
 # Hegelian Dialectical System Prompt
@@ -48,17 +51,19 @@ Structure your response with clear THESIS, ANTITHESIS, and SYNTHESIS sections. I
 
 
 class KimiDialecticalGenerator:
-    def __init__(self, api_key: str, base_url: str = "https://api.kimi.com/coding/v1", model: str = "kimi-for-coding"):
-        self.client = OpenAI(
-            api_key=api_key,
-            base_url=base_url
-        )
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://api.kimi.com/coding/v1",
+        model: str = "kimi-for-coding",
+    ):
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.model = model
         self.stats = {
-            'total': 0,
-            'success': 0,
-            'errors': 0,
-            'total_tokens': 0,
+            "total": 0,
+            "success": 0,
+            "errors": 0,
+            "total_tokens": 0,
         }
 
     def generate_dialectic(self, query: str, max_retries: int = 3) -> Optional[Dict]:
@@ -69,7 +74,7 @@ class KimiDialecticalGenerator:
                     model=self.model,
                     messages=[
                         {"role": "system", "content": HEGELIAN_SYSTEM_PROMPT},
-                        {"role": "user", "content": HEGELIAN_USER_TEMPLATE.format(query=query)}
+                        {"role": "user", "content": HEGELIAN_USER_TEMPLATE.format(query=query)},
                     ],
                     temperature=0.8,
                     max_tokens=6000,
@@ -78,14 +83,14 @@ class KimiDialecticalGenerator:
                 content = response.choices[0].message.content
 
                 # Track usage
-                if hasattr(response, 'usage'):
-                    self.stats['total_tokens'] += response.usage.total_tokens
+                if hasattr(response, "usage"):
+                    self.stats["total_tokens"] += response.usage.total_tokens
 
                 # Parse the response
                 result = self.parse_dialectic(query, content)
 
                 if result:
-                    self.stats['success'] += 1
+                    self.stats["success"] += 1
                     return result
                 else:
                     print(f"  ⚠ Failed to parse response (attempt {attempt + 1}/{max_retries})")
@@ -93,9 +98,9 @@ class KimiDialecticalGenerator:
             except Exception as e:
                 print(f"  ❌ Error (attempt {attempt + 1}/{max_retries}): {e}")
                 if attempt < max_retries - 1:
-                    time.sleep(2 ** attempt)  # Exponential backoff
+                    time.sleep(2**attempt)  # Exponential backoff
 
-        self.stats['errors'] += 1
+        self.stats["errors"] += 1
         return None
 
     def parse_dialectic(self, query: str, content: str) -> Optional[Dict]:
@@ -139,7 +144,7 @@ class KimiDialecticalGenerator:
         # Extract contradictions
         contradictions = []
         if "CONTRADICTION:" in antithesis.upper():
-            lines = antithesis.split('\n')
+            lines = antithesis.split("\n")
             current_contradiction = None
             current_evidence = None
 
@@ -147,10 +152,12 @@ class KimiDialecticalGenerator:
                 line_upper = line.upper()
                 if "CONTRADICTION:" in line_upper:
                     if current_contradiction:
-                        contradictions.append({
-                            "description": current_contradiction,
-                            "evidence": current_evidence or ""
-                        })
+                        contradictions.append(
+                            {
+                                "description": current_contradiction,
+                                "evidence": current_evidence or "",
+                            }
+                        )
                     current_contradiction = line.split(":", 1)[1].strip() if ":" in line else line
                     current_evidence = None
                 elif "EVIDENCE:" in line_upper:
@@ -158,44 +165,48 @@ class KimiDialecticalGenerator:
 
             # Add last one
             if current_contradiction:
-                contradictions.append({
-                    "description": current_contradiction,
-                    "evidence": current_evidence or ""
-                })
+                contradictions.append(
+                    {"description": current_contradiction, "evidence": current_evidence or ""}
+                )
 
         # Extract research proposals
         research_proposals = []
         if "RESEARCH_PROPOSAL:" in synthesis.upper() or "RESEARCH PROPOSAL:" in synthesis.upper():
-            lines = synthesis.split('\n')
+            lines = synthesis.split("\n")
             for i, line in enumerate(lines):
                 line_upper = line.upper()
                 if "RESEARCH" in line_upper and "PROPOSAL" in line_upper:
                     proposal_text = line.split(":", 1)[1].strip() if ":" in line else line
                     # Look for prediction in nearby lines
                     prediction = ""
-                    for j in range(max(0, i-3), min(len(lines), i+3)):
+                    for j in range(max(0, i - 3), min(len(lines), i + 3)):
                         if "PREDICTION" in lines[j].upper():
-                            prediction = lines[j].split(":", 1)[1].strip() if ":" in lines[j] else lines[j]
+                            prediction = (
+                                lines[j].split(":", 1)[1].strip() if ":" in lines[j] else lines[j]
+                            )
                             break
 
-                    research_proposals.append({
-                        "description": proposal_text,
-                        "testable_prediction": prediction
-                    })
+                    research_proposals.append(
+                        {"description": proposal_text, "testable_prediction": prediction}
+                    )
 
         # If no contradictions found, create at least one
         if not contradictions:
-            contradictions.append({
-                "description": "Dialectical tension requiring synthesis",
-                "evidence": "Thesis and antithesis present opposing viewpoints"
-            })
+            contradictions.append(
+                {
+                    "description": "Dialectical tension requiring synthesis",
+                    "evidence": "Thesis and antithesis present opposing viewpoints",
+                }
+            )
 
         # If no research proposals, create one
         if not research_proposals:
-            research_proposals.append({
-                "description": "Empirical validation of synthesis",
-                "testable_prediction": "The synthesis can be tested through systematic investigation"
-            })
+            research_proposals.append(
+                {
+                    "description": "Empirical validation of synthesis",
+                    "testable_prediction": "The synthesis can be tested through systematic investigation",
+                }
+            )
 
         # Create structured result
         result = {
@@ -209,7 +220,7 @@ class KimiDialecticalGenerator:
             "metadata": {
                 "source": "kimi-for-coding",
                 "backend_provider": "kimi",
-                "backend_model": "kimi-for-coding"
+                "backend_model": "kimi-for-coding",
             },
             "trace": {
                 "thesis": thesis,
@@ -219,13 +230,15 @@ class KimiDialecticalGenerator:
                 "research_proposals": [
                     f"{rp['description']} | Prediction: {rp['testable_prediction']}"
                     for rp in research_proposals
-                ]
-            }
+                ],
+            },
         }
 
         # Validate minimum quality
         if len(thesis) < 50 or len(antithesis) < 50 or len(synthesis) < 50:
-            print(f"  ⚠ Response too short: T={len(thesis)}, A={len(antithesis)}, S={len(synthesis)}")
+            print(
+                f"  ⚠ Response too short: T={len(thesis)}, A={len(antithesis)}, S={len(synthesis)}"
+            )
             return None
 
         return result
@@ -234,7 +247,9 @@ class KimiDialecticalGenerator:
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Generate Hegelian dialectical samples using Kimi API")
+    parser = argparse.ArgumentParser(
+        description="Generate Hegelian dialectical samples using Kimi API"
+    )
     parser.add_argument("--prompts", default="hegelion_prompts_500.txt", help="Prompt file")
     parser.add_argument("--output", default="data/hegelion_kimi_500.jsonl", help="Output file")
     parser.add_argument("--limit", type=int, default=500, help="Number of samples to generate")
@@ -264,12 +279,8 @@ def main():
         print(f"❌ Prompt file not found: {prompt_file}")
         sys.exit(1)
 
-    with open(prompt_file, 'r') as f:
-        prompts = [
-            line.strip()
-            for line in f
-            if line.strip() and not line.strip().startswith('#')
-        ]
+    with open(prompt_file, "r") as f:
+        prompts = [line.strip() for line in f if line.strip() and not line.strip().startswith("#")]
 
     print(f"✓ Loaded {len(prompts)} prompts\n")
 
@@ -279,7 +290,7 @@ def main():
 
     processed = 0
     if args.resume and output_file.exists():
-        with open(output_file, 'r') as f:
+        with open(output_file, "r") as f:
             processed = sum(1 for line in f if line.strip())
         print(f"📍 Resuming from {processed} existing samples\n")
 
@@ -287,8 +298,8 @@ def main():
     generator = KimiDialecticalGenerator(api_key, args.base_url, args.model)
 
     # Generate
-    mode = 'a' if args.resume and output_file.exists() else 'w'
-    with open(output_file, mode, encoding='utf-8') as f:
+    mode = "a" if args.resume and output_file.exists() else "w"
+    with open(output_file, mode, encoding="utf-8") as f:
         for i in range(processed, min(args.limit, len(prompts))):
             query = prompts[i]
 
@@ -297,17 +308,21 @@ def main():
             result = generator.generate_dialectic(query)
 
             if result:
-                f.write(json.dumps(result, ensure_ascii=False) + '\n')
+                f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 f.flush()
-                print(f"  ✓ Success ({len(result['thesis'])} + {len(result['antithesis'])} + {len(result['synthesis'])} chars)")
+                print(
+                    f"  ✓ Success ({len(result['thesis'])} + {len(result['antithesis'])} + {len(result['synthesis'])} chars)"
+                )
             else:
                 print(f"  ✗ Failed to generate")
 
-            generator.stats['total'] += 1
+            generator.stats["total"] += 1
 
             # Progress
             if (i + 1) % 10 == 0:
-                print(f"\n📊 Progress: {generator.stats['success']}/{generator.stats['total']} successful")
+                print(
+                    f"\n📊 Progress: {generator.stats['success']}/{generator.stats['total']} successful"
+                )
                 print(f"   Total tokens: {generator.stats['total_tokens']:,}")
 
             # Rate limiting

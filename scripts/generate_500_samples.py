@@ -38,6 +38,7 @@ try:
     from hegelion.core.core import run_dialectic
     from hegelion.core.config import get_config, set_config_value
     from hegelion.core.models import HegelionResult
+
     HEGELION_AVAILABLE = True
 except ImportError:
     HEGELION_AVAILABLE = False
@@ -76,14 +77,12 @@ class HegelianDatasetGenerator:
             print(f"❌ Prompt file not found: {self.prompt_file}")
             return False
 
-        with open(self.prompt_file, 'r', encoding='utf-8') as f:
+        with open(self.prompt_file, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
         # Filter out comments and empty lines
         self.prompts = [
-            line.strip()
-            for line in lines
-            if line.strip() and not line.strip().startswith('#')
+            line.strip() for line in lines if line.strip() and not line.strip().startswith("#")
         ]
 
         print(f"✓ Loaded {len(self.prompts)} prompts from {self.prompt_file}")
@@ -98,9 +97,9 @@ class HegelianDatasetGenerator:
         config = get_config()
 
         # Check for API keys
-        has_anthropic = bool(config.anthropic_key or os.getenv('ANTHROPIC_API_KEY'))
-        has_openai = bool(config.openai_key or os.getenv('OPENAI_API_KEY'))
-        has_moonshot = bool(config.moonshot_key or os.getenv('MOONSHOT_API_KEY'))
+        has_anthropic = bool(config.anthropic_key or os.getenv("ANTHROPIC_API_KEY"))
+        has_openai = bool(config.openai_key or os.getenv("OPENAI_API_KEY"))
+        has_moonshot = bool(config.moonshot_key or os.getenv("MOONSHOT_API_KEY"))
 
         print(f"\n🔧 Backend Configuration:")
         print(f"  Anthropic API: {'✓' if has_anthropic else '✗'}")
@@ -145,7 +144,7 @@ class HegelianDatasetGenerator:
             return 0
 
         count = 0
-        with open(self.output_file, 'r', encoding='utf-8') as f:
+        with open(self.output_file, "r", encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     count += 1
@@ -162,7 +161,7 @@ class HegelianDatasetGenerator:
             result: HegelionResult = await run_dialectic(
                 query=query,
                 max_tokens_per_phase=self.max_tokens,
-                use_search=False  # Pure reasoning, no web search
+                use_search=False,  # Pure reasoning, no web search
             )
 
             # Format as training data
@@ -173,16 +172,13 @@ class HegelianDatasetGenerator:
                 "antithesis": result.antithesis,
                 "synthesis": result.synthesis,
                 "contradictions": [
-                    {
-                        "description": c.get("description", ""),
-                        "evidence": c.get("evidence", "")
-                    }
+                    {"description": c.get("description", ""), "evidence": c.get("evidence", "")}
                     for c in result.contradictions
                 ],
                 "research_proposals": [
                     {
                         "description": rp.get("description", ""),
-                        "testable_prediction": rp.get("testable_prediction", "")
+                        "testable_prediction": rp.get("testable_prediction", ""),
                     }
                     for rp in result.research_proposals
                 ],
@@ -196,8 +192,10 @@ class HegelianDatasetGenerator:
                         f"{rp.get('description', '')} | Prediction: {rp.get('testable_prediction', '')}"
                         for rp in result.research_proposals
                     ],
-                    "internal_conflict_score": result.metadata.get("debug", {}).get("internal_conflict_score", 0)
-                }
+                    "internal_conflict_score": result.metadata.get("debug", {}).get(
+                        "internal_conflict_score", 0
+                    ),
+                },
             }
 
             # Validate structure
@@ -205,8 +203,12 @@ class HegelianDatasetGenerator:
                 print(f"  ⚠ Warning: Incomplete dialectical structure")
                 return None
 
-            print(f"  ✓ Generated {len(result.thesis)} + {len(result.antithesis)} + {len(result.synthesis)} chars")
-            print(f"  ✓ Found {len(result.contradictions)} contradictions, {len(result.research_proposals)} research proposals")
+            print(
+                f"  ✓ Generated {len(result.thesis)} + {len(result.antithesis)} + {len(result.synthesis)} chars"
+            )
+            print(
+                f"  ✓ Found {len(result.contradictions)} contradictions, {len(result.research_proposals)} research proposals"
+            )
 
             return entry
 
@@ -264,8 +266,8 @@ class HegelianDatasetGenerator:
         start_time = datetime.now()
 
         # Open file for appending
-        mode = 'a' if self.resume and self.output_file.exists() else 'w'
-        with open(self.output_file, mode, encoding='utf-8') as f:
+        mode = "a" if self.resume and self.output_file.exists() else "w"
+        with open(self.output_file, mode, encoding="utf-8") as f:
             current_idx = self.processed_count
 
             while current_idx < self.limit and current_idx < len(self.prompts):
@@ -275,7 +277,7 @@ class HegelianDatasetGenerator:
 
                 for result in results:
                     if result is not None:
-                        f.write(json.dumps(result, ensure_ascii=False) + '\n')
+                        f.write(json.dumps(result, ensure_ascii=False) + "\n")
                         f.flush()  # Ensure data is written immediately
                         self.success_count += 1
                     else:
@@ -289,7 +291,9 @@ class HegelianDatasetGenerator:
                 rate = self.processed_count / elapsed if elapsed > 0 else 0
                 eta = (self.limit - self.processed_count) / rate if rate > 0 else 0
 
-                print(f"\n📊 Progress: {self.processed_count}/{self.limit} ({self.processed_count/self.limit*100:.1f}%)")
+                print(
+                    f"\n📊 Progress: {self.processed_count}/{self.limit} ({self.processed_count/self.limit*100:.1f}%)"
+                )
                 print(f"   Success: {self.success_count}, Errors: {self.error_count}")
                 print(f"   Rate: {rate:.2f} samples/sec, ETA: {eta/60:.1f} minutes")
 
@@ -314,47 +318,28 @@ async def main():
         description="Generate 500+ Hegelian dialectical training samples"
     )
     parser.add_argument(
-        "--prompts",
-        default="hegelion_prompts_500.txt",
-        help="Path to prompt file (one per line)"
+        "--prompts", default="hegelion_prompts_500.txt", help="Path to prompt file (one per line)"
     )
     parser.add_argument(
-        "--output",
-        default="data/hegelion_500_samples.jsonl",
-        help="Output JSONL file"
+        "--output", default="data/hegelion_500_samples.jsonl", help="Output JSONL file"
     )
     parser.add_argument(
-        "--limit",
-        type=int,
-        default=500,
-        help="Number of samples to generate (default: 500)"
+        "--limit", type=int, default=500, help="Number of samples to generate (default: 500)"
     )
     parser.add_argument(
-        "--resume",
-        action="store_true",
-        default=True,
-        help="Resume from existing output file"
+        "--resume", action="store_true", default=True, help="Resume from existing output file"
     )
     parser.add_argument(
         "--provider",
         choices=["anthropic", "openai", "moonshot", "auto"],
-        help="LLM provider to use"
+        help="LLM provider to use",
+    )
+    parser.add_argument("--model", help="Specific model to use (e.g., claude-sonnet-4, gpt-4)")
+    parser.add_argument(
+        "--max-tokens", type=int, default=4000, help="Max tokens per dialectical phase"
     )
     parser.add_argument(
-        "--model",
-        help="Specific model to use (e.g., claude-sonnet-4, gpt-4)"
-    )
-    parser.add_argument(
-        "--max-tokens",
-        type=int,
-        default=4000,
-        help="Max tokens per dialectical phase"
-    )
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=1,
-        help="Number of samples to generate concurrently"
+        "--batch-size", type=int, default=1, help="Number of samples to generate concurrently"
     )
 
     args = parser.parse_args()

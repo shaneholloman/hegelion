@@ -38,12 +38,12 @@ class HegelianDatasetCleaner:
 
         self.samples = []
         self.stats = {
-            'input_count': 0,
-            'exact_duplicates': 0,
-            'too_short': 0,
-            'missing_structure': 0,
-            'low_quality': 0,
-            'output_count': 0,
+            "input_count": 0,
+            "exact_duplicates": 0,
+            "too_short": 0,
+            "missing_structure": 0,
+            "low_quality": 0,
+            "output_count": 0,
         }
 
     def load_samples(self) -> bool:
@@ -52,7 +52,7 @@ class HegelianDatasetCleaner:
             print(f"❌ Input file not found: {self.input_file}")
             return False
 
-        with open(self.input_file, 'r', encoding='utf-8') as f:
+        with open(self.input_file, "r", encoding="utf-8") as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -63,14 +63,14 @@ class HegelianDatasetCleaner:
                 except json.JSONDecodeError as e:
                     print(f"⚠ Line {line_num}: JSON decode error: {e}")
 
-        self.stats['input_count'] = len(self.samples)
+        self.stats["input_count"] = len(self.samples)
         print(f"✓ Loaded {len(self.samples)} samples")
         return True
 
     def get_query_key(self, query: str) -> str:
         """Get normalized query key for deduplication"""
         # Normalize: lowercase, strip, remove extra whitespace
-        normalized = ' '.join(query.lower().strip().split())
+        normalized = " ".join(query.lower().strip().split())
         return normalized
 
     def get_query_hash(self, query: str) -> str:
@@ -83,32 +83,32 @@ class HegelianDatasetCleaner:
         unique_samples = []
 
         for sample in self.samples:
-            query = sample.get('query', '')
+            query = sample.get("query", "")
             query_hash = self.get_query_hash(query)
 
             if query_hash in seen_hashes:
                 # Keep the one with longer dialectical trace
                 existing = seen_hashes[query_hash]
-                existing_trace = existing.get('trace', {})
-                current_trace = sample.get('trace', {})
+                existing_trace = existing.get("trace", {})
+                current_trace = sample.get("trace", {})
 
                 existing_length = (
-                    len(existing_trace.get('thesis', '')) +
-                    len(existing_trace.get('antithesis', '')) +
-                    len(existing_trace.get('synthesis', ''))
+                    len(existing_trace.get("thesis", ""))
+                    + len(existing_trace.get("antithesis", ""))
+                    + len(existing_trace.get("synthesis", ""))
                 )
                 current_length = (
-                    len(current_trace.get('thesis', '')) +
-                    len(current_trace.get('antithesis', '')) +
-                    len(current_trace.get('synthesis', ''))
+                    len(current_trace.get("thesis", ""))
+                    + len(current_trace.get("antithesis", ""))
+                    + len(current_trace.get("synthesis", ""))
                 )
 
                 if current_length > existing_length:
                     # Replace with better quality
                     seen_hashes[query_hash] = sample
-                    self.stats['exact_duplicates'] += 1
+                    self.stats["exact_duplicates"] += 1
                 else:
-                    self.stats['exact_duplicates'] += 1
+                    self.stats["exact_duplicates"] += 1
             else:
                 seen_hashes[query_hash] = sample
 
@@ -121,44 +121,50 @@ class HegelianDatasetCleaner:
         filtered = []
 
         for sample in samples:
-            trace = sample.get('trace', {})
-            thesis = trace.get('thesis', '')
-            antithesis = trace.get('antithesis', '')
-            synthesis = trace.get('synthesis', '')
-            contradictions = sample.get('contradictions', [])
+            trace = sample.get("trace", {})
+            thesis = trace.get("thesis", "")
+            antithesis = trace.get("antithesis", "")
+            synthesis = trace.get("synthesis", "")
+            contradictions = sample.get("contradictions", [])
 
             # Check minimum lengths
             if len(thesis) < self.min_thesis_length:
-                self.stats['too_short'] += 1
+                self.stats["too_short"] += 1
                 continue
 
             if len(antithesis) < self.min_antithesis_length:
-                self.stats['too_short'] += 1
+                self.stats["too_short"] += 1
                 continue
 
             if len(synthesis) < self.min_synthesis_length:
-                self.stats['too_short'] += 1
+                self.stats["too_short"] += 1
                 continue
 
             # Check for required structure
             if not all([thesis, antithesis, synthesis]):
-                self.stats['missing_structure'] += 1
+                self.stats["missing_structure"] += 1
                 continue
 
             # Check for contradictions
             if len(contradictions) < self.min_contradictions:
-                self.stats['low_quality'] += 1
+                self.stats["low_quality"] += 1
                 continue
 
             # Check for dialectical markers (relaxed check)
             has_dialectical = (
-                any(marker in thesis.upper() for marker in ['THESIS', 'ASSERT', 'CLAIM']) or
-                any(marker in antithesis.upper() for marker in ['ANTITHESIS', 'CONTRADICTION', 'EVIDENCE', 'HOWEVER']) or
-                any(marker in synthesis.upper() for marker in ['SYNTHESIS', 'PREDICTION', 'RESEARCH'])
+                any(marker in thesis.upper() for marker in ["THESIS", "ASSERT", "CLAIM"])
+                or any(
+                    marker in antithesis.upper()
+                    for marker in ["ANTITHESIS", "CONTRADICTION", "EVIDENCE", "HOWEVER"]
+                )
+                or any(
+                    marker in synthesis.upper()
+                    for marker in ["SYNTHESIS", "PREDICTION", "RESEARCH"]
+                )
             )
 
             if not has_dialectical:
-                self.stats['low_quality'] += 1
+                self.stats["low_quality"] += 1
                 continue
 
             filtered.append(sample)
@@ -170,13 +176,14 @@ class HegelianDatasetCleaner:
 
     def rank_by_quality(self, samples: List[Dict]) -> List[Dict]:
         """Rank samples by quality metrics"""
+
         def quality_score(sample: Dict) -> float:
-            trace = sample.get('trace', {})
-            thesis = trace.get('thesis', '')
-            antithesis = trace.get('antithesis', '')
-            synthesis = trace.get('synthesis', '')
-            contradictions = sample.get('contradictions', [])
-            research = sample.get('research_proposals', [])
+            trace = sample.get("trace", {})
+            thesis = trace.get("thesis", "")
+            antithesis = trace.get("antithesis", "")
+            synthesis = trace.get("synthesis", "")
+            contradictions = sample.get("contradictions", [])
+            research = sample.get("research_proposals", [])
 
             score = 0.0
 
@@ -192,23 +199,25 @@ class HegelianDatasetCleaner:
 
             # Dialectical markers
             markers_count = 0
-            if 'THESIS' in thesis.upper():
+            if "THESIS" in thesis.upper():
                 markers_count += 1
-            if 'ANTITHESIS' in antithesis.upper():
+            if "ANTITHESIS" in antithesis.upper():
                 markers_count += 1
-            if 'SYNTHESIS' in synthesis.upper():
+            if "SYNTHESIS" in synthesis.upper():
                 markers_count += 1
-            if 'CONTRADICTION' in antithesis.upper():
+            if "CONTRADICTION" in antithesis.upper():
                 markers_count += 1
-            if 'EVIDENCE' in antithesis.upper():
+            if "EVIDENCE" in antithesis.upper():
                 markers_count += 1
-            if 'PREDICTION' in synthesis.upper():
+            if "PREDICTION" in synthesis.upper():
                 markers_count += 1
 
             score += markers_count * 5  # Max 30 points
 
             # Conflict score from metadata
-            conflict_score = sample.get('metadata', {}).get('debug', {}).get('internal_conflict_score', 0)
+            conflict_score = (
+                sample.get("metadata", {}).get("debug", {}).get("internal_conflict_score", 0)
+            )
             score += conflict_score * 20  # Max ~20 points
 
             return score
@@ -237,13 +246,13 @@ class HegelianDatasetCleaner:
         print("\n[3/3] Ranking by quality...")
         final_samples = self.rank_by_quality(quality_samples)
 
-        self.stats['output_count'] = len(final_samples)
+        self.stats["output_count"] = len(final_samples)
 
         # Write output
         self.output_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.output_file, 'w', encoding='utf-8') as f:
+        with open(self.output_file, "w", encoding="utf-8") as f:
             for sample in final_samples:
-                f.write(json.dumps(sample, ensure_ascii=False) + '\n')
+                f.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
         # Print summary
         print(f"\n{'='*70}")
@@ -265,37 +274,22 @@ def main():
     parser = argparse.ArgumentParser(
         description="Clean and deduplicate Hegelian dialectical dataset"
     )
+    parser.add_argument("input", help="Input JSONL file")
+    parser.add_argument("--output", help="Output JSONL file (default: input_cleaned.jsonl)")
     parser.add_argument(
-        "input",
-        help="Input JSONL file"
+        "--min-thesis", type=int, default=200, help="Minimum thesis length (default: 200)"
     )
     parser.add_argument(
-        "--output",
-        help="Output JSONL file (default: input_cleaned.jsonl)"
+        "--min-antithesis", type=int, default=200, help="Minimum antithesis length (default: 200)"
     )
     parser.add_argument(
-        "--min-thesis",
-        type=int,
-        default=200,
-        help="Minimum thesis length (default: 200)"
-    )
-    parser.add_argument(
-        "--min-antithesis",
-        type=int,
-        default=200,
-        help="Minimum antithesis length (default: 200)"
-    )
-    parser.add_argument(
-        "--min-synthesis",
-        type=int,
-        default=300,
-        help="Minimum synthesis length (default: 300)"
+        "--min-synthesis", type=int, default=300, help="Minimum synthesis length (default: 300)"
     )
     parser.add_argument(
         "--min-contradictions",
         type=int,
         default=1,
-        help="Minimum contradictions required (default: 1)"
+        help="Minimum contradictions required (default: 1)",
     )
 
     args = parser.parse_args()

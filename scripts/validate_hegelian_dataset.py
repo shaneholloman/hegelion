@@ -27,7 +27,7 @@ class HegelianValidator:
     def load_data(self) -> bool:
         """Load JSONL data file"""
         try:
-            with open(self.file_path, 'r', encoding='utf-8') as f:
+            with open(self.file_path, "r", encoding="utf-8") as f:
                 for line_num, line in enumerate(f, 1):
                     line = line.strip()
                     if not line:
@@ -38,7 +38,7 @@ class HegelianValidator:
                     except json.JSONDecodeError as e:
                         self.errors.append(f"Line {line_num}: JSON decode error: {e}")
 
-            self.stats['total_samples'] = len(self.samples)
+            self.stats["total_samples"] = len(self.samples)
             print(f"✓ Loaded {len(self.samples)} samples from {self.file_path}")
             return True
         except Exception as e:
@@ -50,25 +50,25 @@ class HegelianValidator:
         issues = []
 
         # Check for required fields
-        required_fields = ['query', 'thesis', 'antithesis', 'synthesis']
+        required_fields = ["query", "thesis", "antithesis", "synthesis"]
         for field in required_fields:
-            if field not in sample and field not in sample.get('trace', {}):
+            if field not in sample and field not in sample.get("trace", {}):
                 issues.append(f"Missing required field: {field}")
 
         # Check trace structure
-        trace = sample.get('trace', {})
+        trace = sample.get("trace", {})
         if not trace:
             issues.append("Missing 'trace' field with dialectical structure")
             return False, issues
 
-        thesis = trace.get('thesis', '')
-        antithesis = trace.get('antithesis', '')
-        synthesis = trace.get('synthesis', '')
+        thesis = trace.get("thesis", "")
+        antithesis = trace.get("antithesis", "")
+        synthesis = trace.get("synthesis", "")
 
         # Check for dialectical keywords in structure
-        has_thesis_marker = 'THESIS' in thesis.upper()
-        has_antithesis_marker = 'ANTITHESIS' in antithesis.upper()
-        has_synthesis_marker = 'SYNTHESIS' in synthesis.upper()
+        has_thesis_marker = "THESIS" in thesis.upper()
+        has_antithesis_marker = "ANTITHESIS" in antithesis.upper()
+        has_synthesis_marker = "SYNTHESIS" in synthesis.upper()
 
         if not has_thesis_marker:
             self.warnings.append(f"Line {line_num}: Thesis lacks 'THESIS' marker")
@@ -78,12 +78,16 @@ class HegelianValidator:
             self.warnings.append(f"Line {line_num}: Synthesis lacks 'SYNTHESIS' marker")
 
         # Check for CONTRADICTION in antithesis
-        if 'CONTRADICTION' not in antithesis.upper() and 'EVIDENCE' not in antithesis.upper():
-            self.warnings.append(f"Line {line_num}: Antithesis should identify contradictions with evidence")
+        if "CONTRADICTION" not in antithesis.upper() and "EVIDENCE" not in antithesis.upper():
+            self.warnings.append(
+                f"Line {line_num}: Antithesis should identify contradictions with evidence"
+            )
 
         # Check for PREDICTION or RESEARCH in synthesis
-        if 'PREDICTION' not in synthesis.upper() and 'RESEARCH' not in synthesis.upper():
-            self.warnings.append(f"Line {line_num}: Synthesis should include predictions or research proposals")
+        if "PREDICTION" not in synthesis.upper() and "RESEARCH" not in synthesis.upper():
+            self.warnings.append(
+                f"Line {line_num}: Synthesis should include predictions or research proposals"
+            )
 
         # Check minimum length (dialectical reasoning should be substantial)
         if len(thesis) < 200:
@@ -94,18 +98,18 @@ class HegelianValidator:
             issues.append(f"Synthesis too short ({len(synthesis)} chars, minimum 300)")
 
         # Check for contradictions list
-        contradictions = sample.get('contradictions', [])
+        contradictions = sample.get("contradictions", [])
         if not contradictions:
             issues.append("No contradictions identified")
         else:
-            self.stats['avg_contradictions'] += len(contradictions)
+            self.stats["avg_contradictions"] += len(contradictions)
 
         # Check for research proposals
-        research = sample.get('research_proposals', [])
+        research = sample.get("research_proposals", [])
         if not research:
             self.warnings.append(f"Line {line_num}: No research proposals included")
         else:
-            self.stats['avg_research_proposals'] += len(research)
+            self.stats["avg_research_proposals"] += len(research)
 
         return len(issues) == 0, issues
 
@@ -114,7 +118,7 @@ class HegelianValidator:
         query_map = defaultdict(list)
 
         for line_num, sample in self.samples:
-            query = sample.get('query', '').strip().lower()
+            query = sample.get("query", "").strip().lower()
             if query:
                 query_map[query].append(line_num)
 
@@ -128,25 +132,29 @@ class HegelianValidator:
         output_lengths = []
 
         for _, sample in self.samples:
-            query = sample.get('query', '')
+            query = sample.get("query", "")
             if query:
                 # Get first 3 words as topic indicator
                 words = query.split()[:3]
-                first_words[' '.join(words)] += 1
+                first_words[" ".join(words)] += 1
                 query_lengths.append(len(query))
 
             # Check output length
-            trace = sample.get('trace', {})
-            total_length = len(trace.get('thesis', '')) + len(trace.get('antithesis', '')) + len(trace.get('synthesis', ''))
+            trace = sample.get("trace", {})
+            total_length = (
+                len(trace.get("thesis", ""))
+                + len(trace.get("antithesis", ""))
+                + len(trace.get("synthesis", ""))
+            )
             output_lengths.append(total_length)
 
         return {
-            'unique_topic_starters': len(first_words),
-            'most_common_topics': first_words.most_common(10),
-            'avg_query_length': sum(query_lengths) / len(query_lengths) if query_lengths else 0,
-            'avg_output_length': sum(output_lengths) / len(output_lengths) if output_lengths else 0,
-            'min_output_length': min(output_lengths) if output_lengths else 0,
-            'max_output_length': max(output_lengths) if output_lengths else 0,
+            "unique_topic_starters": len(first_words),
+            "most_common_topics": first_words.most_common(10),
+            "avg_query_length": sum(query_lengths) / len(query_lengths) if query_lengths else 0,
+            "avg_output_length": sum(output_lengths) / len(output_lengths) if output_lengths else 0,
+            "min_output_length": min(output_lengths) if output_lengths else 0,
+            "max_output_length": max(output_lengths) if output_lengths else 0,
         }
 
     def validate(self) -> bool:
@@ -154,9 +162,9 @@ class HegelianValidator:
         if not self.load_data():
             return False
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("HEGELIAN DIALECTICAL STRUCTURE VALIDATION")
-        print("="*70)
+        print("=" * 70)
 
         # Validate each sample
         valid_count = 0
@@ -164,17 +172,19 @@ class HegelianValidator:
             is_valid, issues = self.check_dialectical_structure(line_num, sample)
             if is_valid:
                 valid_count += 1
-                self.stats['valid_samples'] += 1
+                self.stats["valid_samples"] += 1
             else:
-                self.stats['invalid_samples'] += 1
+                self.stats["invalid_samples"] += 1
                 for issue in issues:
                     self.errors.append(f"Line {line_num}: {issue}")
 
         # Find duplicates
         duplicates = self.find_duplicates()
         if duplicates:
-            self.stats['duplicate_queries'] = sum(len(v) - 1 for v in duplicates.values())
-            print(f"\n⚠ Found {len(duplicates)} duplicate queries affecting {self.stats['duplicate_queries']} samples")
+            self.stats["duplicate_queries"] = sum(len(v) - 1 for v in duplicates.values())
+            print(
+                f"\n⚠ Found {len(duplicates)} duplicate queries affecting {self.stats['duplicate_queries']} samples"
+            )
             for query, lines in list(duplicates.items())[:5]:
                 print(f"  '{query[:60]}...' appears on lines: {lines}")
 
@@ -182,15 +192,17 @@ class HegelianValidator:
         diversity = self.analyze_diversity()
 
         # Calculate averages
-        if self.stats['valid_samples'] > 0:
-            self.stats['avg_contradictions'] /= self.stats['valid_samples']
-            self.stats['avg_research_proposals'] /= self.stats['valid_samples']
+        if self.stats["valid_samples"] > 0:
+            self.stats["avg_contradictions"] /= self.stats["valid_samples"]
+            self.stats["avg_research_proposals"] /= self.stats["valid_samples"]
 
         # Print results
         print(f"\n📊 VALIDATION RESULTS")
         print(f"{'─'*70}")
         print(f"Total samples: {self.stats['total_samples']}")
-        print(f"Valid samples: {self.stats['valid_samples']} ({valid_count/self.stats['total_samples']*100:.1f}%)")
+        print(
+            f"Valid samples: {self.stats['valid_samples']} ({valid_count/self.stats['total_samples']*100:.1f}%)"
+        )
         print(f"Invalid samples: {self.stats['invalid_samples']}")
         print(f"Duplicate queries: {self.stats.get('duplicate_queries', 0)}")
         print(f"Unique topics: {diversity['unique_topic_starters']}")
@@ -198,11 +210,13 @@ class HegelianValidator:
         print(f"Avg research proposals: {self.stats.get('avg_research_proposals', 0):.1f}")
         print(f"Avg query length: {diversity['avg_query_length']:.0f} chars")
         print(f"Avg dialectical trace length: {diversity['avg_output_length']:.0f} chars")
-        print(f"Output length range: {diversity['min_output_length']} - {diversity['max_output_length']} chars")
+        print(
+            f"Output length range: {diversity['min_output_length']} - {diversity['max_output_length']} chars"
+        )
 
-        if diversity['most_common_topics']:
+        if diversity["most_common_topics"]:
             print(f"\nMost common topic patterns:")
-            for topic, count in diversity['most_common_topics'][:5]:
+            for topic, count in diversity["most_common_topics"][:5]:
                 print(f"  '{topic}': {count} samples")
 
         # Print errors
@@ -223,11 +237,11 @@ class HegelianValidator:
 
         # Final verdict
         print(f"\n{'='*70}")
-        if self.stats['valid_samples'] >= self.stats['total_samples'] * 0.95:
+        if self.stats["valid_samples"] >= self.stats["total_samples"] * 0.95:
             print("✅ DATASET QUALITY: EXCELLENT")
             print("The dataset has proper Hegelian dialectical structure.")
             return True
-        elif self.stats['valid_samples'] >= self.stats['total_samples'] * 0.80:
+        elif self.stats["valid_samples"] >= self.stats["total_samples"] * 0.80:
             print("⚠ DATASET QUALITY: GOOD (some issues)")
             print("Most samples have dialectical structure but some need improvement.")
             return True
