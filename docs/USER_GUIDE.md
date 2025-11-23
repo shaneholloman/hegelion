@@ -20,10 +20,10 @@ uv sync  # or: pip install -e .
 
 ## Basic Configuration
 
-Create a `.env` file (or export environment variables) to choose your backend. We provide a template `env.example`:
+Create a `.env` file (or export environment variables) to choose your backend. We provide a template `.env.example`:
 
 ```bash
-cp env.example .env
+cp .env.example .env
 ```
 
 Edit `.env` to point at Anthropic, OpenAI, Ollama, or a custom HTTP backend as described in `HEGELION_SPEC.md` and the main README.
