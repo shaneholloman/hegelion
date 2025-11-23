@@ -1,0 +1,637 @@
+# Philosophy & Metaphysics
+Can machines possess genuine consciousness?
+Is free will compatible with determinism?
+Does objective morality exist independent of human minds?
+What is the nature of truth - correspondence, coherence, or pragmatism?
+Is there a fundamental difference between mind and matter?
+Can we have knowledge of things-in-themselves?
+Does existence precede essence, or essence precede existence?
+Is time an objective feature of reality or a subjective framework?
+Can we derive ought from is?
+Is suffering necessary for meaning?
+What makes a life worth living?
+Is death harmful to the person who dies?
+Can artificial systems experience qualia?
+Is consciousness fundamental or emergent?
+Does the self persist through time?
+Is reality fundamentally mental or physical?
+Can we have certain knowledge about the external world?
+Is mathematics discovered or invented?
+What is the relationship between language and reality?
+Is there a hard problem of consciousness?
+
+# Ethics & Moral Philosophy
+Is it ethical to edit human embryos for enhancement?
+Should we prioritize reducing suffering or increasing happiness?
+Is there a moral difference between killing and letting die?
+Can cultural relativism justify any practice?
+Is lying ever morally required?
+Should future generations have moral standing?
+Is it ethical to create sentient AI?
+Do animals have rights or just welfare interests?
+Is effective altruism the correct moral framework?
+Should we maximize utility or respect rights?
+Is there a duty to rescue strangers?
+Can war ever be just?
+Is capital punishment morally permissible?
+Should we save the many at the expense of the few?
+Is privacy a fundamental right or social construct?
+Do we have obligations to possible future people?
+Is speciesism morally analogous to racism?
+Should organ donation be mandatory?
+Is paternalism ever justified?
+Can corporations have moral responsibilities?
+
+# Political Philosophy
+Is democracy the best form of government?
+Should borders exist in an ideal world?
+Is a universal basic income desirable?
+Should hate speech be legally restricted?
+Is socialism compatible with individual liberty?
+Should voting be mandatory?
+Is nationalism inherently problematic?
+Should citizens have a right to revolution?
+Is representative democracy superior to direct democracy?
+Should we have open borders?
+Is meritocracy achievable or desirable?
+Should wealthy nations accept climate refugees?
+Is state surveillance ever justified?
+Can capitalism be ethical?
+Should corporations have free speech rights?
+Is multiculturalism coherent as a political doctrine?
+Should we have global governance institutions?
+Is patriotism a virtue or vice?
+Should reparations be paid for historical injustices?
+Is the social contract theory valid?
+
+# Science & Epistemology
+Is scientific realism justified?
+Can science answer moral questions?
+Is there a demarcation between science and pseudoscience?
+Should we trust scientific consensus?
+Is induction logically justified?
+Can we have theory-independent observations?
+Is randomness fundamental or epistemic?
+Should we accept the many-worlds interpretation?
+Is consciousness explainable by neuroscience?
+Can we unify quantum mechanics and general relativity?
+Is the universe fine-tuned for life?
+Should we expect to find alien intelligence?
+Is evolution teleological?
+Can chaos theory predict complex systems?
+Is climate change reversible?
+Should we pursue geoengineering?
+Is the placebo effect "real"?
+Can we eliminate all diseases?
+Should we extend human lifespan indefinitely?
+Is artificial general intelligence achievable?
+
+# Technology & Society
+Should social media platforms moderate content?
+Is blockchain technology revolutionary or overhyped?
+Should we develop autonomous weapons?
+Is the metaverse the future of human interaction?
+Should we ban facial recognition technology?
+Is algorithmic bias solvable?
+Should we regulate AI development?
+Is quantum computing a paradigm shift?
+Should gene drives be deployed in nature?
+Is brain-computer interface technology safe?
+Should we create digital twins of humans?
+Is cryptocurrency a legitimate currency?
+Should we colonize Mars?
+Is nuclear energy essential for climate goals?
+Should we pursue nuclear fusion aggressively?
+Is 5G technology harmful to health?
+Should we allow human cloning?
+Is technological unemployment inevitable?
+Should we develop mind uploading?
+Is the internet making us smarter or dumber?
+
+# Artificial Intelligence
+Can AI systems be creative?
+Should AI have legal personhood?
+Is AGI alignment solvable?
+Should we pause frontier AI development?
+Is AI risk existential or exaggerated?
+Can neural networks truly understand language?
+Should AI decision-making be explainable?
+Is machine learning inherently biased?
+Should we grant rights to sentient AI?
+Can AI replace human scientists?
+Is artificial consciousness possible?
+Should we develop AI weapons?
+Can AI systems be held morally responsible?
+Is the Turing test a valid measure of intelligence?
+Should we open-source advanced AI models?
+Is reinforcement learning the path to AGI?
+Can AI achieve common sense reasoning?
+Should AI art be copyrightable?
+Is GPT-style scaling sufficient for AGI?
+Should we fear superintelligence?
+
+# Economics & Markets
+Should we transition to a gift economy?
+Is infinite growth possible on a finite planet?
+Should land be privately owned?
+Is the labor theory of value correct?
+Should we abolish intellectual property?
+Is price gouging morally wrong?
+Should we have a maximum wage?
+Is inequality inherently bad?
+Should we tax carbon emissions?
+Is degrowth necessary for sustainability?
+Should central banks issue digital currencies?
+Is Modern Monetary Theory valid?
+Should we abolish fractional reserve banking?
+Is automation a net benefit for workers?
+Should we break up tech monopolies?
+Is the efficient market hypothesis true?
+Should we implement a wealth tax?
+Is housing a human right or commodity?
+Should we have a job guarantee?
+Is exploitation inherent to capitalism?
+
+# Education & Learning
+Should education be completely free?
+Is standardized testing beneficial?
+Should we teach philosophy to children?
+Is homework harmful to students?
+Should universities exist in their current form?
+Is autodidacticism superior to formal education?
+Should we eliminate grades?
+Is the liberal arts education valuable?
+Should STEM be prioritized over humanities?
+Is online learning as effective as in-person?
+Should we teach critical thinking explicitly?
+Is memorization important in the digital age?
+Should education focus on skills or knowledge?
+Is the Socratic method the best teaching approach?
+Should we separate students by ability?
+Is lifelong learning necessary?
+Should education be personalized?
+Is gatekeeping in academia harmful?
+Should universities be abolished?
+Is credentialism a problem?
+
+# Psychology & Human Nature
+Is human nature fundamentally good or evil?
+Can traumatic memories be safely erased?
+Is intelligence primarily genetic or environmental?
+Should we enhance human cognition pharmacologically?
+Is addiction a disease or choice?
+Can personality fundamentally change?
+Is altruism genuinely selfless?
+Should we eliminate negative emotions?
+Is free will an illusion?
+Can meditation fundamentally alter consciousness?
+Is happiness the ultimate goal?
+Should we pursue radical life extension?
+Is conformity inherently problematic?
+Can empathy be taught?
+Is rationality always superior to intuition?
+Should we optimize for happiness or meaning?
+Is human nature plastic or fixed?
+Can we eliminate prejudice?
+Is competition or cooperation our default?
+Should we embrace or resist our evolutionary heritage?
+
+# Art & Aesthetics
+Can AI-generated art be truly creative?
+Is beauty objective or subjective?
+Should museums return cultural artifacts?
+Is street art vandalism or art?
+Should art be separate from politics?
+Is censoring art ever justified?
+Can anything be art?
+Should we preserve all cultural heritage?
+Is representation in art morally required?
+Should artists be held to moral standards?
+Is abstract art meaningful?
+Can art be objectively good or bad?
+Should offensive art be deplatformed?
+Is kitsch a legitimate aesthetic category?
+Should we fund the arts publicly?
+Is appropriation in art theft?
+Can AI understand aesthetics?
+Should art serve a social function?
+Is the author's intent relevant?
+Can ugly things be art?
+
+# Language & Communication
+Is language a window or mirror to reality?
+Should we create a universal language?
+Is linguistic relativity true?
+Should we preserve dying languages?
+Is prescriptivism in grammar justified?
+Can animals use true language?
+Should we use person-first language?
+Is political correctness beneficial?
+Can translation truly preserve meaning?
+Should we simplify complex academic language?
+Is emoji a legitimate form of writing?
+Should we abandon gendered language?
+Is code-switching empowering or problematic?
+Can machines truly understand language?
+Should we teach grammar explicitly?
+Is slang degrading language?
+Should we have language academies?
+Is the Sapir-Whorf hypothesis valid?
+Can we think without language?
+Should we standardize global English?
+
+# Space & Cosmology
+Should we prioritize space exploration over Earth problems?
+Is the Fermi paradox a real puzzle?
+Should we send messages to alien civilizations?
+Is the simulation hypothesis plausible?
+Should we terraform other planets?
+Is space colonization humanity's destiny?
+Should we mine asteroids?
+Is the anthropic principle explanatory?
+Should we search for technosignatures?
+Is dark matter a placeholder for new physics?
+Should we build orbital habitats?
+Is interstellar travel feasible?
+Should we preserve Mars as pristine?
+Is the multiverse real or metaphysics?
+Should we weaponize space?
+Is panspermia a viable hypothesis?
+Should we create generation ships?
+Is SETI worth funding?
+Should we deflect asteroids preemptively?
+Is the cosmic dark age accessible?
+
+# Biology & Evolution
+Is evolution teleological or blind?
+Should we de-extinct species?
+Is group selection a valid mechanism?
+Should we edit the human germline?
+Is aging a disease we can cure?
+Should we create synthetic life?
+Is consciousness an evolutionary adaptation?
+Should we enhance animal intelligence?
+Is the selfish gene the right level of selection?
+Should we preserve all biodiversity?
+Is nature inherently balanced?
+Should we biohack ourselves?
+Is race a biological reality?
+Should we modify ecosystems deliberately?
+Is epigenetics revolutionizing biology?
+Should we ban gain-of-function research?
+Is the microbiome the "second genome"?
+Should we eradicate all diseases?
+Is vitalism completely refuted?
+Should we merge with biotechnology?
+
+# History & Historiography
+Is history inherently progressive?
+Should we judge historical figures by modern standards?
+Is historical objectivity possible?
+Should we remove controversial monuments?
+Is counterfactual history valuable?
+Should history education emphasize national narratives?
+Is the Great Man theory of history valid?
+Should we preserve all historical documents?
+Is history cyclical or linear?
+Should we apologize for historical wrongs?
+Is oral history as valid as written?
+Should we repatriate museum artifacts?
+Is colonialism's legacy primarily negative?
+Should we teach controversial history?
+Is material conditions the primary historical driver?
+Should we preserve negative heritage sites?
+Is the archive inherently political?
+Should we challenge historical consensus?
+Is commemoration the same as endorsement?
+Should we contextualize or remove offensive history?
+
+# Climate & Environment
+Is geoengineering a necessary solution?
+Should we prioritize adaptation or mitigation?
+Is economic growth compatible with sustainability?
+Should we rewild large areas?
+Is veganism necessary for climate goals?
+Should we ban fossil fuels immediately?
+Is nuclear power essential for decarbonization?
+Should we have climate reparations?
+Is individual action or systemic change more important?
+Should we grant rights to ecosystems?
+Is carbon capture viable at scale?
+Should we prioritize humans over ecosystems?
+Is the Anthropocene a useful concept?
+Should we embrace ecological modernization?
+Is degrowth the only solution?
+Should we engineer climate-resistant crops?
+Is the tragedy of the commons inevitable?
+Should we price ecosystem services?
+Is conservation or preservation the right approach?
+Should we intervene in natural ecosystems?
+
+# Medicine & Health
+Should healthcare be a human right?
+Is pharmaceutical patenting ethical?
+Should we mandate vaccines?
+Is evidence-based medicine the only valid approach?
+Should we allow physician-assisted suicide?
+Is mental illness a brain disease?
+Should we edit embryos to prevent disease?
+Is alternative medicine ever legitimate?
+Should organ markets be legal?
+Is aging a disease we should treat?
+Should we allow human challenge trials?
+Is the placebo effect therapeutically useful?
+Should we prioritize treatment or prevention?
+Is informed consent always possible?
+Should we ban cosmetic surgery?
+Is addiction primarily biological?
+Should we use AI for diagnosis?
+Is rationing healthcare ever justified?
+Should we pursue immortality?
+Is the medical model of disability correct?
+
+# Law & Justice
+Should restorative justice replace retribution?
+Is the jury system reliable?
+Should we abolish prisons?
+Is plea bargaining just?
+Should corporations face criminal charges?
+Is intellectual property legitimate?
+Should we have algorithmic sentencing?
+Is the death penalty ever justified?
+Should we allow vigilante justice?
+Is international law real law?
+Should we have global courts?
+Is rehabilitation or punishment the goal?
+Should juveniles be tried as adults?
+Is strict liability fair?
+Should we legalize all drugs?
+Is preventive detention ethical?
+Should we have truth and reconciliation commissions?
+Is adversarial justice the best system?
+Should AI replace judges?
+Is civil disobedience justified?
+
+# Social Structures
+Is the nuclear family the ideal structure?
+Should marriage be abolished?
+Is gender a social construct?
+Should we eliminate social hierarchies?
+Is intersectionality a useful framework?
+Should we have affirmative action?
+Is cultural appropriation harmful?
+Should we separate art from the artist?
+Is identity politics divisive or necessary?
+Should we abolish gender categories?
+Is assimilation or multiculturalism preferable?
+Should we have reparations for slavery?
+Is meritocracy a myth?
+Should we celebrate or critique Western civilization?
+Is individualism or collectivism superior?
+Should we preserve traditional cultures?
+Is nationalism compatible with globalism?
+Should we have open borders?
+Is the state necessary?
+Should we embrace cosmopolitanism?
+
+# Media & Information
+Should platforms be liable for user content?
+Is objectivity in journalism possible?
+Should we regulate social media algorithms?
+Is fake news a new problem?
+Should we have public broadcasters?
+Is the attention economy harmful?
+Should we ban targeted advertising?
+Is cancel culture beneficial?
+Should we fact-check in real-time?
+Is media consolidation dangerous?
+Should we have algorithm transparency?
+Is citizen journalism legitimate?
+Should we regulate recommendation systems?
+Is the filter bubble real?
+Should we have right to be forgotten?
+Is misinformation worse than ever?
+Should we teach media literacy?
+Is clickbait inherently bad?
+Should we ban deepfakes?
+Is the marketplace of ideas working?
+
+# Cognitive Science
+Is consciousness computational?
+Can we explain intentionality naturalistically?
+Is mental content in the head or in the world?
+Should we accept eliminative materialism?
+Is perception theory-laden?
+Can we reduce psychology to neuroscience?
+Is folk psychology dispensable?
+Should we trust introspection?
+Is reasoning inherently logical?
+Can we have unconscious beliefs?
+Is modularity of mind correct?
+Should we embrace embodied cognition?
+Is the mind a computer?
+Can neural networks model cognition?
+Is there a language of thought?
+Should we accept dual-process theories?
+Is mental imagery like perception?
+Can we explain creativity scientifically?
+Is intuition reliable?
+Should we enhance cognition artificially?
+
+# Urban Planning & Architecture
+Should cities ban cars?
+Is mixed-use zoning superior?
+Should we build high-density housing?
+Is modernist architecture a failure?
+Should we preserve all historic buildings?
+Is walkability essential for cities?
+Should we have green belts?
+Is brutalism aesthetically valuable?
+Should cities be designed for efficiency or beauty?
+Is suburbanization inherently problematic?
+Should we build new cities from scratch?
+Is gentrification always harmful?
+Should we mandate affordable housing?
+Is the 15-minute city the ideal?
+Should we embrace or resist megacities?
+Is public space a right?
+Should we ban single-family zoning?
+Is vertical farming the future?
+Should we underground utilities?
+Is car-centric design obsolete?
+
+# Food & Agriculture
+Should we transition to lab-grown meat?
+Is organic farming more sustainable?
+Should we mandate vegetarianism?
+Is GMO technology safe and necessary?
+Should we ban factory farming?
+Is local food always better?
+Should we have food sovereignty?
+Is vertical farming viable at scale?
+Should we fortify all foods?
+Is the green revolution a net positive?
+Should we patent seeds?
+Is food a human right?
+Should we ban junk food advertising?
+Is veganism nutritionally adequate?
+Should we embrace insects as food?
+Is precision fermentation the future?
+Should we subsidize agriculture?
+Is monoculture inherently bad?
+Should we rewild farmland?
+Is eating animals ever ethical?
+
+# Energy & Resources
+Should we pursue nuclear fusion aggressively?
+Is renewable energy sufficient?
+Should we exploit space resources?
+Is energy too cheap?
+Should we have energy rationing?
+Is hydrogen the future fuel?
+Should we ban oil extraction?
+Is thorium better than uranium?
+Should we build microgrids?
+Is energy independence a worthy goal?
+Should we have carbon dividends?
+Is peak oil still relevant?
+Should we subsidize renewables?
+Is nuclear waste solvable?
+Should we exploit Arctic resources?
+Is geothermal underutilized?
+Should we have energy democracy?
+Is biofuel sustainable?
+Should we ban fracking?
+Is energy storage the key bottleneck?
+
+# Religion & Spirituality
+Is religious belief rational?
+Should we respect all religions equally?
+Is secularism neutral?
+Should religion be private?
+Is science compatible with religion?
+Should we have blasphemy laws?
+Is atheism a form of faith?
+Should we preserve religious diversity?
+Is religious experience evidential?
+Should we teach comparative religion?
+Is fundamentalism inherently problematic?
+Should we separate church and state absolutely?
+Is prayer efficacious?
+Should we have religious exemptions?
+Is mysticism epistemically valid?
+Should we proselytize?
+Is religious pluralism coherent?
+Should we respect religious authority?
+Is ritual psychologically necessary?
+Should we preserve dying religions?
+
+# Memory & Identity
+Is identity narrative or biological?
+Should we enhance memory artificially?
+Can personal identity survive teleportation?
+Is nostalgia harmful or beneficial?
+Should we be able to delete memories?
+Is collective memory reliable?
+Should we preserve all personal data?
+Is the extended mind thesis correct?
+Should we augment working memory?
+Is forgetting adaptive?
+Should we have a right to be forgotten?
+Is memory reconsolidation real?
+Should we treat PTSD by memory editing?
+Is identity fixed or fluid?
+Should we embrace multiple identities?
+Is memory like a recording?
+Should we outsource memory to technology?
+Is autobiographical memory special?
+Should we enhance collective remembering?
+Is the self an illusion?
+
+# Mathematics & Logic
+Is mathematics discovered or invented?
+Should we accept the axiom of choice?
+Is classical logic the one true logic?
+Should we embrace mathematical platonism?
+Is infinity coherent?
+Should we accept infinitesimals?
+Is mathematics empirical?
+Should we teach constructive mathematics?
+Is set theory the foundation?
+Should we accept large cardinals?
+Is the continuum hypothesis decidable?
+Should we embrace category theory as fundamental?
+Is mathematical intuition reliable?
+Should we formalize all mathematics?
+Is proof by contradiction legitimate?
+Should we accept non-classical logics?
+Is mathematics consistent?
+Should we pursue computational mathematics?
+Is the unreasonable effectiveness of mathematics explained?
+Should we teach alternative foundations?
+
+# Neuroscience & Brain
+Is the brain a computer?
+Should we pursue whole brain emulation?
+Is neuroplasticity unlimited?
+Should we enhance intelligence artificially?
+Is consciousness localized in the brain?
+Should we interface brains directly?
+Is mental illness primarily neurological?
+Should we map every neuron?
+Is the connectome sufficient for understanding?
+Should we stimulate brains electrically?
+Is split-brain research ethical?
+Should we enhance memory pharmacologically?
+Is the brain modular or unified?
+Should we pursue optogenetics in humans?
+Is neuroimaging reliable for lie detection?
+Should we enhance mood chemically?
+Is the default mode network fundamental?
+Should we reverse aging in brains?
+Is prediction the brain's primary function?
+Should we enable technologically mediated telepathy?
+
+# Quantum Mechanics
+Is the Copenhagen interpretation correct?
+Should we accept many-worlds?
+Is quantum mechanics complete?
+Should we pursue quantum computing aggressively?
+Is non-locality real?
+Should we accept retrocausality?
+Is the measurement problem solved?
+Should we embrace quantum Bayesianism?
+Is pilot-wave theory viable?
+Should we accept objective collapse theories?
+Is quantum entanglement paradoxical?
+Should we pursue quantum biology?
+Is complementarity fundamental?
+Should we interpret quantum mechanics realistically?
+Is the uncertainty principle fundamental?
+Should we accept quantum information as fundamental?
+Is decoherence the solution?
+Should we pursue quantum gravity?
+Is spacetime emergent from entanglement?
+Should we take superposition literally?
+
+# Creativity & Innovation
+Is genius innate or developed?
+Should we mandate creative commons licensing?
+Is innovation always beneficial?
+Should we have innovation prizes?
+Is lateral thinking teachable?
+Should we embrace or regulate disruptive technology?
+Is diversity essential for creativity?
+Should we patent algorithms?
+Is serendipity important for discovery?
+Should we fund basic research generously?
+Is creativity domain-general?
+Should we encourage interdisciplinary work?
+Is constraint liberating for creativity?
+Should we celebrate or critique "move fast and break things"?
+Is the lone genius a myth?
+Should we have open innovation?
+Is creativity measurable?
+Should we teach design thinking?
+Is incremental or radical innovation more valuable?
+Should we preserve all innovations?
