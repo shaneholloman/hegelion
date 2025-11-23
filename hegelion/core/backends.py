@@ -412,4 +412,9 @@ __all__ = [
     "DummyLLMBackend",
     "GoogleLLMBackend",
     "BackendNotAvailableError",
+    "MockBackend",
 ]
+
+
+# Backwards compatibility alias
+MockBackend = DummyLLMBackend

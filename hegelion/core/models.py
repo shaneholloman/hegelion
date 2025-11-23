@@ -6,6 +6,12 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 
+class ValidationError(Exception):
+    """Raised when validation fails."""
+
+    pass
+
+
 @dataclass
 class ContradictionResult:
     """A structured contradiction extracted during antithesis."""
@@ -194,3 +200,8 @@ class HegelionOutput:
             },
             trace=self.trace.to_dict(),
         )
+
+
+# Backwards compatibility alias (older tests / code expect DialecticOutput)
+# DialecticOutput used to be the public name — map it to the current HegelionResult
+DialecticOutput = HegelionResult

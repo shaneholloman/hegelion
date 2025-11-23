@@ -63,7 +63,9 @@ class TestValidateHegelionResult:
         }
         with pytest.raises(ValidationError) as exc_info:
             validate_hegelion_result(invalid_result)
-        assert "Invalid field type" in str(exc_info.value) or "Field 'thesis' must be str" in str(exc_info.value)
+        assert "Invalid field type" in str(exc_info.value) or "Field 'thesis' must be str" in str(
+            exc_info.value
+        )
 
     def test_validate_hegelion_result_empty_strings(self):
         """Test validation with empty strings for required fields."""
@@ -223,7 +225,11 @@ class TestValidateHegelionResultList:
     def test_validate_hegelion_result_list_invalid_item(self):
         """Test validation fails when one item in list is invalid."""
         invalid_list: List[Dict[str, Any]] = [
-            {"thesis": "Valid thesis", "antithesis": "Valid antithesis", "synthesis": "Valid synthesis"},
+            {
+                "thesis": "Valid thesis",
+                "antithesis": "Valid antithesis",
+                "synthesis": "Valid synthesis",
+            },
             {"thesis": "Invalid"},  # Missing required fields
         ]
         with pytest.raises(ValidationError) as exc_info:
@@ -243,7 +249,11 @@ class TestValidateHegelionResultList:
     def test_validate_hegelion_result_list_single_item(self):
         """Test validation with single item list."""
         single_item_list: List[Dict[str, Any]] = [
-            {"thesis": "Single thesis", "antithesis": "Single antithesis", "synthesis": "Single synthesis"},
+            {
+                "thesis": "Single thesis",
+                "antithesis": "Single antithesis",
+                "synthesis": "Single synthesis",
+            },
         ]
         try:
             validate_hegelion_result_list(single_item_list)
@@ -286,11 +296,11 @@ class TestModelCreationAndValidation:
             timestamp="2024-01-01T12:00:00",
             validation_score=0.95,
         )
-        
+
         # Convert to dict and validate
         result_dict = result.model_dump()
         validate_hegelion_result(result_dict)
-        
+
         # Verify all fields are present
         assert "thesis" in result_dict
         assert "antithesis" in result_dict
@@ -305,11 +315,11 @@ class TestModelCreationAndValidation:
             antithesis="Consciousness is non-computational.",
             synthesis="Consciousness emerges from complex computation.",
         )
-        
+
         # Validate the DialecticOutput
         output_dict = output.model_dump()
         validate_dialectic_output(output_dict)
-        
+
         # Create HegelionResult from DialecticOutput and validate
         result_dict = {
             "thesis": output.thesis,
@@ -329,11 +339,11 @@ class TestModelCreationAndValidation:
             synthesis="AI demonstrates functional sentience.",
             instructions="Analyze using dialectical reasoning.",
         )
-        
+
         # Validate workflow
         workflow_dict = workflow.model_dump()
         validate_prompt_workflow(workflow_dict)
-        
+
         # Create list of HegelionResult objects (simulating results)
         results = [
             HegelionResult(
@@ -342,7 +352,7 @@ class TestModelCreationAndValidation:
                 synthesis=workflow.synthesis,
             )
         ]
-        
+
         # Validate list of results
         result_dicts = [r.model_dump() for r in results]
         validate_hegelion_result_list(result_dicts)
@@ -394,7 +404,7 @@ class TestValidationEdgeCases:
     def test_validation_boundary_scores(self):
         """Test validation with boundary validation scores."""
         test_cases = [0.0, 0.5, 1.0, 0.99, 0.01]
-        
+
         for score in test_cases:
             result_dict: Dict[str, Any] = {
                 "thesis": "Test thesis",

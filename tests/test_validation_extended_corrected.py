@@ -26,14 +26,14 @@ class TestHegelionResultValidation:
             contradictions_found=2,
             research_proposals=["Proposal 1", "Proposal 2"],
         )
-        
+
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
             synthesis_time_ms=120.0,
             total_time_ms=370.0,
         )
-        
+
         result = HegelionResult(
             query="Test query",
             mode="synthesis",
@@ -51,7 +51,7 @@ class TestHegelionResultValidation:
             metadata=metadata,
             trace=trace.to_dict(),
         )
-        
+
         # Should not raise any exception
         validate_hegelion_result(result)
 
@@ -64,14 +64,14 @@ class TestHegelionResultValidation:
             contradictions_found=0,
             research_proposals=[],
         )
-        
+
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
             synthesis_time_ms=120.0,
             total_time_ms=370.0,
         )
-        
+
         result = HegelionResult(
             query="Test query",
             mode="synthesis",
@@ -83,7 +83,7 @@ class TestHegelionResultValidation:
             metadata=metadata,
             trace=None,
         )
-        
+
         # Should not raise any exception
         validate_hegelion_result(result)
 
@@ -96,14 +96,14 @@ class TestHegelionResultValidation:
             contradictions_found=0,
             research_proposals=[],
         )
-        
+
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
             synthesis_time_ms=120.0,
             total_time_ms=370.0,
         )
-        
+
         result = HegelionResult(
             query="",
             mode="synthesis",
@@ -114,7 +114,7 @@ class TestHegelionResultValidation:
             research_proposals=[],
             metadata=metadata,
         )
-        
+
         # Empty strings might be valid depending on business logic
         # The schema requires strings but allows empty ones
         try:
@@ -132,14 +132,14 @@ class TestHegelionResultValidation:
             contradictions_found=1,
             research_proposals=["Test proposal"],
         )
-        
+
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
             synthesis_time_ms=120.0,
             total_time_ms=370.0,
         )
-        
+
         result = HegelionResult(
             query="Unicode test query: 🧠💭🤔",
             mode="synthesis",
@@ -150,7 +150,7 @@ class TestHegelionResultValidation:
             research_proposals=[{"description": "Unicode proposal: предложение"}],
             metadata=metadata,
         )
-        
+
         # Should handle unicode without issues
         validate_hegelion_result(result)
 
@@ -163,14 +163,14 @@ class TestHegelionResultValidation:
             contradictions_found=0,
             research_proposals=[],
         )
-        
+
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
             synthesis_time_ms=120.0,
             total_time_ms=370.0,
         )
-        
+
         result = HegelionResult(
             # Missing query field
             mode="synthesis",
@@ -182,10 +182,10 @@ class TestHegelionResultValidation:
             metadata=metadata,
             trace=trace.to_dict(),
         )
-        
+
         with pytest.raises(ResultValidationError) as exc_info:
             validate_hegelion_result(result)
-        
+
         assert "query" in str(exc_info.value)
 
     def test_validate_hegelion_result_invalid_contradiction_structure(self):
@@ -197,14 +197,14 @@ class TestHegelionResultValidation:
             contradictions_found=1,
             research_proposals=[],
         )
-        
+
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
             synthesis_time_ms=120.0,
             total_time_ms=370.0,
         )
-        
+
         # Missing required "description" field in contradiction
         result = HegelionResult(
             query="Test query",
@@ -217,10 +217,10 @@ class TestHegelionResultValidation:
             metadata=metadata,
             trace=trace.to_dict(),
         )
-        
+
         with pytest.raises(ResultValidationError) as exc_info:
             validate_hegelion_result(result)
-        
+
         assert "description" in str(exc_info.value)
 
     def test_validate_hegelion_result_invalid_proposal_structure(self):
@@ -232,14 +232,14 @@ class TestHegelionResultValidation:
             contradictions_found=0,
             research_proposals=["Proposal 1"],
         )
-        
+
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
             synthesis_time_ms=120.0,
             total_time_ms=370.0,
         )
-        
+
         # Missing required "description" field in proposal
         result = HegelionResult(
             query="Test query",
@@ -248,14 +248,16 @@ class TestHegelionResultValidation:
             antithesis="Test antithesis",
             synthesis="Test synthesis",
             contradictions=[],
-            research_proposals=[{"testable_prediction": "Missing description"}],  # Missing "description"
+            research_proposals=[
+                {"testable_prediction": "Missing description"}
+            ],  # Missing "description"
             metadata=metadata,
             trace=trace.to_dict(),
         )
-        
+
         with pytest.raises(ResultValidationError) as exc_info:
             validate_hegelion_result(result)
-        
+
         assert "description" in str(exc_info.value)
 
     def test_validate_hegelion_result_invalid_metadata_structure(self):
@@ -267,14 +269,14 @@ class TestHegelionResultValidation:
             contradictions_found=0,
             research_proposals=[],
         )
-        
+
         # Missing required fields in metadata - construct the dict manually to simulate invalid metadata
         class InvalidMetadata:
             def to_dict(self):
                 return {"missing_required_fields": True}
-        
+
         invalid_metadata = InvalidMetadata()
-        
+
         result = HegelionResult(
             query="Test query",
             mode="synthesis",
@@ -285,15 +287,19 @@ class TestHegelionResultValidation:
             research_proposals=[],
             metadata=invalid_metadata,
         )
-        
+
         with pytest.raises(ResultValidationError) as exc_info:
             validate_hegelion_result(result)
-        
+
         # Should complain about missing required metadata fields
-        assert any(field in str(exc_info.value) for field in ["thesis_time_ms", "antithesis_time_ms", "total_time_ms"])
+        assert any(
+            field in str(exc_info.value)
+            for field in ["thesis_time_ms", "antithesis_time_ms", "total_time_ms"]
+        )
 
     def test_validate_hegelion_result_with_optional_fields_filled(self):
         """Test validation with optional fields populated."""
+
         # Test with metadata optional field upgrade
         class ExtendedMetadata:
             def __init__(self):
@@ -305,7 +311,7 @@ class TestHegelionResultValidation:
                 self.backend_model = "test_model"
                 self.debug = {"key": "value"}
                 self.errors = ["error1", "error2"]
-            
+
             def to_dict(self):
                 return {
                     "thesis_time_ms": self.thesis_time_ms,
@@ -317,9 +323,9 @@ class TestHegelionResultValidation:
                     "debug": self.debug,
                     "errors": self.errors,
                 }
-        
+
         metadata = ExtendedMetadata()
-        
+
         trace = HegelionTrace(
             thesis="Test thesis",
             antithesis="Test antithesis",
@@ -327,7 +333,7 @@ class TestHegelionResultValidation:
             contradictions_found=0,
             research_proposals=[],
         )
-        
+
         result = HegelionResult(
             query="Test query",
             mode="synthesis",
@@ -339,7 +345,7 @@ class TestHegelionResultValidation:
             metadata=metadata,
             trace=trace.to_dict(),
         )
-        
+
         # Should validate successfully with optional fields
         validate_hegelion_result(result)
 
@@ -354,7 +360,7 @@ class TestHegelionResultValidation:
             backend_model=None,
             debug=None,
         )
-        
+
         trace = HegelionTrace(
             thesis="Test thesis",
             antithesis="Test antithesis",
@@ -362,7 +368,7 @@ class TestHegelionResultValidation:
             contradictions_found=0,
             research_proposals=[],
         )
-        
+
         result = HegelionResult(
             query="Test query",
             mode="synthesis",
@@ -374,7 +380,7 @@ class TestHegelionResultValidation:
             metadata=metadata,
             trace=None,  # Optional field
         )
-        
+
         # Should validate successfully with null optional fields
         validate_hegelion_result(result)
 
@@ -386,10 +392,10 @@ class TestResultValidationError:
         """Test ResultValidationError has helpful message."""
         try:
             from jsonschema.exceptions import ValidationError
-            
+
             original_error = ValidationError("Test validation error")
             error = ResultValidationError("Validation failed", original_error)
-            
+
             assert "Validation failed" in str(error)
             assert error.original is original_error
             assert isinstance(error, RuntimeError)
@@ -410,7 +416,7 @@ class TestHegelionTrace:
             research_proposals=["Proposal 1", "Proposal 2"],
             internal_conflict_score=0.75,
         )
-        
+
         assert trace.thesis == "Test thesis"
         assert trace.antithesis == "Test antithesis"
         assert trace.synthesis == "Test synthesis"
@@ -427,7 +433,7 @@ class TestHegelionTrace:
             contradictions_found=1,
             research_proposals=["Proposal 1"],
         )
-        
+
         trace_dict = trace.to_dict()
         assert isinstance(trace_dict, dict)
         assert trace_dict["thesis"] == "Test thesis"
@@ -443,7 +449,7 @@ class TestHegelionTrace:
             contradictions_found=0,
             research_proposals=[],
         )
-        
+
         assert trace.synthesis is None
         trace_dict = trace.to_dict()
         assert trace_dict["synthesis"] is None
@@ -463,7 +469,7 @@ class TestHegelionMetadata:
             backend_model="test_model",
             debug={"key": "value"},
         )
-        
+
         assert metadata.thesis_time_ms == 100.5
         assert metadata.antithesis_time_ms == 150.7
         assert metadata.synthesis_time_ms == 120.3
@@ -480,7 +486,7 @@ class TestHegelionMetadata:
             synthesis_time_ms=120.0,
             total_time_ms=370.0,
         )
-        
+
         metadata_dict = metadata.to_dict()
         assert isinstance(metadata_dict, dict)
         assert metadata_dict["thesis_time_ms"] == 100.0
@@ -496,7 +502,7 @@ class TestHegelionMetadata:
             synthesis_time_ms=None,
             total_time_ms=370.0,
         )
-        
+
         metadata_dict = metadata.to_dict()
         assert metadata_dict["synthesis_time_ms"] is None
         # Optional string fields should be omitted when None
@@ -517,7 +523,7 @@ class TestHegelionResultRoundTrip:
             backend_provider="test_provider",
             backend_model="test_model",
         )
-        
+
         trace = HegelionTrace(
             thesis="Test thesis",
             antithesis="Test antithesis",
@@ -525,7 +531,7 @@ class TestHegelionResultRoundTrip:
             contradictions_found=2,
             research_proposals=["Proposal 1", "Proposal 2"],
         )
-        
+
         original = HegelionResult(
             query="Test query",
             mode="synthesis",
@@ -543,13 +549,13 @@ class TestHegelionResultRoundTrip:
             metadata=metadata,
             trace=trace.to_dict(),
         )
-        
+
         # Serialize to dict
         result_dict = original.to_dict()
-        
+
         # Deserialize from dict
         restored = HegelionResult.from_dict(result_dict)
-        
+
         # Verify all fields match
         assert restored.query == original.query
         assert restored.mode == original.mode

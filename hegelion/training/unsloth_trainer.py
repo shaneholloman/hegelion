@@ -18,6 +18,7 @@ import sys
 from dataclasses import dataclass, field
 from typing import Optional
 
+
 def train(
     dataset_path: str,
     model_name: str = "unsloth/llama-3-8b-Instruct-bnb-4bit",
@@ -27,7 +28,10 @@ def train(
     # Check for CUDA
     if not torch.cuda.is_available():
         print("WARNING: CUDA not detected. Unsloth requires an NVIDIA GPU.", file=sys.stderr)
-        print("This script is intended to run on Linux with GPUs (e.g. Lambda Labs, RunPod).", file=sys.stderr)
+        print(
+            "This script is intended to run on Linux with GPUs (e.g. Lambda Labs, RunPod).",
+            file=sys.stderr,
+        )
         return
 
     from unsloth import FastLanguageModel
@@ -46,12 +50,19 @@ def train(
     model = FastLanguageModel.get_peft_model(
         model,
         r=16,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                        "gate_proj", "up_proj", "down_proj",],
+        target_modules=[
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj",
+        ],
         lora_alpha=16,
         lora_dropout=0,
         bias="none",
-        use_gradient_checkpointing="unsloth", 
+        use_gradient_checkpointing="unsloth",
         random_state=3407,
         use_rslora=False,
         loftq_config=None,
@@ -60,7 +71,7 @@ def train(
     # Load Dataset
     # Format: {"instruction": "...", "output": "..."}
     dataset = load_dataset("json", data_files=dataset_path, split="train")
-    
+
     # Formatting function
     prompt_style = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
@@ -93,7 +104,7 @@ def train(
             per_device_train_batch_size=2,
             gradient_accumulation_steps=4,
             warmup_steps=5,
-            max_steps=60, # Increase for real training
+            max_steps=60,  # Increase for real training
             learning_rate=2e-4,
             fp16=not torch.cuda.is_bf16_supported(),
             bf16=torch.cuda.is_bf16_supported(),
@@ -112,15 +123,17 @@ def train(
     print(f"Saving model to {output_dir}...")
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
-    
+
     # Save GGUF for local use
     # model.save_pretrained_gguf(output_dir, tokenizer, quantization_method = "q4_k_m")
 
+
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", required=True, help="Path to JSONL dataset")
     parser.add_argument("--output", default="hegelion_adapter")
     args = parser.parse_args()
-    
+
     train(args.dataset, output_dir=args.output)

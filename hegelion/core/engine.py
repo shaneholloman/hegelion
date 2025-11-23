@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import inspect
 import time
+import asyncio
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 import numpy as np
@@ -30,9 +31,7 @@ from .personas import Persona
 class HegelionPhaseError(Exception):
     """Base class for phase-specific errors."""
 
-    def __init__(
-        self, phase: str, message: str, original_error: Optional[Exception] = None
-    ):
+    def __init__(self, phase: str, message: str, original_error: Optional[Exception] = None):
         self.phase = phase
         self.original_error = original_error
         super().__init__(f"{phase} phase failed: {message}")
@@ -88,7 +87,9 @@ class HegelionEngine:
     - Search grounding instructions
     """
 
-    DEFAULT_SYSTEM_PROMPT = "You are Hegelion, a dialectical reasoning engine that embraces permanent opposition."
+    DEFAULT_SYSTEM_PROMPT = (
+        "You are Hegelion, a dialectical reasoning engine that embraces permanent opposition."
+    )
 
     def __init__(
         self,
@@ -131,9 +132,7 @@ class HegelionEngine:
         personas: Optional[List[Persona]] = None,
         use_search: bool = False,
         stream_callback: Optional[Callable[[str, str], Awaitable[None] | None]] = None,
-        progress_callback: Optional[
-            Callable[[str, Dict[str, Any]], Awaitable[None] | None]
-        ] = None,
+        progress_callback: Optional[Callable[[str, Dict[str, Any]], Awaitable[None] | None]] = None,
     ) -> HegelionResult:
         """
         Run the dialectical pipeline for a single query.
@@ -147,7 +146,7 @@ class HegelionEngine:
         # Iterative loop (T -> A -> S -> T -> ...)
         for i in range(max_iterations):
             is_first_iteration = i == 0
-            
+
             if is_first_iteration:
                 # Initial Thesis Generation
                 current_thesis = await self._generate_thesis_phase(
@@ -197,16 +196,12 @@ class HegelionEngine:
         query: str,
         debug: bool,
         stream_callback: Optional[Callable[[str, str], Awaitable[None] | None]],
-        progress_callback: Optional[
-            Callable[[str, Dict[str, Any]], Awaitable[None] | None]
-        ],
+        progress_callback: Optional[Callable[[str, Dict[str, Any]], Awaitable[None] | None]],
     ) -> str:
         """Isolate thesis generation for clarity."""
         thesis_start = time.perf_counter()
         try:
-            await self._emit_progress(
-                progress_callback, "phase_started", {"phase": "thesis"}
-            )
+            await self._emit_progress(progress_callback, "phase_started", {"phase": "thesis"})
             log_phase("thesis_start", query=query[:100], debug=debug)
             thesis = await self._generate_thesis(query, stream_callback)
             thesis_time_ms = (time.perf_counter() - thesis_start) * 1000.0
@@ -229,9 +224,7 @@ class HegelionEngine:
         debug: bool,
         start_time: float,
         stream_callback: Optional[Callable[[str, str], Awaitable[None] | None]],
-        progress_callback: Optional[
-            Callable[[str, Dict[str, Any]], Awaitable[None] | None]
-        ],
+        progress_callback: Optional[Callable[[str, Dict[str, Any]], Awaitable[None] | None]],
     ) -> HegelionResult:
         """Run a single Antithesis -> Synthesis cycle on a given thesis."""
 
@@ -244,9 +237,7 @@ class HegelionEngine:
 
         try:
             antithesis_start = time.perf_counter()
-            await self._emit_progress(
-                progress_callback, "phase_started", {"phase": "antithesis"}
-            )
+            await self._emit_progress(progress_callback, "phase_started", {"phase": "antithesis"})
             log_phase("antithesis_start", personas=len(personas) if personas else 0)
 
             if personas:
@@ -260,9 +251,7 @@ class HegelionEngine:
                         query, thesis, persona, use_search, stream_callback
                     )
                     outputs.append(p_output)
-                    combined_text_parts.append(
-                        f"### Critique by {persona.name}\n{p_output.text}"
-                    )
+                    combined_text_parts.append(f"### Critique by {persona.name}\n{p_output.text}")
                     combined_contradictions.extend(p_output.contradictions)
 
                 antithesis_text = "\n\n".join(combined_text_parts)
@@ -321,9 +310,7 @@ class HegelionEngine:
         synthesis_time_ms = 0.0
         try:
             synthesis_start = time.perf_counter()
-            await self._emit_progress(
-                progress_callback, "phase_started", {"phase": "synthesis"}
-            )
+            await self._emit_progress(progress_callback, "phase_started", {"phase": "synthesis"})
             log_phase("synthesis_start")
 
             synthesis_output = await self._generate_synthesis(
@@ -356,9 +343,7 @@ class HegelionEngine:
             synthesis_time_ms = (time.perf_counter() - synthesis_start) * 1000.0
             error_msg = f"Synthesis generation failed: {exc}"
             log_error("synthesis_failed", error_msg, exception=str(exc))
-            errors.append(
-                {"phase": "synthesis", "error": type(exc).__name__, "message": str(exc)}
-            )
+            errors.append({"phase": "synthesis", "error": type(exc).__name__, "message": str(exc)})
             synthesis_text = f"[Synthesis generation failed: {exc}]"
 
         total_time_ms = (time.perf_counter() - start_time) * 1000.0
@@ -369,9 +354,7 @@ class HegelionEngine:
         for contr in contradictions:
             if " — " in contr:
                 desc, evidence = contr.split(" — ", 1)
-                structured_contradictions.append(
-                    {"description": desc, "evidence": evidence}
-                )
+                structured_contradictions.append({"description": desc, "evidence": evidence})
             else:
                 structured_contradictions.append({"description": contr})
 
@@ -420,11 +403,7 @@ class HegelionEngine:
             internal_conflict_score=internal_conflict_score if debug else None,
         )
 
-        mode = (
-            "synthesis"
-            if not any(e["phase"] == "synthesis" for e in errors)
-            else "antithesis"
-        )
+        mode = "synthesis" if not any(e["phase"] == "synthesis" for e in errors) else "antithesis"
         if any(e["phase"] == "antithesis" for e in errors):
             mode = "thesis_only"
 
@@ -475,9 +454,7 @@ class HegelionEngine:
 
         from collections import namedtuple
 
-        AntithesisResult = namedtuple(
-            "AntithesisResult", ["text", "contradictions", "time_ms"]
-        )
+        AntithesisResult = namedtuple("AntithesisResult", ["text", "contradictions", "time_ms"])
         return AntithesisResult(
             text=text.strip(), contradictions=contradictions, time_ms=elapsed_ms
         )
@@ -516,9 +493,7 @@ class HegelionEngine:
 
         from collections import namedtuple
 
-        AntithesisResult = namedtuple(
-            "AntithesisResult", ["text", "contradictions", "time_ms"]
-        )
+        AntithesisResult = namedtuple("AntithesisResult", ["text", "contradictions", "time_ms"])
         return AntithesisResult(
             text=text.strip(), contradictions=contradictions, time_ms=elapsed_ms
         )
@@ -535,15 +510,9 @@ class HegelionEngine:
         """Generate the synthesis phase and extract research proposals."""
         from .prompts import SYNTHESIS_PROMPT, MULTI_PERSPECTIVE_SYNTHESIS_PROMPT
 
-        formatted_contradictions = (
-            "\n".join(f"- {item}" for item in contradictions) or "None noted"
-        )
+        formatted_contradictions = "\n".join(f"- {item}" for item in contradictions) or "None noted"
 
-        template = (
-            MULTI_PERSPECTIVE_SYNTHESIS_PROMPT
-            if is_multi_perspective
-            else SYNTHESIS_PROMPT
-        )
+        template = MULTI_PERSPECTIVE_SYNTHESIS_PROMPT if is_multi_perspective else SYNTHESIS_PROMPT
 
         prompt = template.format(
             query=query,
@@ -559,9 +528,7 @@ class HegelionEngine:
 
         from collections import namedtuple
 
-        SynthesisResult = namedtuple(
-            "SynthesisResult", ["text", "research_proposals", "time_ms"]
-        )
+        SynthesisResult = namedtuple("SynthesisResult", ["text", "research_proposals", "time_ms"])
         return SynthesisResult(
             text=cleaned_text,
             research_proposals=research_proposals,
@@ -586,11 +553,7 @@ class HegelionEngine:
         contradiction_score = self._contradiction_signal(len(contradictions))
         llm_conflict = await self._estimate_normative_conflict(thesis, antithesis)
 
-        blended = (
-            (0.4 * semantic_distance)
-            + (0.3 * contradiction_score)
-            + (0.3 * llm_conflict)
-        )
+        blended = (0.4 * semantic_distance) + (0.3 * contradiction_score) + (0.3 * llm_conflict)
         conflict_score = max(blended, contradiction_score, llm_conflict)
         return float(min(conflict_score, 1.0))
 
@@ -683,9 +646,7 @@ class HegelionEngine:
 
     async def _emit_progress(
         self,
-        progress_callback: Optional[
-            Callable[[str, Dict[str, Any]], Awaitable[None] | None]
-        ],
+        progress_callback: Optional[Callable[[str, Dict[str, Any]], Awaitable[None] | None]],
         event: str,
         payload: Dict[str, Any],
     ) -> None:
@@ -694,3 +655,43 @@ class HegelionEngine:
         maybe = progress_callback(event, payload)
         if inspect.isawaitable(maybe):
             await maybe
+
+
+def run_dialectic(
+    backend: LLMBackend,
+    model: str,
+    query: str,
+    *,
+    synthesis_threshold: Optional[float] = None,
+    max_tokens_per_phase: Optional[int] = None,
+    embedder: Optional[Any] = None,
+    # pass-through kwargs for process_query (debug, max_iterations, personas, use_search, ...)
+    **process_kwargs,
+):
+    """
+    Backwards-compatibility wrapper for the old `run_dialectic` API.
+
+    - If called from synchronous code, this will run the dialectic and return a HegelionResult.
+    - If called from inside an already-running asyncio event loop, it will return the coroutine
+      which the caller can await (avoids trying to call asyncio.run while a loop is running).
+    """
+    engine_args = {}
+    if synthesis_threshold is not None:
+        engine_args["synthesis_threshold"] = synthesis_threshold
+    if max_tokens_per_phase is not None:
+        engine_args["max_tokens_per_phase"] = max_tokens_per_phase
+    if embedder is not None:
+        engine_args["embedder"] = embedder
+
+    engine = HegelionEngine(backend=backend, model=model, **engine_args)
+    coro = engine.process_query(query, **process_kwargs)
+
+    # If there's no running loop, run to completion synchronously.
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop — safe to run synchronously
+        return asyncio.run(coro)
+    else:
+        # There's a running loop — return the coroutine so callers in async tests can await it.
+        return coro

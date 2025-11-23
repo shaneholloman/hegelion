@@ -132,7 +132,14 @@ def set_config_value(key: str, value: Any) -> None:
     if hasattr(config, key):
         setattr(config, key, value)
         # When backend-related config changes, we must clear the backend cache
-        if key in {"provider", "model", "openai_key", "anthropic_key", "google_key", "moonshot_key"}:
+        if key in {
+            "provider",
+            "model",
+            "openai_key",
+            "anthropic_key",
+            "google_key",
+            "moonshot_key",
+        }:
             get_backend_from_env.cache_clear()
     else:
         raise AttributeError(f"'{type(config).__name__}' has no attribute '{key}'")
@@ -156,7 +163,9 @@ def resolve_backend_for_model(model: str) -> LLMBackend:
         if not config.openai_key:
             raise ConfigurationError("OPENAI_API_KEY must be set.")
         return OpenAILLMBackend(
-            model=model if model != "gpt-5.1-chat-latest" else "gpt-5.1-chat-latest", # Ensure we use the exact model string
+            model=(
+                model if model != "gpt-5.1-chat-latest" else "gpt-5.1-chat-latest"
+            ),  # Ensure we use the exact model string
             api_key=config.openai_key,
             base_url=config.openai_base_url,
             organization=config.openai_org,
@@ -166,9 +175,11 @@ def resolve_backend_for_model(model: str) -> LLMBackend:
         if not config.google_key:
             raise ConfigurationError("GOOGLE_API_KEY must be set.")
         return GoogleLLMBackend(
-            model=model if "gemini" in model else "gemini-3-pro-preview", # Default to new model if generic g- prefix
-            api_key=config.google_key, 
-            base_url=config.google_base_url
+            model=(
+                model if "gemini" in model else "gemini-3-pro-preview"
+            ),  # Default to new model if generic g- prefix
+            api_key=config.google_key,
+            base_url=config.google_base_url,
         )
 
     if "kimi" in lowered:
