@@ -74,8 +74,11 @@ mcp_config.jsonl
 mcp_config.json
 
 # Training Data & Artifacts
-*.jsonl
-data/
+# Allow the main Hegelian dataset to be committed
+!data/hegelion_dialectical_500.jsonl
+# Ignore other data files
+data/*
+!data/hegelion_dialectical_500.jsonl
 adapters/
 artifacts/
 hegelion/training/wrappers/__pycache__/
