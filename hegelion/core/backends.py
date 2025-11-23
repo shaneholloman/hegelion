@@ -192,7 +192,6 @@ class AnthropicLLMBackend:
                     yield block.text
 
 
-
 @dataclass
 class OllamaLLMBackend:
     """Backend for local Ollama servers using the HTTP API."""

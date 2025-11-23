@@ -368,9 +368,7 @@ class HegelionEngine:
             else:
                 structured_proposals.append({"description": proposal})
 
-        estimated_thesis_time_ms = max(
-            total_time_ms - antithesis_time_ms - synthesis_time_ms, 0.0
-        )
+        estimated_thesis_time_ms = max(total_time_ms - antithesis_time_ms - synthesis_time_ms, 0.0)
 
         # Build metadata
         backend_provider = getattr(self.backend, "__class__", None)
@@ -549,9 +547,7 @@ class HegelionEngine:
         thesis_embedding = self._to_vector(self.embedder.encode(thesis))
         antithesis_embedding = self._to_vector(self.embedder.encode(antithesis))
 
-        cosine = float(
-            self._cosine_similarity(thesis_embedding, antithesis_embedding)
-        )
+        cosine = float(self._cosine_similarity(thesis_embedding, antithesis_embedding))
         semantic_distance = max(0.0, min(1.0, 1.0 - float(cosine)))
         contradiction_score = self._contradiction_signal(len(contradictions))
         llm_conflict = await self._estimate_normative_conflict(thesis, antithesis)
