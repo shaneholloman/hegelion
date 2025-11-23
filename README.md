@@ -30,12 +30,11 @@ This version of Hegelion works with **whatever LLM is currently calling the MCP 
 - **VS Code**
 - **Antigravity** or other MCP-compatible environments
 
-## Pick Your MCP Server (start here)
+## MCP Server Configuration
 
-- **Prompt-only (default):** `hegelion-server` returns structured prompts and never makes API calls. Works out of the box in IDEs; zero API keys. Add it to MCP config and your editor/agent can run every step locally.
-- **Backend (optional):** `hegelion-server` runs the dialectic itself with your provider keys (set in `.env`). Use when you want to offload reasoning to a specific model or automate without the editor in the loop.
+`hegelion-server` returns **structured prompts** and never makes API calls. It works out of the box in IDEs with zero API keys. Add it to your MCP config and your editor/agent can run every step locally.
 
-Minimal MCP config for the prompt server:
+Minimal MCP config:
 ```json
 {
   "mcpServers": {

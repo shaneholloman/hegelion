@@ -83,7 +83,7 @@ result = await run_dialectic(
 - "No backend configured" error:
   - Ensure `.env` contains your provider keys and `HEGELION_PROVIDER`/`HEGELION_MODEL`.
 - Claude Desktop can’t see the server:
-  - Ensure `hegelion-prompt-server` is on PATH or use the `uv run` command in the config.
+  - Ensure `hegelion-server` is on PATH or use the `uv run` command in the config.
 - Results look empty:
   - Try a more complex query or a stronger model; enable `debug=True` to include internal metrics.
 

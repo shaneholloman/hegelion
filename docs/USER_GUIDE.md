@@ -108,7 +108,7 @@ asyncio.run(main())
 Start the MCP server:
 
 ```bash
-python -m hegelion.mcp_server
+python -m hegelion.mcp.server
 ```
 
 Then wire it into your MCP client (for example, Claude Desktop) using the configuration snippet in the main README.

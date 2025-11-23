@@ -17,17 +17,16 @@ This version of Hegelion works with **whatever LLM is currently calling the MCP 
 - **VS Code**
 - **Antigravity** or other MCP-compatible environments
 
-## Pick Your MCP Server (start here)
+## MCP Server Configuration
 
-- **Prompt-only (default):** `hegelion-prompt-server` returns structured prompts and never makes API calls. Works out of the box in IDEs; zero API keys. Add it to MCP config and your editor/agent can run every step locally.
-- **Backend (optional):** `hegelion-server` runs the dialectic itself with your provider keys (set in `.env`). Use when you want to offload reasoning to a specific model or automate without the editor in the loop.
+`hegelion-server` returns **structured prompts** and never makes API calls. It works out of the box in IDEs with zero API keys. Add it to your MCP config and your editor/agent can run every step locally.
 
-Minimal MCP config for the prompt server:
+Minimal MCP config:
 ```json
 {
   "mcpServers": {
-    "hegelion-prompt": {
-      "command": "hegelion-prompt-server",
+    "hegelion": {
+      "command": "hegelion-server",
       "args": []
     }
   }
@@ -45,7 +44,7 @@ Instead of configuring API keys and making external calls, users can:
 
 ## 🛠️ **How It Works**
 
-The `hegelion-prompt-server` returns **structured prompts** instead of making API calls:
+The `hegelion-server` returns **structured prompts** instead of making API calls:
 
 ### Single-Shot Dialectic (Powerful Models)
 ```python
@@ -125,7 +124,7 @@ If you prefer to configure it manually:
 {
   "mcpServers": {
     "hegelion-prompt": {
-      "command": "hegelion-prompt-server",
+      "command": "hegelion-server",
       "args": []
     }
   }
@@ -134,7 +133,7 @@ If you prefer to configure it manually:
 
 #### Cursor/VS Code
 1. Install Hegelion MCP extension (or configure via command)
-2. Configure to use `hegelion-prompt-server`
+2. Configure to use `hegelion-server`
 3. Works with any model you have configured
 
 ## 💡 **Usage Examples**

@@ -17,7 +17,7 @@ Instead of configuring API keys and making external calls, users can:
 
 ## 🛠️ **How It Works**
 
-The `hegelion-prompt-server` returns **structured prompts** instead of making API calls:
+The `hegelion-server` returns **structured prompts** instead of making API calls:
 
 ### Single-Shot Dialectic (Powerful Models)
 ```python
@@ -95,7 +95,7 @@ If you prefer to configure it manually:
 {
   "mcpServers": {
     "hegelion-prompt": {
-      "command": "hegelion-prompt-server",
+      "command": "hegelion-server",
       "args": []
     }
   }
@@ -104,7 +104,7 @@ If you prefer to configure it manually:
 
 #### Cursor/VS Code
 1. Install Hegelion MCP extension (or configure via command)
-2. Configure to use `hegelion-prompt-server`
+2. Configure to use `hegelion-server`
 3. Works with any model you have configured
 
 ## 💡 **Usage Examples**
