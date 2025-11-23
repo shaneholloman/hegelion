@@ -10,7 +10,6 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 from datetime import datetime, timezone
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
 
 try:  # pragma: no cover - optional heavy dependency
     from sentence_transformers import SentenceTransformer
@@ -369,12 +368,16 @@ class HegelionEngine:
             else:
                 structured_proposals.append({"description": proposal})
 
+        estimated_thesis_time_ms = max(
+            total_time_ms - antithesis_time_ms - synthesis_time_ms, 0.0
+        )
+
         # Build metadata
         backend_provider = getattr(self.backend, "__class__", None)
         provider_name = backend_provider.__name__ if backend_provider else "Unknown"
 
         metadata = HegelionMetadata(
-            thesis_time_ms=0.0,  # Not tracked in cycle, would need to pass through or refactor
+            thesis_time_ms=estimated_thesis_time_ms,
             antithesis_time_ms=antithesis_time_ms,
             synthesis_time_ms=synthesis_time_ms,
             total_time_ms=total_time_ms,
@@ -546,10 +549,9 @@ class HegelionEngine:
         thesis_embedding = self._to_vector(self.embedder.encode(thesis))
         antithesis_embedding = self._to_vector(self.embedder.encode(antithesis))
 
-        cosine = cosine_similarity(
-            thesis_embedding.reshape(1, -1),
-            antithesis_embedding.reshape(1, -1),
-        )[0][0]
+        cosine = float(
+            self._cosine_similarity(thesis_embedding, antithesis_embedding)
+        )
         semantic_distance = max(0.0, min(1.0, 1.0 - float(cosine)))
         contradiction_score = self._contradiction_signal(len(contradictions))
         llm_conflict = await self._estimate_normative_conflict(thesis, antithesis)
@@ -604,6 +606,16 @@ class HegelionEngine:
         if arr.ndim == 1:
             return arr
         return arr.squeeze()
+
+    @staticmethod
+    def _cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
+        """Lightweight cosine similarity replacement to avoid sklearn dependency."""
+        a = vec_a.reshape(-1)
+        b = vec_b.reshape(-1)
+        denom = float(np.linalg.norm(a) * np.linalg.norm(b))
+        if denom == 0.0:  # pragma: no cover - defensive guard
+            return 0.0
+        return float(np.dot(a, b) / denom)
 
     async def _call_backend(
         self,

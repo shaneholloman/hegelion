@@ -112,6 +112,24 @@ class OpenAILLMBackend:
             if content:
                 yield content
 
+    @staticmethod
+    def _missing_client():  # pragma: no cover - fallback for optional dependency
+        async def _raise(*_: Any, **__: Any):
+            raise BackendNotAvailableError(
+                "openai package is not installed but OpenAI backend was requested."
+            )
+
+        class _Completions:
+            create = _raise
+
+        class _Chat:
+            completions = _Completions()
+
+        class _Client:
+            chat = _Chat()
+
+        return _Client()
+
 
 @dataclass
 class AnthropicLLMBackend:
@@ -172,6 +190,7 @@ class AnthropicLLMBackend:
                 block = getattr(event, "content_block", None)
                 if block and getattr(block, "text", None):
                     yield block.text
+
 
 
 @dataclass
