@@ -21,7 +21,7 @@ except ImportError:
 def train_hegelion_adapter(
     model_path: str,
     data_path: str,
-    adapter_path: str = "adapters",
+    adapter_path: str = "artifacts/adapters",
     iters: int = 600,
     batch_size: int = 1,
     lora_layers: int = 8,
@@ -68,7 +68,7 @@ def train_hegelion_adapter(
         print(f"Training failed with error: {e}")
         sys.exit(1)
 
-def prepare_data_for_mlx(jsonl_path: str, output_dir: str = "data_mlx"):
+def prepare_data_for_mlx(jsonl_path: str, output_dir: str = "artifacts/data/mlx"):
     """
     MLX expects a directory with 'train.jsonl' and 'valid.jsonl'.
     This helper converts our single generator output to that format.

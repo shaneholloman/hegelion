@@ -326,7 +326,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data", required=True)
-    parser.add_argument("--adapter_path", default="adapters/hegelion_mlx_scu")
+    parser.add_argument("--adapter_path", default="artifacts/adapters/hegelion_mlx_scu")
     parser.add_argument("--iters", type=int, default=1000)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--lr", type=float, default=1e-5)

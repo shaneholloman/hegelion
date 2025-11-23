@@ -39,18 +39,18 @@ We welcome confirmation for other Anthropic/OpenAI-compatible deployments (Azure
 
 ## Share Sanitized Logs
 
-Keep raw run output locally (the `logs/` directory is git-ignored) and attach only redacted metadata when opening an issue or PR:
+Keep raw run output locally (the `artifacts/logs/` directory is git-ignored) and attach only redacted metadata when opening an issue or PR:
 
 ```bash
-mkdir -p logs
+mkdir -p artifacts/logs
 HEGELION_PROVIDER=openai \
 HEGELION_MODEL=GLM-4.6 \
 OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4 \
 OPENAI_API_KEY=sk-... \
-uv run hegelion "Can AI be genuinely creative?" --format json > logs/glm_run.json
+uv run hegelion "Can AI be genuinely creative?" --format json > artifacts/logs/glm_run.json
 
 jq 'del(.query, .thesis, .antithesis, .synthesis, .contradictions, .research_proposals)' \
-    logs/glm_run.json > logs/glm_run.metadata.json
+    artifacts/logs/glm_run.json > artifacts/logs/glm_run.metadata.json
 ```
 
 Attach the sanitized file (or paste its contents) when reporting provider success/failure.

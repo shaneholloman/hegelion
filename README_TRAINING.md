@@ -10,20 +10,20 @@ Get from zero to trained model in 3 steps:
 # Step 1: Generate 500 training samples (6-8 hours, runs in background)
 python -m hegelion.training.generator \
   --dataset HuggingFaceH4/ultrafeedback_binarized \
-  --output hegelion_kimi_training_data.jsonl \
+  --output artifacts/data/hegelion_kimi_training_data.jsonl \
   --limit 500 --model kimi-cli --split train_prefs \
   > generator.log 2>&1 &
 
 # Step 2: Convert to SCU training format
 python scripts/convert_for_scu.py \
-  hegelion_kimi_training_data.jsonl \
-  hegelion_scu_ready.jsonl
+  artifacts/data/hegelion_kimi_training_data.jsonl \
+  artifacts/data/hegelion_scu_ready.jsonl
 
 # Step 3: Train with DeepSeek 1.5B (2-3 hours on M2/M3)
 uv run python -m hegelion.training.mlx_scu_trainer \
   --model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data hegelion_scu_ready.jsonl \
-  --adapter_path adapters/hegelion_1.5b_v1 \
+  --data artifacts/data/hegelion_scu_ready.jsonl \
+  --adapter_path artifacts/adapters/hegelion_1.5b_v1 \
   --batch_size 4 --iters 500
 ```
 
@@ -58,7 +58,7 @@ Generates 500 samples sequentially:
 ```bash
 python -m hegelion.training.generator \
   --dataset HuggingFaceH4/ultrafeedback_binarized \
-  --output hegelion_kimi_training_data.jsonl \
+  --output artifacts/data/hegelion_kimi_training_data.jsonl \
   --limit 500 \
   --model kimi-cli \
   --split train_prefs \
@@ -68,13 +68,13 @@ python -m hegelion.training.generator \
 **Monitor progress:**
 ```bash
 # Check sample count every 30 seconds
-watch -n 30 'wc -l hegelion_kimi_training_data.jsonl'
+watch -n 30 'wc -l artifacts/data/hegelion_kimi_training_data.jsonl'
 
 # View current activity
 tail -f generator_ultrafeedback.log
 
 # See recent samples
-tail -3 hegelion_kimi_training_data.jsonl | python3 -c "
+tail -3 artifacts/data/hegelion_kimi_training_data.jsonl | python3 -c "
 import sys, json
 for line in sys.stdin:
     try:
@@ -103,7 +103,7 @@ Run two generators with different random seeds:
 # Generator 1 (seed 42, default)
 python -m hegelion.training.generator \
   --dataset HuggingFaceH4/ultrafeedback_binarized \
-  --output hegelion_kimi_training_data.jsonl \
+  --output artifacts/data/hegelion_kimi_training_data.jsonl \
   --limit 500 --model kimi-cli \
   --split train_prefs \
   > generator1.log 2>&1 &
@@ -111,7 +111,7 @@ python -m hegelion.training.generator \
 # Generator 2 (seed 123, different shuffle)
 python -m hegelion.training.generator \
   --dataset HuggingFaceH4/ultrafeedback_binarized \
-  --output hegelion_kimi_training_data.jsonl \
+  --output artifacts/data/hegelion_kimi_training_data.jsonl \
   --limit 500 --model kimi-cli \
   --split train_prefs \
   --seed 123 \

@@ -47,6 +47,7 @@ env/
 
 # Logs
 logs/
+artifacts/logs/
 *.log
 
 # Development artifacts
@@ -76,6 +77,7 @@ mcp_config.json
 *.jsonl
 data/
 adapters/
+artifacts/
 hegelion/training/wrappers/__pycache__/
 
 # Website build artifacts

@@ -9,14 +9,14 @@ pip install hegelion
 # Generate dialectical data with Kimi CLI
 python -m hegelion.training.generator \\
   --dataset HuggingFaceH4/ultrafeedback_binarized \\
-  --output hegelion_kimi_training_data.jsonl \\
+  --output artifacts/data/hegelion_kimi_training_data.jsonl \\
   --limit 500 --model kimi-cli
 
 # Train on Apple Silicon (M1/M2/M3/M4)
 uv run python -m hegelion.training.mlx_scu_trainer \\
   --model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \\
-  --data hegelion_scu_ready.jsonl \\
-  --adapter_path adapters/hegelion\\_1.5b\\_v1 \\
+  --data artifacts/data/hegelion_scu_ready.jsonl \\
+  --adapter_path artifacts/adapters/hegelion\\_1.5b\\_v1 \\
   --batch_size 4 --iters 500`}</code></pre>
     </section>
   )

@@ -227,6 +227,50 @@ This approach makes Hegelion truly accessible to any user with any LLM setup!
 
 ---
 
+## 🔬 Next Steps & Research
+
+### Model Training Pipeline
+
+We are actively training the **DeepSeek-R1-Distill-Qwen-1.5B** model using Hegelion's dialectical reasoning framework. The training pipeline incorporates:
+
+- **Shannon Control Unit (SCU)**: An adaptive regularization technique that automatically balances model complexity vs. data fit using PID control. SCU dynamically adjusts regularization strength (`λ`) based on the ratio of parameter complexity (ParamBPT) to data complexity (DataBPT), preventing overfitting while maintaining model expressiveness.
+
+- **MLX Optimization**: Training is optimized for Apple Silicon (M1/M2/M3/M4) using MLX, enabling efficient fine-tuning on consumer hardware.
+
+For technical details, see [`README_TRAINING.md`](README_TRAINING.md) and [`docs/TRAINING_PROTOCOL.md`](docs/TRAINING_PROTOCOL.md).
+
+### Hegelian Dialectic Training Dataset
+
+A core research direction is creating training datasets that embed the dialectical reasoning process directly into the model's thinking patterns. Each training example forces the model through the **Thesis → Antithesis → Synthesis** cycle:
+
+**Training Format:**
+```
+<thought>
+THESIS: [Initial proposal or answer]
+ANTITHESIS: [Adversarial critique, contradictions, edge cases]
+SYNTHESIS: [Resolved answer that incorporates valid points from both]
+</thought>
+[Final answer]
+```
+
+**Hypothesis**: This structured thinking process reduces hallucinations by:
+
+1. **Forcing Adversarial Self-Critique**: The Antithesis phase explicitly attacks the initial thesis, identifying hallucinations, unverifiable claims, and risky assumptions before they propagate to the final answer.
+
+2. **Requiring Evidence-Based Synthesis**: The Synthesis phase must resolve contradictions, forcing the model to ground its reasoning in verifiable information rather than confident speculation.
+
+3. **Internalizing Critical Thinking**: By training on this pattern, models may internalize the habit of challenging their own assumptions before answering, leading to more reliable outputs.
+
+**Research Goals:**
+
+- Measure hallucination reduction in models trained with dialectical data vs. standard instruction tuning
+- Evaluate whether the T→A→S structure becomes an internalized reasoning pattern
+- Compare reasoning quality and fact-checking capabilities across different training approaches
+
+The data generation pipeline uses [`hegelion.training.generator`](hegelion/training/generator.py) to create dialectical training examples, and the SCU training implementation is available in [`hegelion.training.mlx_scu_trainer`](hegelion/training/mlx_scu_trainer.py).
+
+---
+
 ## Documentation
 
 -   [Quick Start (docs/QUICKSTART.md)](docs/QUICKSTART.md)

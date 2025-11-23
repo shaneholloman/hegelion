@@ -15,13 +15,13 @@
 ### 🎯 Training Pipeline
 - **Model Configured:** DeepSeek-R1-Distill-Qwen-1.5B (memory-efficient)
 - **Framework:** MLX + SCU (Apple Silicon optimized)
-- **Data Path:** hegelion_scu_ready.jsonl (SCU format)
+- **Data Path:** artifacts/data/hegelion_scu_ready.jsonl (SCU format)
 - **Status:** 🟢 Ready to launch on completion
 
 ### 📁 Key Files
-- `hegelion_kimi_training_data.jsonl` - Raw training data (growing)
-- `hegelion_scu_ready.jsonl` - SCU formatted data (41 samples currently)
-- `adapters/hegelion_1.5b_v1/` - Will hold trained weights
+- `artifacts/data/hegelion_kimi_training_data.jsonl` - Raw training data (growing)
+- `artifacts/data/hegelion_scu_ready.jsonl` - SCU formatted data (41 samples currently)
+- `artifacts/adapters/hegelion_1.5b_v1/` - Will hold trained weights
 - `generator_ultrafeedback.log` - Active generation log
 - `generator_instance2.log` - Parallel instance log
 
@@ -32,19 +32,19 @@
 # Single generator (6-8 hours)
 python -m hegelion.training.generator \
   --dataset HuggingFaceH4/ultrafeedback_binarized \
-  --output hegelion_kimi_training_data.jsonl \
+  --output artifacts/data/hegelion_kimi_training_data.jsonl \
   --limit 500 --model kimi-cli --split train_prefs \
   > generator.log 2>&1 &
 
 # Parallel generation - 2x speed (3-4 hours)
 # Instance 1 (already running: PID 38898)
 # Instance 2 (already running: PID 53374)
-watch -n 30 'wc -l hegelion_kimi_training_data.jsonl'
+watch -n 30 'wc -l artifacts/data/hegelion_kimi_training_data.jsonl'
 
 # Custom prompts
 python -m hegelion.training.generator \
   --prompt-file my_prompts.txt \
-  --output hegelion_kimi_training_data.jsonl \
+  --output artifacts/data/hegelion_kimi_training_data.jsonl \
   --model kimi-cli
 ```
 
@@ -52,8 +52,8 @@ python -m hegelion.training.generator \
 ```bash
 # Convert dialectical traces to SCU format
 python scripts/convert_for_scu.py \
-  hegelion_kimi_training_data.jsonl \
-  hegelion_scu_ready.jsonl
+  artifacts/data/hegelion_kimi_training_data.jsonl \
+  artifacts/data/hegelion_scu_ready.jsonl
 ```
 
 ### Train Model
@@ -61,15 +61,15 @@ python scripts/convert_for_scu.py \
 # SCU training with adaptive regularization
 uv run python -m hegelion.training.mlx_scu_trainer \
   --model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data hegelion_scu_ready.jsonl \
-  --adapter_path adapters/hegelion_1.5b_v1 \
+  --data artifacts/data/hegelion_scu_ready.jsonl \
+  --adapter_path artifacts/adapters/hegelion_1.5b_v1 \
   --batch_size 4 --iters 500 --lr 1e-5
 
 # Standard LoRA training (simpler)
 uv run python -m hegelion.training.mlx_trainer \
   --model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data hegelion_scu_ready.jsonl \
-  --adapter_path adapters/hegelion_1.5b_standard
+  --data artifacts/data/hegelion_scu_ready.jsonl \
+  --adapter_path artifacts/adapters/hegelion_1.5b_standard
 ```
 
 ### Agent Workflows
@@ -88,12 +88,19 @@ python -m hegelion.scripts.hegelion_dataset \
 
 ```
 hegelion/
-├── hegelion_kimi_training_data.jsonl    # Raw dialectical training data
-├── hegelion_scu_ready.jsonl             # SCU format for training
+├── artifacts/
+│   ├── data/
+│   │   ├── hegelion_kimi_training_data.jsonl    # Raw dialectical training data
+│   │   ├── hegelion_scu_ready.jsonl             # SCU format for training
+│   │   └── mlx/                                  # MLX training data
+│   ├── adapters/ (moved to artifacts/adapters/)
+│   │   └── hegelion_1.5b_v1/                    # Trained adapter storage
+│   │       ├── weights.safetensors
+│   │       └── adapter_config.json
+│   └── logs/                                     # Training logs
 ├── generator_ultrafeedback.log          # Generation log (Instance 1)
 ├── generator_instance2.log              # Generation log (Instance 2)
 ├── CHECK_STATUS.sh                      # Quick status script
-├──
 ├── hegelion/
 │   ├── training/
 │   │   ├── generator.py                 # Data generation orchestrator
@@ -101,12 +108,8 @@ hegelion/
 │   │   ├── mlx_trainer.py               # Standard MLX trainer
 │   │   └── datasets.py                  # Dataset conversion utilities
 │   └──
-├── scripts/
-│   └── convert_for_scu.py               # Convert to SCU format
-└── adapters/
-    └── hegelion_1.5b_v1/                # Trained adapter storage
-        ├── weights.safetensors
-        └── adapter_config.json
+└── scripts/
+    └── convert_for_scu.py               # Convert to SCU format
 ```
 
 ## 🔄 Data Pipeline
@@ -116,15 +119,15 @@ UltraFeedback Dataset (70k+ prompts)
     ↓
 Hegelion Generator (2 parallel instances)
     ↓
-hegelion_kimi_training_data.jsonl (500 samples)
+artifacts/data/hegelion_kimi_training_data.jsonl (500 samples)
     ↓
 convert_for_scu.py
     ↓
-hegelion_scu_ready.jsonl (SCU format)
+artifacts/data/hegelion_scu_ready.jsonl (SCU format)
     ↓
 mlx_scu_trainer.py
     ↓
-adapters/hegelion_1.5b_v1/ (trained weights)
+artifacts/adapters/hegelion_1.5b_v1/ (trained weights)
 ```
 
 ## 📊 Monitoring Active Processes
@@ -132,7 +135,7 @@ adapters/hegelion_1.5b_v1/ (trained weights)
 ### Check Generation Progress
 ```bash
 # Quick sample count
-echo "Samples: $(wc -l < hegelion_kimi_training_data.jsonl)/500"
+echo "Samples: $(wc -l < artifacts/data/hegelion_kimi_training_data.jsonl)/500"
 
 # Full status
 ./CHECK_STATUS.sh
@@ -150,7 +153,7 @@ ps aux | grep -E "kimi.*--print|kimi.*--yolo" | grep -v grep
 # Look for: Step N: Loss=X, DataBPT=Y, ParamBPT=Z, S=W%, λ=A -> B
 
 # Check adapter file size growing
-ls -lh adapters/hegelion_1.5b_v1/weights.safetensors
+ls -lh artifacts/adapters/hegelion_1.5b_v1/weights.safetensors
 
 # Watch for "Training complete." message
 ```
@@ -173,9 +176,9 @@ Before launching training, verify:
 
 - [x] **Dependencies installed:** `mlx-lm`, `ai2-olmo`, `datasets`, `kimi-cli`
 - [x] **Model downloaded:** `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`
-- [x] **Data generated:** `wc -l hegelion_kimi_training_data.jsonl` > 500
-- [x] **Data converted:** `hegelion_scu_ready.jsonl` exists
-- [ ] **Adapters directory:** `mkdir -p adapters/hegelion_1.5b_v1`
+- [x] **Data generated:** `wc -l artifacts/data/hegelion_kimi_training_data.jsonl` > 500
+- [x] **Data converted:** `artifacts/data/hegelion_scu_ready.jsonl` exists
+- [ ] **Adapters directory:** `mkdir -p artifacts/adapters/hegelion_1.5b_v1`
 - [ ] **Sufficient disk:** ~2GB free for adapters + logs
 - [ ] **Sufficient memory:** 8GB+ RAM recommended
 
@@ -218,7 +221,7 @@ uv add datasets
 tail -20 generator_ultrafeedback.log | grep "Training complete"
 
 # Verify write permissions
-ls -la adapters/
+ls -la artifacts/adapters/
 
 # Check available disk space
 df -h .
@@ -274,16 +277,16 @@ df -h .
 2. **Convert data** (if not already done):
    ```bash
    python scripts/convert_for_scu.py \
-     hegelion_kimi_training_data.jsonl \
-     hegelion_scu_ready.jsonl
+     artifacts/data/hegelion_kimi_training_data.jsonl \
+     artifacts/data/hegelion_scu_ready.jsonl
    ```
 
 3. **Launch training**:
    ```bash
    uv run python -m hegelion.training.mlx_scu_trainer \
      --model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-     --data hegelion_scu_ready.jsonl \
-     --adapter_path adapters/hegelion_1.5b_v1 \
+     --data artifacts/data/hegelion_scu_ready.jsonl \
+     --adapter_path artifacts/adapters/hegelion_1.5b_v1 \
      --batch_size 4 --iters 500
    ```
 
