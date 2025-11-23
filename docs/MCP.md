@@ -218,6 +218,18 @@ Hegelion optimizes for **conflict and negation**.
 
 - **Zero Configuration**: No API keys or backend setup needed
 - **Model Flexibility**: Works with any modern LLM capable of instruction following
+
+## Common Issues (AI Assistants)
+
+- "Module not found" when starting server
+  - Set `PYTHONPATH` to the repo root when running from source.
+  - Example: `PYTHONPATH=/path/to/hegelion python -m hegelion.mcp.server`
+
+- "Unknown tool"
+  - Valid tools: dialectical_workflow, dialectical_single_shot, thesis_prompt, antithesis_prompt, synthesis_prompt
+
+- Invalid `response_style`
+  - Valid values: `json`, `sections`, `synthesis_only` (default is `sections`).
 - **Cost Efficiency**: Uses your existing LLM setup, no additional charges  
 - **Instant Access**: Experience dialectical reasoning immediately
 - **Full Feature Set**: All Phase 2 capabilities (search, council, judge) available

@@ -83,6 +83,9 @@ def print_setup_instructions(dry_run=False):
     print(json_output)
     print("-" * 60)
 
+    print("Tools available: dialectical_workflow, dialectical_single_shot, thesis_prompt, antithesis_prompt, synthesis_prompt")
+    print("response_style options: json, sections, synthesis_only")
+
     if not is_installed:
         print(f"\nNOTE: Detected source installation at {project_root}")
         print("Added PYTHONPATH to ensure the server runs correctly.")

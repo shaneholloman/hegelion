@@ -1,20 +1,14 @@
 # Hegelion
 
-> *“The truth is the whole. The whole, however, is merely the essential nature reaching its completeness through the process of its own development.”*  
-> — **G.W.F. Hegel**
+*“The truth is the whole. The whole, however, is merely the essential nature reaching its completeness through the process of its own development.”* — **G.W.F. Hegel**
 
-> **TL;DR**
->
-> Wraps any LLM in a thesis → antithesis → synthesis loop
->
-> Returns structured JSON / workflows, not just text
->
-> Ships as an MCP server (`hegelion-server`) so tools like Claude Desktop, Cursor, VS Code can use it with zero API keys
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg) [![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion) [![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion)
-[![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
+## TL;DR
+
+- Wrap any LLM in a thesis → antithesis → synthesis loop
+- Return structured JSON/workflows, not just text
+- Ship as an MCP server (`hegelion-server`) so Claude Desktop, Cursor, VS Code work with zero API keys
 
 ### Why you should care
 

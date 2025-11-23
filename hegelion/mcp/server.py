@@ -46,10 +46,10 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="dialectical_workflow",
             description=(
-                "Generate a structured dialectical reasoning workflow (thesis → antithesis → synthesis) "
-                "that can be executed by any LLM. Returns step-by-step prompts instead of making API calls. "
-                "Perfect for Cursor, Claude Desktop, VS Code, or any environment where you want the "
-                "current LLM to perform the reasoning."
+                "Step-by-step prompts for dialectical reasoning (thesis → antithesis → synthesis). "
+                "Set response_style to control output: 'json' (structured, agent-friendly), "
+                "'sections' (full text), or 'synthesis_only' (just the resolution). "
+                "Example: {'query': 'Should AI be regulated?', 'response_style': 'json'}."
             ),
             inputSchema={
                 "type": "object",
@@ -99,9 +99,8 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="dialectical_single_shot",
             description=(
-                "Generate a single comprehensive prompt for dialectical reasoning that can be "
-                "executed by any capable LLM in one go. The LLM performs thesis → antithesis → synthesis "
-                "and returns structured results. Great for any powerful model with large context."
+                "One comprehensive prompt that makes the LLM do thesis → antithesis → synthesis in one go. "
+                "Use response_style: 'json' (structured), 'sections' (full text), or 'synthesis_only' (just the resolution)."
             ),
             inputSchema={
                 "type": "object",
