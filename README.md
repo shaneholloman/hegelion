@@ -40,6 +40,8 @@ print(prompt)  # paste into any LLM; it will run T→A→S with council + judge
 
 ```bash
 pip install hegelion
+# Optional helper: writes a ready-to-use MCP snippet for Cursor/Claude Desktop
+hegelion-setup-mcp --write ~/.claude_desktop_config.json
 python -m hegelion.mcp.server
 ```
 
@@ -106,7 +108,8 @@ workflow = await dialectical_workflow(
     query="Should we implement universal basic income?", 
     use_council=True,
     use_judge=True,
-    format="workflow"
+    format="workflow",
+    response_style="json",  # or "sections" (default) / "synthesis_only"
 )
 # Returns structured steps that can be executed sequentially
 ```

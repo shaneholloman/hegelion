@@ -82,8 +82,8 @@ step3 = await synthesis_prompt(query="Your question", thesis="<step1>", antithes
 
 ### `dialectical_workflow`
 Returns a structured workflow for step-by-step execution:
-- **Input**: query, options (search, council, judge)
-- **Output**: JSON workflow with step-by-step prompts
+- **Input**: query, options (search, council, judge, `response_style` for sections/json/synthesis-only)
+- **Output**: JSON workflow with step-by-step prompts (also returned as `structuredContent` for agents)
 - **Best for**: Systematic execution, complex queries
 
 ### `dialectical_single_shot`  

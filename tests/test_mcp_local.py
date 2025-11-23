@@ -57,13 +57,14 @@ class TestMCPLocal(unittest.TestCase):
             self.assertEqual(response["result"]["serverInfo"]["name"], "hegelion-server")
 
             # 2. List Tools
-            list_req = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+            list_req = {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}
             process.stdin.write(json.dumps(list_req) + "\n")
             process.stdin.flush()
 
             response_line = process.stdout.readline()
             response = json.loads(response_line)
-            self.assertEqual(response["id"], 2)
+            self.assertEqual(response.get("id"), 2)
+            assert "result" in response, f"tools/list failed: {response}"
             tools = response["result"]["tools"]
             tool_names = [t["name"] for t in tools]
             self.assertIn("thesis_prompt", tool_names)

@@ -7,13 +7,13 @@ VS Code, or any MCP-compatible environment.
 
 from __future__ import annotations
 
-import asyncio
 import argparse
 import json
-import sys
+from typing import Any, Dict, List
 
 from mcp.server import Server
-from mcp.types import TextContent, Tool
+from mcp.server.stdio import stdio_server
+from mcp.types import CallToolResult, TextContent, Tool
 import anyio
 
 from hegelion.core.prompt_dialectic import (
@@ -39,6 +39,7 @@ if not hasattr(anyio.create_memory_object_stream, "__getitem__"):
     anyio.create_memory_object_stream = _CreateStreamWrapper()  # type: ignore[assignment]
 
 
+@app.list_tools()
 async def list_tools() -> list[Tool]:
     """Return dialectical reasoning tools that work with any LLM."""
     tools = [
@@ -78,6 +79,19 @@ async def list_tools() -> list[Tool]:
                         "description": "Return structured workflow or single comprehensive prompt",
                         "default": "workflow",
                     },
+                    "response_style": {
+                        "type": "string",
+                        "enum": [
+                            "sections",
+                            "synthesis_only",
+                            "json",
+                        ],
+                        "description": (
+                            "Shape of the final output you want from the LLM: full thesis/antithesis/synthesis sections,"
+                            " synthesis-only, or JSON with all fields."
+                        ),
+                        "default": "sections",
+                    },
                 },
                 "required": ["query"],
             },
@@ -105,6 +119,18 @@ async def list_tools() -> list[Tool]:
                         "type": "boolean",
                         "description": "Enable multi-perspective council critiques",
                         "default": False,
+                    },
+                    "response_style": {
+                        "type": "string",
+                        "enum": [
+                            "sections",
+                            "synthesis_only",
+                            "json",
+                        ],
+                        "description": (
+                            "Format you want the model to return: full sections, synthesis-only, or JSON with thesis/antithesis/synthesis."
+                        ),
+                        "default": "sections",
                     },
                 },
                 "required": ["query"],
@@ -187,7 +213,19 @@ async def list_tools() -> list[Tool]:
     return tools
 
 
-async def call_tool(name: str, arguments: dict) -> list[TextContent]:
+def _response_style_summary(style: str) -> str:
+    """Short human-readable description of response style."""
+    match style:
+        case "json":
+            return "LLM should return a JSON object with thesis/antithesis/synthesis fields."
+        case "synthesis_only":
+            return "LLM should only return the synthesis (no thesis/antithesis sections)."
+        case _:
+            return "LLM should return full Thesis → Antithesis → Synthesis sections."
+
+
+@app.call_tool()
+async def call_tool(name: str, arguments: Dict[str, Any]):
     """Execute dialectical reasoning tools."""
 
     if name == "dialectical_workflow":
@@ -196,12 +234,24 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         use_council = arguments.get("use_council", False)
         use_judge = arguments.get("use_judge", False)
         format_type = arguments.get("format", "workflow")
+        response_style = arguments.get("response_style", "sections")
 
         if format_type == "single_prompt":
             prompt = create_single_shot_dialectic_prompt(
-                query=query, use_search=use_search, use_council=use_council
+                query=query,
+                use_search=use_search,
+                use_council=use_council,
+                response_style=response_style,
             )
-            return [TextContent(type="text", text=prompt)]
+            structured = {
+                "query": query,
+                "format": "single_prompt",
+                "use_search": use_search,
+                "use_council": use_council,
+                "response_style": response_style,
+                "prompt": prompt,
+            }
+            return ([TextContent(type="text", text=prompt)], structured)
         else:
             workflow = create_dialectical_workflow(
                 query=query,
@@ -209,17 +259,46 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 use_council=use_council,
                 use_judge=use_judge,
             )
-            return [TextContent(type="text", text=json.dumps(workflow, indent=2))]
+            workflow.setdefault("instructions", {})
+            workflow["instructions"]["response_style"] = response_style
+            workflow["instructions"]["response_style_note"] = _response_style_summary(response_style)
+
+            serialized = json.dumps(workflow, indent=2)
+            summary = (
+                "Hegelion dialectical workflow ready. Agents should read the structuredContent JSON. "
+                f"Human-readable summary: query='{query}', response_style='{response_style}'."
+            )
+            contents: List[TextContent] = [
+                TextContent(type="text", text=summary),
+                TextContent(type="text", text=serialized),
+            ]
+            return (contents, workflow)
 
     elif name == "dialectical_single_shot":
         query = arguments["query"]
         use_search = arguments.get("use_search", False)
         use_council = arguments.get("use_council", False)
 
+        response_style = arguments.get("response_style", "sections")
         prompt = create_single_shot_dialectic_prompt(
-            query=query, use_search=use_search, use_council=use_council
+            query=query,
+            use_search=use_search,
+            use_council=use_council,
+            response_style=response_style,
         )
-        return [TextContent(type="text", text=prompt)]
+
+        structured = {
+            "query": query,
+            "use_search": use_search,
+            "use_council": use_council,
+            "response_style": response_style,
+            "prompt": prompt,
+        }
+        note = _response_style_summary(response_style)
+        contents = [
+            TextContent(type="text", text=f"{note}\n\n{prompt}"),
+        ]
+        return (contents, structured)
 
     elif name == "thesis_prompt":
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
@@ -228,6 +307,13 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         dialectic = PromptDrivenDialectic()
         prompt_obj = dialectic.generate_thesis_prompt(query)
 
+        structured = {
+            "phase": prompt_obj.phase,
+            "prompt": prompt_obj.prompt,
+            "instructions": prompt_obj.instructions,
+            "expected_format": prompt_obj.expected_format,
+        }
+
         response = f"""# THESIS PROMPT
 
 {prompt_obj.prompt}
@@ -235,7 +321,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 **Instructions:** {prompt_obj.instructions}
 **Expected Format:** {prompt_obj.expected_format}"""
 
-        return [TextContent(type="text", text=response)]
+        return ([TextContent(type="text", text=response)], structured)
 
     elif name == "antithesis_prompt":
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
@@ -250,16 +336,32 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         if use_council:
             council_prompts = dialectic.generate_council_prompts(query, thesis)
             response_parts = ["# COUNCIL ANTITHESIS PROMPTS\n"]
+            structured_prompts = []
 
             for prompt_obj in council_prompts:
                 response_parts.append(f"## {prompt_obj.phase.replace('_', ' ').title()}")
                 response_parts.append(prompt_obj.prompt)
                 response_parts.append(f"**Instructions:** {prompt_obj.instructions}")
                 response_parts.append("")
+                structured_prompts.append(
+                    {
+                        "phase": prompt_obj.phase,
+                        "prompt": prompt_obj.prompt,
+                        "instructions": prompt_obj.instructions,
+                        "expected_format": prompt_obj.expected_format,
+                    }
+                )
 
+            structured = {"prompts": structured_prompts, "phase": "antithesis_council"}
             response = "\n".join(response_parts)
         else:
             prompt_obj = dialectic.generate_antithesis_prompt(query, thesis, use_search)
+            structured = {
+                "phase": prompt_obj.phase,
+                "prompt": prompt_obj.prompt,
+                "instructions": prompt_obj.instructions,
+                "expected_format": prompt_obj.expected_format,
+            }
             response = f"""# ANTITHESIS PROMPT
 
 {prompt_obj.prompt}
@@ -267,7 +369,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 **Instructions:** {prompt_obj.instructions}
 **Expected Format:** {prompt_obj.expected_format}"""
 
-        return [TextContent(type="text", text=response)]
+        return ([TextContent(type="text", text=response)], structured)
 
     elif name == "synthesis_prompt":
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
@@ -279,6 +381,13 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         dialectic = PromptDrivenDialectic()
         prompt_obj = dialectic.generate_synthesis_prompt(query, thesis, antithesis)
 
+        structured = {
+            "phase": prompt_obj.phase,
+            "prompt": prompt_obj.prompt,
+            "instructions": prompt_obj.instructions,
+            "expected_format": prompt_obj.expected_format,
+        }
+
         response = f"""# SYNTHESIS PROMPT
 
 {prompt_obj.prompt}
@@ -286,104 +395,30 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 **Instructions:** {prompt_obj.instructions}
 **Expected Format:** {prompt_obj.expected_format}"""
 
-        return [TextContent(type="text", text=response)]
+        return ([TextContent(type="text", text=response)], structured)
 
     else:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
+        return CallToolResult(
+            content=[TextContent(type="text", text=f"Unknown tool: {name}")],
+            structuredContent={"error": f"Unknown tool: {name}"},
+            isError=True,
+        )
 
 
 async def run_server() -> None:
-    """Run the prompt-driven MCP server.
+    """Run the prompt-driven MCP server using the standard stdio transport."""
 
-    Uses a lightweight JSON-RPC loop that supports both Content-Length framed
-    messages (MCP stdio clients) and newline-delimited JSON (test harnesses).
-    """
+    init_options = app.create_initialization_options()
 
-    async def _simple_stdio_loop():
-        """Minimal line-based JSON-RPC loop for compatibility and tests."""
-
-        def _read_message():
-            # Support both Content-Length framed messages and newline-delimited JSON.
-            line = sys.stdin.readline()
-            if not line:
-                return None, False
-            stripped = line.strip()
-            if stripped.lower().startswith("content-length"):
-                try:
-                    length = int(stripped.split(":", 1)[1].strip())
-                except (ValueError, IndexError):
-                    return None, False
-                # Consume blank separator line
-                sys.stdin.readline()
-                payload = sys.stdin.read(length)
-                return payload, True
-            return stripped, False
-
-        async def _write_message(payload: dict, framed: bool) -> None:
-            data = json.dumps(payload)
-            if framed:
-                encoded = data.encode("utf-8")
-                sys.stdout.write(f"Content-Length: {len(encoded)}\r\n\r\n")
-                sys.stdout.buffer.write(encoded)
-            else:
-                sys.stdout.write(data + "\n")
-            sys.stdout.flush()
-
-        while True:
-            raw, framed = await asyncio.to_thread(_read_message)
-            if raw is None:
-                break
-            if not raw:
-                continue
-            try:
-                message = json.loads(raw)
-            except json.JSONDecodeError:
-                continue
-
-            method = message.get("method")
-            # Notifications have no id, so we should not respond
-            if "id" not in message:
-                # If it's a notification we care about, handle it here
-                # e.g. notifications/initialized or cancel
-                continue
-
-            msg_id = message["id"]
-            params = message.get("params", {}) or {}
-            response: dict = {"jsonrpc": "2.0", "id": msg_id}
-
-            if method == "initialize":
-                init_options = app.create_initialization_options()
-                # Match JSON-RPC shape expected by MCP clients/tests.
-                capabilities = (
-                    init_options.capabilities.model_dump(mode="json")
-                    if hasattr(init_options.capabilities, "model_dump")
-                    else init_options.capabilities
-                )
-                response["result"] = {
-                    "serverInfo": {
-                        "name": getattr(init_options, "server_name", "hegelion-server"),
-                        "version": getattr(init_options, "server_version", "unknown"),
-                    },
-                    "capabilities": capabilities,
-                }
-            elif method == "tools/list":
-                tools = await list_tools()
-                response["result"] = {"tools": [tool.model_dump() for tool in tools]}
-            elif method == "tools/call":
-                name = params.get("name")
-                arguments = params.get("arguments", {})
-                contents = await call_tool(name=name, arguments=arguments)
-                # The MCP spec wraps tool outputs in a list of contents
-                response["result"] = {
-                    "content": [content.model_dump() for content in contents],
-                    "isError": False,
-                }
-            else:
-                response["error"] = {"code": -32601, "message": f"Method not found: {method}"}
-
-            await _write_message(response, framed)
-
-    await _simple_stdio_loop()
+    async with stdio_server() as (read_stream, write_stream):
+        await app.run(
+            read_stream,
+            write_stream,
+            init_options,
+            # Stateless keeps older MCP runtimes happy if they call tools/list immediately
+            # after initialization or skip explicit initialization notifications.
+            stateless=True,
+        )
 
 
 def main() -> None:
@@ -395,12 +430,8 @@ def main() -> None:
     # Remove the redundant --help argument
     parser.parse_args()
 
-    asyncio.run(run_server())
+    anyio.run(run_server)
 
 
 if __name__ == "__main__":
     main()
-
-# Expose decorated handlers on the app instance for test convenience
-app.list_tools = list_tools  # type: ignore[attr-defined]
-app.call_tool = call_tool  # type: ignore[attr-defined]

@@ -310,7 +310,10 @@ def create_dialectical_workflow(
 
 
 def create_single_shot_dialectic_prompt(
-    query: str, use_search: bool = False, use_council: bool = False
+    query: str,
+    use_search: bool = False,
+    use_council: bool = False,
+    response_style: str = "sections",
 ) -> str:
     """Create a single comprehensive prompt for dialectical reasoning.
 
@@ -331,6 +334,43 @@ For the ANTITHESIS phase, adopt three distinct critical perspectives:
 - THE ETHICIST: Focus on ethical implications and societal impact
 
 Generate critiques from each perspective, then synthesize them."""
+    if response_style == "json":
+        output_instructions = f"""Return ONLY a JSON object with this shape:
+{{
+  "query": "{query}",
+  "thesis": "...",
+  "antithesis": "...",
+  "synthesis": "...",
+  "contradictions": [
+    {{"description": "...", "evidence": "..."}}
+  ],
+  "research_proposals": [
+    {{"proposal": "...", "testable_prediction": "..."}}
+  ]
+}}
+No markdown, no commentary outside the JSON."""
+    elif response_style == "synthesis_only":
+        output_instructions = """Return ONLY the SYNTHESIS as 2-3 tight paragraphs. Do not include thesis, antithesis, headings, or lists."""
+    else:
+        output_instructions = f"""Structure your complete response as:
+
+# DIALECTICAL ANALYSIS: {query}
+
+## THESIS
+[Your initial position]
+
+## ANTITHESIS  
+[Your critical examination]
+
+## SYNTHESIS
+[Your transcendent resolution]
+
+## CONTRADICTIONS IDENTIFIED
+1. [Contradiction 1]: [Evidence]
+2. [Contradiction 2]: [Evidence]
+
+## RESEARCH PROPOSALS
+1. [Proposal 1]: [Testable prediction]"""
 
     return f"""You will now perform Hegelian dialectical reasoning on the following query using a three-phase process: THESIS → ANTITHESIS → SYNTHESIS.
 {search_instruction}
@@ -352,24 +392,6 @@ Transcend both thesis and antithesis with a novel perspective that resolves the 
 RESEARCH_PROPOSAL: [description]  
 TESTABLE_PREDICTION: [falsifiable claim]
 
-Structure your complete response as:
-
-# DIALECTICAL ANALYSIS: {query}
-
-## THESIS
-[Your initial position]
-
-## ANTITHESIS  
-[Your critical examination]
-
-## SYNTHESIS
-[Your transcendent resolution]
-
-## CONTRADICTIONS IDENTIFIED
-1. [Contradiction 1]: [Evidence]
-2. [Contradiction 2]: [Evidence]
-
-## RESEARCH PROPOSALS
-1. [Proposal 1]: [Testable prediction]
+{output_instructions}
 
 Begin your dialectical analysis now."""
