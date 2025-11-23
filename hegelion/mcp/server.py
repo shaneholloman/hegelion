@@ -261,7 +261,9 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             )
             workflow.setdefault("instructions", {})
             workflow["instructions"]["response_style"] = response_style
-            workflow["instructions"]["response_style_note"] = _response_style_summary(response_style)
+            workflow["instructions"]["response_style_note"] = _response_style_summary(
+                response_style
+            )
 
             serialized = json.dumps(workflow, indent=2)
             summary = (

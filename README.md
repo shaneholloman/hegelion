@@ -45,6 +45,11 @@ hegelion-setup-mcp --write ~/.claude_desktop_config.json
 python -m hegelion.mcp.server
 ```
 
+In-process smoke test (no MCP client needed):
+```bash
+python examples/mcp/inprocess_check.py
+```
+
 Smoke-test with MCP Inspector:
 ```bash
 npx -y @modelcontextprotocol/inspector python -m hegelion.mcp.server
