@@ -25,22 +25,22 @@
 
 ### 5. Initial Dataset
 - **File**: `data/hegelion_dialectical_500.jsonl`
-- **Status**: 15/500 samples completed (3.0%)
+- **Status**: 25/500 samples completed (5.0%)
 - **Quality**: High-quality exemplars
-- **File Size**: 152K
+- **File Size**: 252K
 
 ## 📊 Sample Quality Metrics
 
-**Samples 1-15** (validated):
+**Samples 1-25** (validated):
 - ✅ Full THESIS → ANTITHESIS → SYNTHESIS structure
 - ✅ Average thesis length: **1,300+ characters**
 - ✅ Average antithesis length: **1,400+ characters**
 - ✅ Average synthesis length: **1,600+ characters**
 - ✅ Average contradictions: **4 per sample**
 - ✅ Average research proposals: **1 per sample**
-- ✅ Total trace length: **~4,300+ characters per sample**
+- ✅ Total trace length: **~4,500+ characters per sample**
 
-### Sample Topics Completed (15/500)
+### Sample Topics Completed (25/500)
 1. Can machines possess genuine consciousness?
 2. Is free will compatible with determinism?
 3. Does objective morality exist independent of human minds?
@@ -56,6 +56,16 @@
 13. Can artificial systems experience qualia?
 14. Is consciousness fundamental or emergent?
 15. Does the self persist through time?
+16. Is reality fundamentally mental or physical?
+17. Is it ethical to edit human embryos for enhancement?
+18. Should we prioritize reducing suffering or increasing happiness?
+19. Is there a moral difference between killing and letting die?
+20. Can cultural relativism justify any practice?
+21. Is lying ever morally required?
+22. Should future generations have moral standing?
+23. Is it ethical to create sentient AI?
+24. Do animals have rights or just welfare interests?
+25. Is effective altruism the correct moral framework?
 
 ## 🎯 Path to 500 Samples
 
@@ -160,7 +170,7 @@ Hegelion/
 │   └── glm4_6_examples.jsonl         # ✅ 4 reference examples
 │
 └── data/
-    └── hegelion_dialectical_500.jsonl # 🔄 4/500 samples
+    └── hegelion_dialectical_500.jsonl # 🔄 25/500 samples (5%)
 ```
 
 ## 🚀 Next Steps
@@ -206,4 +216,4 @@ All infrastructure is ready. To complete:
 
 ---
 
-**Current Status**: Infrastructure complete, 4 exemplar samples created, ready for bulk generation.
+**Current Status**: Infrastructure complete, 25 high-quality samples created (5%), continuing toward 500-sample goal.
