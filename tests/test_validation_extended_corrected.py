@@ -237,6 +237,7 @@ class TestHegelionResultValidation:
 
     def test_validate_hegelion_result_invalid_metadata_structure(self):
         """Test validation fails with invalid metadata structure."""
+
         # Missing required fields in metadata - construct the dict manually to simulate invalid metadata
         class InvalidMetadata:
             def to_dict(self):
