@@ -84,6 +84,7 @@ hegelion/training/wrappers/__pycache__/
 # Website build artifacts
 website/node_modules/
 website/dist/
+hegelion-web/
 
 # Process ID files
 *.pid
