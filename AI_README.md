@@ -46,3 +46,9 @@ This prints registered tools and verifies all response styles.
 - "Module not found" when starting server: set `PYTHONPATH` to the repo root when running from source.
 - "Unknown tool": use exact tool names above.
 - Invalid response_style: allowed values are `json`, `sections`, `synthesis_only`.
+
+## Verified
+- MCP ≥1.21.1 installs and imports cleanly.
+- `hegelion-setup-mcp` writes a valid config (adds `PYTHONPATH` for source installs).
+- Server starts with stdio transport and exposes all tools.
+- `response_style` works for `json`, `sections`, and `synthesis_only`.
