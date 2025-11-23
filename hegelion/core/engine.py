@@ -815,6 +815,13 @@ def run_dialectic(*args, **process_kwargs):
             if not metadata_obj.thesis_time_ms or metadata_obj.thesis_time_ms <= 0:
                 fallback = metadata_obj.total_time_ms * 0.1 if metadata_obj.total_time_ms else 1.0
                 metadata_obj.thesis_time_ms = max(1.0, fallback)
+            # Ensure total_time_ms is at least as large as phase timings to keep metadata consistent.
+            metadata_obj.total_time_ms = max(
+                metadata_obj.total_time_ms,
+                metadata_obj.thesis_time_ms or 0.0,
+                metadata_obj.antithesis_time_ms or 0.0,
+                metadata_obj.synthesis_time_ms or 0.0,
+            )
         else:
             result.metadata = metadata_obj
 

@@ -7,7 +7,6 @@ from hegelion.core.models import (
     HegelionResult,
     DialecticOutput,
     PromptWorkflow,
-    WorkflowResult,
     ValidationError,
 )
 from hegelion.core.validation import (

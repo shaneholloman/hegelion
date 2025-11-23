@@ -14,8 +14,7 @@ import json
 import sys
 import argparse
 from pathlib import Path
-from collections import defaultdict
-from typing import List, Dict, Tuple, Set
+from typing import List, Dict
 import hashlib
 
 
@@ -228,7 +227,7 @@ class HegelianDatasetCleaner:
     def clean(self) -> bool:
         """Run full cleaning pipeline"""
         print(f"\n{'='*70}")
-        print(f"CLEANING HEGELIAN DATASET")
+        print("CLEANING HEGELIAN DATASET")
         print(f"{'='*70}\n")
 
         if not self.load_samples():
@@ -256,7 +255,7 @@ class HegelianDatasetCleaner:
 
         # Print summary
         print(f"\n{'='*70}")
-        print(f"CLEANING SUMMARY")
+        print("CLEANING SUMMARY")
         print(f"{'='*70}")
         print(f"Input samples: {self.stats['input_count']}")
         print(f"Exact duplicates removed: {self.stats['exact_duplicates']}")

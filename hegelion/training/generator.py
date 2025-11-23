@@ -1,6 +1,5 @@
 import asyncio
 import json
-import os
 from pathlib import Path
 from typing import Optional
 
@@ -148,11 +147,6 @@ async def generate_dataset(
                 # We need to parse the raw response into a HegelionResult-like structure if possible
                 # or just use it directly for the dataset if it followed the format.
                 # Assuming Kimi CLI follows the prompt:
-
-                # Simple parsing logic (robustness needed in prod)
-                thesis = ""
-                antithesis = ""
-                synthesis = ""
 
                 # Create a dummy result for consistency
                 result = HegelionResult(

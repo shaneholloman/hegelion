@@ -1,7 +1,5 @@
 """Comprehensive tests for Hegelion models."""
 
-import pytest
-from datetime import datetime
 from typing import Dict, Any
 
 from hegelion.core.models import (
@@ -9,7 +7,6 @@ from hegelion.core.models import (
     DialecticOutput,
     PromptWorkflow,
     WorkflowResult,
-    ValidationError,
     ResultMetadata,
     ConfidenceScore,
 )

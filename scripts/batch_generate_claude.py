@@ -4,8 +4,6 @@ Batch Hegelian Dialectical Sample Generator using Claude Code
 This script helps generate samples in batches by reading prompts and formatting them for generation.
 """
 
-import json
-import sys
 from pathlib import Path
 
 
@@ -40,7 +38,7 @@ def main():
     for i, prompt in enumerate(prompts, existing + 1):
         print(f"{i}. {prompt}")
 
-    print(f"\n💡 Generate dialectical samples for these prompts and append to:")
+    print("\n💡 Generate dialectical samples for these prompts and append to:")
     print(f"   {output_file}")
     print(f"\n🎯 Target: {500 - existing} more samples needed to reach 500")
 

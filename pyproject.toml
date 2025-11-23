@@ -70,7 +70,14 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["hegelion", "hegelion.scripts", "hegelion.examples_data"]
+packages = [
+    "hegelion",
+    "hegelion.core",
+    "hegelion.examples_data",
+    "hegelion.mcp",
+    "hegelion.scripts",
+    "hegelion.training"
+]
 
 [tool.setuptools.package-data]
 "hegelion.examples_data" = ["*.jsonl"]

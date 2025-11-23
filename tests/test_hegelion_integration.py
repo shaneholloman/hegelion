@@ -1,15 +1,10 @@
 """Integration tests for Hegelion dialectical reasoning workflow."""
 
 import pytest
-from unittest.mock import MagicMock, patch
 import asyncio
 
 from hegelion.core.engine import run_dialectic
-from hegelion.core.models import (
-    HegelionResult,
-    HegelionTrace,
-    HegelionMetadata,
-)
+from hegelion.core.models import HegelionResult, HegelionMetadata
 from hegelion.core.backends import MockBackend
 
 

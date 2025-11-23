@@ -1,6 +1,5 @@
 import json
 import sys
-from pathlib import Path
 
 
 def convert_hegelion_to_scu(input_file, output_file):

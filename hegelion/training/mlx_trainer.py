@@ -9,12 +9,11 @@ Requirements:
 """
 
 import argparse
+import importlib.util
 import sys
 from pathlib import Path
 
-try:
-    from mlx_lm import load, lora
-except ImportError:
+if importlib.util.find_spec("mlx_lm") is None:
     print("Error: mlx-lm not installed. Run: pip install mlx-lm", file=sys.stderr)
     sys.exit(1)
 
@@ -29,7 +28,7 @@ def train_hegelion_adapter(
     learning_rate: float = 1e-5,
     **kwargs,
 ):
-    print(f"--- Hegelion MLX Trainer ---")
+    print("--- Hegelion MLX Trainer ---")
     print(f"Model: {model_path}")
     print(f"Data: {data_path}")
 
@@ -130,7 +129,7 @@ def prepare_data_for_mlx(jsonl_path: str, output_dir: str = "artifacts/data/mlx"
                     f"{output_text}<|im_end|>\n"
                 )
                 data.append({"text": text})
-            except:
+            except Exception:
                 pass
 
     random.shuffle(data)

@@ -7,10 +7,8 @@ without direct API integration if needed, or as an alternative path.
 """
 
 import asyncio
-import json
 import os
 import subprocess
-import sys
 import re
 import ast
 from typing import Optional

@@ -1,7 +1,6 @@
 """Extended validation tests for Hegelion result models."""
 
 import pytest
-from typing import Dict, Any, List
 
 from hegelion.core.models import (
     HegelionResult,
@@ -57,14 +56,6 @@ class TestHegelionResultValidation:
 
     def test_validate_hegelion_result_valid_minimal(self):
         """Test validation with minimal valid HegelionResult."""
-        trace = HegelionTrace(
-            thesis="Test thesis",
-            antithesis="Test antithesis",
-            synthesis="Test synthesis",
-            contradictions_found=0,
-            research_proposals=[],
-        )
-
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
@@ -89,14 +80,6 @@ class TestHegelionResultValidation:
 
     def test_validate_hegelion_result_empty_strings(self):
         """Test validation with empty strings for required text fields."""
-        trace = HegelionTrace(
-            thesis="",
-            antithesis="",
-            synthesis="",
-            contradictions_found=0,
-            research_proposals=[],
-        )
-
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
@@ -125,14 +108,6 @@ class TestHegelionResultValidation:
 
     def test_validate_hegelion_result_with_unicode_content(self):
         """Test validation with unicode content."""
-        trace = HegelionTrace(
-            thesis="Thesis with unicode: 你好, مرحبا, здравствуйте",
-            antithesis="Antithesis with emojis: 🚀💡🔬",
-            synthesis="Synthesis with math: ∫∂∇∆",
-            contradictions_found=1,
-            research_proposals=["Test proposal"],
-        )
-
         metadata = HegelionMetadata(
             thesis_time_ms=100.0,
             antithesis_time_ms=150.0,
@@ -262,14 +237,6 @@ class TestHegelionResultValidation:
 
     def test_validate_hegelion_result_invalid_metadata_structure(self):
         """Test validation fails with invalid metadata structure."""
-        trace = HegelionTrace(
-            thesis="Test thesis",
-            antithesis="Test antithesis",
-            synthesis="Test synthesis",
-            contradictions_found=0,
-            research_proposals=[],
-        )
-
         # Missing required fields in metadata - construct the dict manually to simulate invalid metadata
         class InvalidMetadata:
             def to_dict(self):
@@ -359,14 +326,6 @@ class TestHegelionResultValidation:
             backend_provider=None,
             backend_model=None,
             debug=None,
-        )
-
-        trace = HegelionTrace(
-            thesis="Test thesis",
-            antithesis="Test antithesis",
-            synthesis="Test synthesis",
-            contradictions_found=0,
-            research_proposals=[],
         )
 
         result = HegelionResult(

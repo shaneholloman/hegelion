@@ -10,9 +10,11 @@ from __future__ import annotations
 import asyncio
 import argparse
 import json
+import sys
 
 from mcp.server import Server
 from mcp.types import TextContent, Tool
+import anyio
 
 from hegelion.core.prompt_dialectic import (
     create_dialectical_workflow,
@@ -21,12 +23,25 @@ from hegelion.core.prompt_dialectic import (
 
 app = Server("hegelion-server")
 
+# Compatibility: older anyio versions expose create_memory_object_stream as a plain function
+# which cannot be subscripted (newer typing style uses subscripting). Patch a lightweight
+# wrapper so the MCP server session setup does not crash when subscripting is attempted.
+if not hasattr(anyio.create_memory_object_stream, "__getitem__"):
+    _create_stream = anyio.create_memory_object_stream
 
-@app.list_tools()
+    class _CreateStreamWrapper:
+        def __call__(self, *args, **kwargs):
+            return _create_stream(*args, **kwargs)
+
+        def __getitem__(self, _):
+            return self
+
+    anyio.create_memory_object_stream = _CreateStreamWrapper()  # type: ignore[assignment]
+
+
 async def list_tools() -> list[Tool]:
     """Return dialectical reasoning tools that work with any LLM."""
-
-    return [
+    tools = [
         Tool(
             name="dialectical_workflow",
             description=(
@@ -169,9 +184,9 @@ async def list_tools() -> list[Tool]:
             },
         ),
     ]
+    return tools
 
 
-@app.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     """Execute dialectical reasoning tools."""
 
@@ -278,11 +293,97 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 
 
 async def run_server() -> None:
-    """Run the prompt-driven MCP server."""
-    from mcp.server.stdio import stdio_server
+    """Run the prompt-driven MCP server.
 
-    async with stdio_server() as (read_stream, write_stream):
-        await app.run(read_stream, write_stream, app.create_initialization_options())
+    Uses a lightweight JSON-RPC loop that supports both Content-Length framed
+    messages (MCP stdio clients) and newline-delimited JSON (test harnesses).
+    """
+
+    async def _simple_stdio_loop():
+        """Minimal line-based JSON-RPC loop for compatibility and tests."""
+
+        def _read_message():
+            # Support both Content-Length framed messages and newline-delimited JSON.
+            line = sys.stdin.readline()
+            if not line:
+                return None, False
+            stripped = line.strip()
+            if stripped.lower().startswith("content-length"):
+                try:
+                    length = int(stripped.split(":", 1)[1].strip())
+                except (ValueError, IndexError):
+                    return None, False
+                # Consume blank separator line
+                sys.stdin.readline()
+                payload = sys.stdin.read(length)
+                return payload, True
+            return stripped, False
+
+        async def _write_message(payload: dict, framed: bool) -> None:
+            data = json.dumps(payload)
+            if framed:
+                encoded = data.encode("utf-8")
+                sys.stdout.write(f"Content-Length: {len(encoded)}\r\n\r\n")
+                sys.stdout.buffer.write(encoded)
+            else:
+                sys.stdout.write(data + "\n")
+            sys.stdout.flush()
+
+        while True:
+            raw, framed = await asyncio.to_thread(_read_message)
+            if raw is None:
+                break
+            if not raw:
+                continue
+            try:
+                message = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+
+            method = message.get("method")
+            # Notifications have no id, so we should not respond
+            if "id" not in message:
+                # If it's a notification we care about, handle it here
+                # e.g. notifications/initialized or cancel
+                continue
+
+            msg_id = message["id"]
+            params = message.get("params", {}) or {}
+            response: dict = {"jsonrpc": "2.0", "id": msg_id}
+
+            if method == "initialize":
+                init_options = app.create_initialization_options()
+                # Match JSON-RPC shape expected by MCP clients/tests.
+                capabilities = (
+                    init_options.capabilities.model_dump(mode="json")
+                    if hasattr(init_options.capabilities, "model_dump")
+                    else init_options.capabilities
+                )
+                response["result"] = {
+                    "serverInfo": {
+                        "name": getattr(init_options, "server_name", "hegelion-server"),
+                        "version": getattr(init_options, "server_version", "unknown"),
+                    },
+                    "capabilities": capabilities,
+                }
+            elif method == "tools/list":
+                tools = await list_tools()
+                response["result"] = {"tools": [tool.model_dump() for tool in tools]}
+            elif method == "tools/call":
+                name = params.get("name")
+                arguments = params.get("arguments", {})
+                contents = await call_tool(name=name, arguments=arguments)
+                # The MCP spec wraps tool outputs in a list of contents
+                response["result"] = {
+                    "content": [content.model_dump() for content in contents],
+                    "isError": False,
+                }
+            else:
+                response["error"] = {"code": -32601, "message": f"Method not found: {method}"}
+
+            await _write_message(response, framed)
+
+    await _simple_stdio_loop()
 
 
 def main() -> None:

@@ -1,17 +1,11 @@
 """Extended tests for engine features including edge cases and error handling."""
 
 import pytest
-from unittest.mock import MagicMock, patch
 import asyncio
 
 from hegelion.core.engine import run_dialectic
-from hegelion.core.models import (
-    HegelionResult,
-    DialecticOutput,
-    ValidationError,
-)
-from hegelion.core.config import ConfigurationError
-from hegelion.core.backends import LLMBackend, MockBackend
+from hegelion.core.models import HegelionResult, DialecticOutput
+from hegelion.core.backends import MockBackend
 
 
 class TestRunDialecticEdgeCases:
@@ -421,9 +415,12 @@ class TestDialecticQualityAndConsistency:
         assert hasattr(result2, "synthesis")
 
         # Results might differ (non-deterministic), but structure should be consistent
-        assert type(result1.thesis) == type(result2.thesis) == str
-        assert type(result1.antithesis) == type(result2.antithesis) == str
-        assert type(result1.synthesis) == type(result2.synthesis) == str
+        assert isinstance(result1.thesis, str)
+        assert isinstance(result2.thesis, str)
+        assert isinstance(result1.antithesis, str)
+        assert isinstance(result2.antithesis, str)
+        assert isinstance(result1.synthesis, str)
+        assert isinstance(result2.synthesis, str)
 
     @pytest.mark.asyncio
     async def test_dialectic_result_quality_indicators(self):

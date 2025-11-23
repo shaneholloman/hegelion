@@ -101,7 +101,7 @@ class HegelianDatasetGenerator:
         has_openai = bool(config.openai_key or os.getenv("OPENAI_API_KEY"))
         has_moonshot = bool(config.moonshot_key or os.getenv("MOONSHOT_API_KEY"))
 
-        print(f"\n🔧 Backend Configuration:")
+        print("\n🔧 Backend Configuration:")
         print(f"  Anthropic API: {'✓' if has_anthropic else '✗'}")
         print(f"  OpenAI API: {'✓' if has_openai else '✗'}")
         print(f"  Moonshot API: {'✓' if has_moonshot else '✗'}")
@@ -119,21 +119,21 @@ class HegelianDatasetGenerator:
             if has_anthropic:
                 set_config_value("provider", "anthropic")
                 set_config_value("model", "claude-sonnet-4")
-                print(f"  Auto-selected: Anthropic Claude Sonnet 4")
+                print("  Auto-selected: Anthropic Claude Sonnet 4")
             elif has_moonshot:
                 set_config_value("provider", "moonshot")
                 set_config_value("model", "moonshot-v1-128k")
-                print(f"  Auto-selected: Moonshot Kimi")
+                print("  Auto-selected: Moonshot Kimi")
             elif has_openai:
                 set_config_value("provider", "openai")
                 set_config_value("model", "gpt-4")
-                print(f"  Auto-selected: OpenAI GPT-4")
+                print("  Auto-selected: OpenAI GPT-4")
             else:
-                print(f"\n❌ No API keys found!")
-                print(f"Set one of these environment variables:")
-                print(f"  export ANTHROPIC_API_KEY='your-key'")
-                print(f"  export OPENAI_API_KEY='your-key'")
-                print(f"  export MOONSHOT_API_KEY='your-key'")
+                print("\n❌ No API keys found!")
+                print("Set one of these environment variables:")
+                print("  export ANTHROPIC_API_KEY='your-key'")
+                print("  export OPENAI_API_KEY='your-key'")
+                print("  export MOONSHOT_API_KEY='your-key'")
                 return False
 
         return True
@@ -200,7 +200,7 @@ class HegelianDatasetGenerator:
 
             # Validate structure
             if not all([result.thesis, result.antithesis, result.synthesis]):
-                print(f"  ⚠ Warning: Incomplete dialectical structure")
+                print("  ⚠ Warning: Incomplete dialectical structure")
                 return None
 
             print(
@@ -300,13 +300,13 @@ class HegelianDatasetGenerator:
         duration = (datetime.now() - start_time).total_seconds()
 
         print(f"\n{'='*70}")
-        print(f"✅ GENERATION COMPLETE")
+        print("✅ GENERATION COMPLETE")
         print(f"{'='*70}")
         print(f"Total samples: {self.success_count}")
         print(f"Errors: {self.error_count}")
         print(f"Time: {duration/60:.1f} minutes")
         print(f"Output: {self.output_file}")
-        print(f"\nNext steps:")
+        print("\nNext steps:")
         print(f"  1. Validate: python scripts/validate_hegelian_dataset.py {self.output_file}")
         print(f"  2. Clean/dedupe: python scripts/clean_dataset.py {self.output_file}")
 

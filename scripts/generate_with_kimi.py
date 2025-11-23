@@ -9,7 +9,7 @@ import json
 import os
 import time
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 import sys
 
 # Try to import OpenAI
@@ -266,7 +266,7 @@ def main():
         print("❌ No API key found. Set OPENAI_API_KEY environment variable or use --api-key")
         sys.exit(1)
 
-    print(f"🚀 Kimi Hegelian Dialectical Generator")
+    print("🚀 Kimi Hegelian Dialectical Generator")
     print(f"{'='*70}")
     print(f"API: {args.base_url}")
     print(f"Model: {args.model}")
@@ -314,7 +314,7 @@ def main():
                     f"  ✓ Success ({len(result['thesis'])} + {len(result['antithesis'])} + {len(result['synthesis'])} chars)"
                 )
             else:
-                print(f"  ✗ Failed to generate")
+                print("  ✗ Failed to generate")
 
             generator.stats["total"] += 1
 
@@ -329,7 +329,7 @@ def main():
             time.sleep(1)
 
     print(f"\n{'='*70}")
-    print(f"✅ GENERATION COMPLETE")
+    print("✅ GENERATION COMPLETE")
     print(f"{'='*70}")
     print(f"Success: {generator.stats['success']}")
     print(f"Errors: {generator.stats['errors']}")

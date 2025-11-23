@@ -10,7 +10,6 @@ Logic:
 5. Optimize: Loss = CE + lambda * L2
 """
 
-import time
 import math
 import json
 import argparse
@@ -24,13 +23,7 @@ import psutil
 import mlx.core as mx
 import mlx.nn as nn
 import mlx.optimizers as optim
-from mlx.utils import tree_flatten, tree_map
-
-# MLX-LM imports
-try:
-    import ai2_olmo
-except ImportError:
-    pass
+from mlx.utils import tree_flatten
 from mlx_lm import load
 from mlx_lm.tuner.utils import linear_to_lora_layers
 
@@ -65,7 +58,7 @@ def update_lambda(
     lmbda,
     S_meas,
     S_target,
-    I,
+    integral_term,
     Kp=0.8,
     Ki=0.15,
     deadband=0.002,
@@ -78,16 +71,16 @@ def update_lambda(
     error = S_meas - S_target
 
     if abs(error) <= deadband:
-        return lmbda, I * 0.995  # Leak
+        return lmbda, integral_term * 0.995  # Leak
 
-    I = I * 0.995
-    I = max(i_min, min(i_max, I + Ki * error))
+    integral_term = integral_term * 0.995
+    integral_term = max(i_min, min(i_max, integral_term + Ki * error))
 
-    control_effort = Kp * error + I
+    control_effort = Kp * error + integral_term
     lmbda_new = lmbda * math.exp(control_effort)
     lmbda_new = max(lmin, min(lmax, lmbda_new))
 
-    return lmbda_new, I
+    return lmbda_new, integral_term
 
 
 def check_system_resources():
@@ -103,7 +96,7 @@ def check_system_resources():
             print(f"⚠️  WARNING: High memory usage: {memory.percent:.1f}%")
 
         return cpu_percent, memory.percent
-    except:
+    except Exception:
         # If psutil fails, return None values silently
         return None, None
 
@@ -177,7 +170,7 @@ def train_scu(args):
         else:
             # Reasonable default for 1.5B models
             num_layers = 24
-    except:
+    except Exception:
         num_layers = 24  # Safe default
 
     print(f"Applying LoRA to {num_layers} layers")
@@ -202,7 +195,7 @@ def train_scu(args):
 
     # SCU State
     lmbda = args.lambda_init
-    I = 0.0
+    integral_term = 0.0
     sigma = args.prior_sigma
 
     # Data Loading
@@ -309,7 +302,9 @@ def train_scu(args):
 
                 # Update Lambda
                 lmbda_old = lmbda
-                lmbda, I = update_lambda(lmbda, S_meas, args.target_s, I, Kp=args.kp, Ki=args.ki)
+                lmbda, integral_term = update_lambda(
+                    lmbda, S_meas, args.target_s, integral_term, Kp=args.kp, Ki=args.ki
+                )
             else:
                 # Keep lambda constant between updates
                 lmbda_old = lmbda

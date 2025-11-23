@@ -8,6 +8,19 @@
 [![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion)
 [![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
 
+## Quickstart (MCP)
+
+```bash
+pip install hegelion
+python -m hegelion.mcp.server
+```
+
+Smoke-test with MCP Inspector:
+```bash
+npx -y @modelcontextprotocol/inspector python -m hegelion.mcp.server
+```
+- In the UI, call `initialize`, then `tools/list`, then `dialectical_workflow` with a query. You should see prompts returned without any API keys.
+
 ## Model-Agnostic Hegelion: Works with Any LLM
 
 This version of Hegelion works with **whatever LLM is currently calling the MCP server** instead of making its own API calls. Perfect for:

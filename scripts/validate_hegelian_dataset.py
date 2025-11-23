@@ -197,7 +197,7 @@ class HegelianValidator:
             self.stats["avg_research_proposals"] /= self.stats["valid_samples"]
 
         # Print results
-        print(f"\n📊 VALIDATION RESULTS")
+        print("\n📊 VALIDATION RESULTS")
         print(f"{'─'*70}")
         print(f"Total samples: {self.stats['total_samples']}")
         print(
@@ -215,7 +215,7 @@ class HegelianValidator:
         )
 
         if diversity["most_common_topics"]:
-            print(f"\nMost common topic patterns:")
+            print("\nMost common topic patterns:")
             for topic, count in diversity["most_common_topics"][:5]:
                 print(f"  '{topic}': {count} samples")
 
