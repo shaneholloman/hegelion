@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 

@@ -214,11 +214,6 @@ async def run_dialectic(
 
     # Check for Phase 2 features
     if use_search or use_council or use_judge:
-        # Import Phase 2 modules only when needed
-        from .search_providers import search_for_context
-        from .council import DialecticalCouncil
-        from .judge import judge_dialectic
-
         result = await _run_enhanced_dialectic(
             engine=engine,
             query=query,
@@ -285,12 +280,9 @@ async def _run_enhanced_dialectic(
     from .search_providers import search_for_context
     from .council import DialecticalCouncil
     from .judge import judge_dialectic
-    import time
 
     for iteration in range(max_iterations):
         try:
-            start_time = time.time()
-
             # Step 1: Standard thesis generation
             if progress_callback:
                 progress_callback("thesis", {"iteration": iteration + 1})
