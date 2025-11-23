@@ -23,9 +23,10 @@ def train_hegelion_adapter(
     data_path: str,
     adapter_path: str = "adapters",
     iters: int = 600,
-    batch_size: int = 4,
-    lora_layers: int = 16,
+    batch_size: int = 1,
+    lora_layers: int = 8,
     learning_rate: float = 1e-5,
+    **kwargs
 ):
     print(f"--- Hegelion MLX Trainer ---")
     print(f"Model: {model_path}")
@@ -42,12 +43,18 @@ def train_hegelion_adapter(
         "--data", data_path, # Expects directory with train.jsonl / valid.jsonl
         "--iters", str(iters),
         "--batch-size", str(batch_size),
-        "--lora-layers", str(lora_layers),
+        "--num-layers", str(lora_layers),
         "--learning-rate", str(learning_rate),
         "--adapter-path", adapter_path,
         "--save-every", "100",
         "--steps-per-eval", "50"
     ]
+    
+    if kwargs.get("max_seq_length"):
+        cmd.extend(["--max-seq-length", str(kwargs["max_seq_length"])])
+        
+    if kwargs.get("grad_checkpoint"):
+        cmd.append("--grad-checkpoint")
     
     print(f"Running: {' '.join(cmd)}")
     
@@ -85,6 +92,12 @@ def prepare_data_for_mlx(jsonl_path: str, output_dir: str = "data_mlx"):
             if not line.strip(): continue
             try:
                 obj = json.loads(line)
+                
+                # Standardize reasoning tags for DeepSeek R1 models
+                # R1 expects <think>...</think> but our data might have <thought>
+                output_text = obj.get('output', '')
+                output_text = output_text.replace("<thought>", "<think>").replace("</thought>", "</think>")
+                
                 # MLX format: {"text": "..."}
                 # We need to construct the full prompt text including system/user/assistant tokens
                 # Simple ChatML-like format for now
@@ -95,12 +108,12 @@ def prepare_data_for_mlx(jsonl_path: str, output_dir: str = "data_mlx"):
                     "<|im_start|>user\n"
                     f"{obj.get('instruction', '')}<|im_end|>\n"
                     "<|im_start|>assistant\n"
-                    f"{obj.get('output', '')}<|im_end|>\n"
+                    f"{output_text}<|im_end|>\n"
                 )
                 data.append({"text": text})
             except:
                 pass
-                
+
     random.shuffle(data)
     split_idx = int(len(data) * 0.9)
     train_data = data[:split_idx]
@@ -121,11 +134,23 @@ def prepare_data_for_mlx(jsonl_path: str, output_dir: str = "data_mlx"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="mlx-community/OLMo-7B-0724-hf-4bit")
+    parser.add_argument("--model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data", required=True, help="Path to generated hegelion_kimi_data.jsonl")
     parser.add_argument("--iters", type=int, default=600)
+    parser.add_argument("--batch-size", type=int, default=1, help="Batch size per step")
+    parser.add_argument("--lora-layers", type=int, default=8, help="Number of LoRA layers")
+    parser.add_argument("--max-seq-length", type=int, default=2048, help="Maximum sequence length")
+    parser.add_argument("--grad-checkpoint", action="store_true", help="Enable gradient checkpointing to save memory")
     args = parser.parse_args()
     
     data_dir = prepare_data_for_mlx(args.data)
     if data_dir:
-        train_hegelion_adapter(args.model, data_dir, iters=args.iters)
+        train_hegelion_adapter(
+            args.model, 
+            data_dir, 
+            iters=args.iters, 
+            batch_size=args.batch_size, 
+            lora_layers=args.lora_layers,
+            max_seq_length=args.max_seq_length,
+            grad_checkpoint=args.grad_checkpoint
+        )

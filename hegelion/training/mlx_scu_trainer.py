@@ -17,6 +17,9 @@ import argparse
 from pathlib import Path
 import numpy as np
 
+# Optional imports
+import psutil
+
 # MLX imports
 import mlx.core as mx
 import mlx.nn as nn
@@ -37,23 +40,21 @@ def calculate_data_bpt(loss_nats):
     return loss_nats / math.log(2)
 
 def calculate_param_bpt(model, sigma=0.01, tokens_per_epoch=1000000):
-    """Calculate ParamBPT for trainable parameters (LoRA) in MLX."""
-    param_sum = 0.0
-    
-    # Iterate over trainable parameters
-    # In MLX, we filter for trainable ones. 
-    # Since we apply LoRA, usually only LoRA layers are trainable.
-    # We can iterate the tree.
-    
+    """Calculate ParamBPT - optimized to batch operations."""
+    param_squares = []
     total_params = 0
+
+    # Collect all parameter squares first (stays on Neural Engine)
     for name, weight in tree_flatten(model.trainable_parameters()):
-        # Sum of squares
-        param_sum += mx.sum(weight ** 2).item()
+        param_squares.append(mx.sum(weight ** 2))
         total_params += weight.size
-        
+
     if total_params == 0:
-        return 1e-9 # Avoid zero division
-        
+        return 1e-9, 0.0
+
+    # Sum all at once, then evaluate once
+    param_sum = mx.sum(mx.stack(param_squares)).item()  # ✅ GOOD: Single .item() call
+
     # Convert to bits
     param_bpt = param_sum / (2 * sigma**2 * tokens_per_epoch * math.log(2))
     return param_bpt, param_sum
@@ -74,6 +75,23 @@ def update_lambda(lmbda, S_meas, S_target, I, Kp=0.8, Ki=0.15, deadband=0.002,
     lmbda_new = max(lmin, min(lmax, lmbda_new))
     
     return lmbda_new, I
+
+def check_system_resources():
+    """Check CPU and memory usage, warn if high."""
+    try:
+        cpu_percent = psutil.cpu_percent(interval=0.1)
+        memory = psutil.virtual_memory()
+
+        if cpu_percent > 90:
+            print(f"⚠️  WARNING: High CPU usage: {cpu_percent:.1f}%")
+
+        if memory.percent > 85:
+            print(f"⚠️  WARNING: High memory usage: {memory.percent:.1f}%")
+
+        return cpu_percent, memory.percent
+    except:
+        # If psutil fails, return None values silently
+        return None, None
 
 def loss_fn(model, inputs, targets, lmbda, sigma, tokens_per_epoch, lengths):
     # Forward pass
@@ -97,9 +115,9 @@ def loss_fn(model, inputs, targets, lmbda, sigma, tokens_per_epoch, lengths):
     # We calculate this purely for gradients.
     # ParamBPT calculation is separate but related.
     
-    l2_sum = 0
-    for _, weight in tree_flatten(model.trainable_parameters()):
-        l2_sum = l2_sum + mx.sum(weight ** 2)
+    # More efficient: collect all squares, then sum
+    param_squares = [mx.sum(weight ** 2) for _, weight in tree_flatten(model.trainable_parameters())]
+    l2_sum = mx.sum(mx.stack(param_squares)) if param_squares else mx.array(0.0)
         
     reg_term = l2_sum / (2 * sigma**2)
     
@@ -133,7 +151,21 @@ def train_scu(args):
     }
     
     # Apply to all layers
-    linear_to_lora_layers(model, num_layers=1000, config=lora_config)
+    # Auto-detect number of layers or use reasonable default
+    try:
+        # Try to detect from model structure
+        if hasattr(model, 'layers'):
+            num_layers = len(model.layers)
+        elif hasattr(model, 'model') and hasattr(model.model, 'layers'):
+            num_layers = len(model.model.layers)
+        else:
+            # Reasonable default for 1.5B models
+            num_layers = 24
+    except:
+        num_layers = 24  # Safe default
+
+    print(f"Applying LoRA to {num_layers} layers")
+    linear_to_lora_layers(model, num_layers=num_layers, config=lora_config)
 
     # Ensure only LoRA adapters are trainable to avoid gradients through quantized weights
     model.freeze()  # freeze newly created modules (base weights stay frozen)
@@ -155,7 +187,6 @@ def train_scu(args):
     # SCU State
     lmbda = args.lambda_init
     I = 0.0
-    tokens_per_epoch = args.tokens_per_epoch # Fixed normalization constant
     sigma = args.prior_sigma
     
     # Data Loading
@@ -166,18 +197,26 @@ def train_scu(args):
         data = []
         with open(path, 'r') as f:
             for line in f:
-                if not line.strip(): continue
+                if not line.strip():
+                    continue
                 obj = json.loads(line)
                 text = obj.get('text', '')
-                if text:
-                    # Tokenize
-                    # Append EOS
-                    ids = tokenizer.encode(text) + [tokenizer.eos_token_id]
-                    data.append(np.array(ids))
+                if not text:
+                    continue
+
+                # Tokenize and append EOS
+                ids = tokenizer.encode(text) + [tokenizer.eos_token_id]
+                data.append(np.array(ids))
         return data
 
     dataset = load_dataset(args.data)
-    print(f"Loaded {len(dataset)} examples")
+    total_tokens = sum(len(x) for x in dataset)
+    print(f"Loaded {len(dataset)} examples | {total_tokens} tokens (pre-truncation)")
+
+    tokens_per_epoch = args.tokens_per_epoch
+    if tokens_per_epoch <= 0:
+        tokens_per_epoch = max(1, total_tokens)
+        print(f"Auto-setting tokens_per_epoch to {tokens_per_epoch}")
     
     # Training Loop
     steps = 0
@@ -213,7 +252,8 @@ def train_scu(args):
             # Pad batch
             max_len = max(len(x) for x in batch_data)
             # Truncate if too long?
-            if max_len > 2048: max_len = 2048
+            if max_len > args.max_seq_length:
+                max_len = args.max_seq_length
             
             inputs_np = np.zeros((len(batch_data), max_len), dtype=np.int32)
             targets_np = np.full((len(batch_data), max_len), -100, dtype=np.int32) # -100 for ignore
@@ -240,16 +280,26 @@ def train_scu(args):
             mx.eval(model.parameters(), optimizer.state)
             
             # SCU Updates (Post-step measurement)
-            # Calculate BPTs
-            data_bpt = calculate_data_bpt(ce_loss_val.item())
-            param_bpt, _ = calculate_param_bpt(model, sigma, tokens_per_epoch)
-            
-            S_meas = param_bpt / (data_bpt + param_bpt + 1e-9)
-            
-            # Update Lambda
-            lmbda_old = lmbda
-            lmbda, I = update_lambda(lmbda, S_meas, args.target_s, I, Kp=args.kp, Ki=args.ki)
-            
+            if steps % args.scu_update_freq == 0:
+                # Calculate BPTs
+                data_bpt = calculate_data_bpt(ce_loss_val.item())
+                param_bpt, _ = calculate_param_bpt(model, sigma, tokens_per_epoch)
+
+                S_meas = param_bpt / (data_bpt + param_bpt + 1e-9)
+
+                # Update Lambda
+                lmbda_old = lmbda
+                lmbda, I = update_lambda(lmbda, S_meas, args.target_s, I, Kp=args.kp, Ki=args.ki)
+            else:
+                # Keep lambda constant between updates
+                lmbda_old = lmbda
+
+            # System monitoring
+            if steps % 50 == 0:
+                cpu, mem = check_system_resources()
+                if cpu is not None and cpu > 95:
+                    print("⚠️  CRITICAL: CPU usage > 95%, consider reducing --scu_update_freq")
+
             # Logging
             if steps % 10 == 0:
                 print(f"Step {steps}: Loss={ce_loss_val.item():.3f}, DataBPT={data_bpt:.3f}, "
@@ -260,6 +310,7 @@ def train_scu(args):
             # Save adapter occasionally
             if steps % 100 == 0:
                 print(f"Saving adapter to {args.adapter_path}")
+                Path(args.adapter_path).mkdir(parents=True, exist_ok=True)
                 model.save_weights(str(Path(args.adapter_path) / "weights.safetensors"))
                 with open(Path(args.adapter_path) / "adapter_config.json", "w") as f:
                     json.dump(lora_config, f, indent=2)
@@ -273,7 +324,7 @@ def train_scu(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="mlx-community/OLMo-7B-0724-hf-4bit")
+    parser.add_argument("--model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data", required=True)
     parser.add_argument("--adapter_path", default="adapters/hegelion_mlx_scu")
     parser.add_argument("--iters", type=int, default=1000)
@@ -291,7 +342,11 @@ if __name__ == "__main__":
     parser.add_argument("--ki", type=float, default=0.15)
     parser.add_argument("--lambda_init", type=float, default=1.0)
     parser.add_argument("--prior_sigma", type=float, default=0.01)
-    parser.add_argument("--tokens_per_epoch", type=float, default=1000000)
+    parser.add_argument("--tokens_per_epoch", type=float, default=-1,
+                        help="If <=0, auto-compute from dataset token count")
+    parser.add_argument("--scu_update_freq", type=int, default=10,
+                        help="Update SCU lambda every N steps (default: 10)")
+    parser.add_argument("--max_seq_length", type=int, default=4096)
     parser.add_argument("--seed", type=int, default=42)
     
     args = parser.parse_args()

@@ -74,6 +74,15 @@ mcp_config.json
 
 # Training Data & Artifacts
 *.jsonl
+data/
 adapters/
 hegelion/training/wrappers/__pycache__/
+
+# Website build artifacts
+website/node_modules/
+website/dist/
+
+# Process ID files
+*.pid
+*_pid.txt
 

@@ -95,3 +95,15 @@ python -m hegelion.scripts.hegelion_agent_cli "CI fails on Python 3.12" --goal "
 - **Optional Council & Judge:** multi-perspective critiques plus a scoring phase catch gaps before action.
 
 Whether you use the prompt server or the Python agent, the structure is identical—only the executor changes.
+
+## Core Libraries for Web Performance
+
+Based on dialectical reasoning, these are verified high-performance, low-adoption libraries:
+
+1. **Partytown** (MIT): Offloads third-party scripts to web workers for main thread optimization.
+2. **Elder.js** (MIT): Svelte-based SSG with zero JS by default and partial hydration.
+3. **Fresh** (MIT): Deno's island architecture framework with minimal client-side JavaScript.
+4. **Marko** (MIT, eBay): Streaming SSR UI library with exceptional server performance.
+5. **Slim.js** (MIT): 2.9KB web components library using native browser APIs.
+
+All libraries are production-ready with development team support and clear maintenance status.

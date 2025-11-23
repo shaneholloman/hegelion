@@ -39,11 +39,12 @@ async def generate_dataset(
     resume: bool = True,
     max_tokens: int = 4000,
     model: str = "kimi", # Default to our teacher
+    prompt_file: Optional[str] = None,
 ):
     """
     Generate dialectical traces for a HuggingFace dataset using a Teacher model (Kimi).
     """
-    if load_dataset is None:
+    if load_dataset is None and prompt_file is None:
         raise ImportError("Please install 'datasets' to use this feature: pip install datasets")
 
     # Configure Teacher
@@ -63,8 +64,14 @@ async def generate_dataset(
         set_config_value("model", model)
         set_config_value("provider", "auto")
 
-    print(f"Loading dataset {dataset_name} ({split})...")
-    ds = load_dataset(dataset_name, split=split, streaming=True)
+    prompts = None
+    if prompt_file:
+        prompts = [line.strip() for line in Path(prompt_file).read_text().splitlines() if line.strip()]
+        print(f"Loaded {len(prompts)} prompts from {prompt_file}")
+        ds = [{"prompt": p} for p in prompts]
+    else:
+        print(f"Loading dataset {dataset_name} ({split})...")
+        ds = load_dataset(dataset_name, split=split, streaming=True)
     
     output_path = Path(output_file)
     processed_count = 0
@@ -89,7 +96,9 @@ async def generate_dataset(
             break
 
         # Extract prompt (handle different dataset formats)
-        if column in item:
+        if prompt_file:
+            query = item.get("prompt", "")
+        elif column in item:
             query = item[column]
         elif "prompt" in item:
             query = item["prompt"]
@@ -205,10 +214,12 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default="HuggingFaceH4/ultrafeedback_binarized")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for shuffling")
     parser.add_argument("--output", default="hegelion_kimi_data.jsonl")
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--split", default="train", help="Dataset split to use")
     parser.add_argument("--model", help="Teacher model", default="kimi")
+    parser.add_argument("--prompt-file", help="Optional newline-delimited prompts to bypass HF datasets")
     args = parser.parse_args()
     
     asyncio.run(generate_dataset(
@@ -216,5 +227,6 @@ if __name__ == "__main__":
         output_file=args.output,
         split=args.split,
         limit=args.limit,
-        model=args.model
+        model=args.model,
+        prompt_file=args.prompt_file
     ))
