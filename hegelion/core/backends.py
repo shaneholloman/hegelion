@@ -337,6 +337,10 @@ class DummyLLMBackend:
         # fallback
         return "This is a deterministic dummy response for testing."
 
+    # Legacy compatibility: some older tests expect a `query` coroutine.
+    async def query(self, *args, **kwargs):  # pragma: no cover - compatibility shim
+        return await self.generate(*args, **kwargs)
+
 
 @dataclass
 class GoogleLLMBackend:

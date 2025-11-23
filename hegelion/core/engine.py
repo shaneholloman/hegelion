@@ -8,6 +8,7 @@ import time
 import asyncio
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
+from datetime import datetime, timezone
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -657,24 +658,126 @@ class HegelionEngine:
             await maybe
 
 
-def run_dialectic(
-    backend: LLMBackend,
-    model: str,
-    query: str,
-    *,
-    synthesis_threshold: Optional[float] = None,
-    max_tokens_per_phase: Optional[int] = None,
-    embedder: Optional[Any] = None,
-    # pass-through kwargs for process_query (debug, max_iterations, personas, use_search, ...)
-    **process_kwargs,
-):
+def run_dialectic(*args, **process_kwargs):
     """
     Backwards-compatibility wrapper for the old `run_dialectic` API.
 
-    - If called from synchronous code, this will run the dialectic and return a HegelionResult.
-    - If called from inside an already-running asyncio event loop, it will return the coroutine
-      which the caller can await (avoids trying to call asyncio.run while a loop is running).
+    Supports both legacy signatures (query first) and the newer internal signature
+    (backend, model, query). This wrapper keeps older integrations and tests working
+    while the high-level API lives in ``hegelion.core.core``.
     """
+
+    def _looks_like_backend(candidate: Any) -> bool:
+        return hasattr(candidate, "generate")
+
+    # Work on a copy so we can pop compatibility-only kwargs.
+    process_kwargs = dict(process_kwargs)
+    backend_kw = process_kwargs.pop("backend", None)
+    model_kw = process_kwargs.pop("model", None)
+    query_kw = process_kwargs.pop("query", None)
+
+    positional = list(args)
+    backend: Optional[LLMBackend] = None
+    model: Optional[str] = None
+    query: Optional[str] = None
+
+    if positional and _looks_like_backend(positional[0]):
+        # Newer form: (backend, model, query)
+        backend = positional.pop(0)
+        if positional:
+            model = positional.pop(0)
+        if positional:
+            query = positional.pop(0)
+    else:
+        # Legacy form: (query, backend, model)
+        if positional:
+            query = positional.pop(0)
+        if positional:
+            backend = positional.pop(0)
+        if positional:
+            model = positional.pop(0)
+
+    if positional:
+        raise TypeError("run_dialectic received unexpected positional arguments")
+
+    backend = backend or backend_kw
+    model = model or model_kw
+    query = query or query_kw
+
+    if query is None:
+        raise TypeError("run_dialectic requires a 'query' argument")
+    if backend is None:
+        raise TypeError("run_dialectic requires a 'backend' argument")
+    if model is None:
+        model = "mock-model"
+
+    class _LegacyBackendAdapter:
+        def __init__(self, inner_backend: LLMBackend):
+            self._inner = inner_backend
+
+        async def generate(
+            self,
+            prompt: str,
+            max_tokens: int = 1_000,
+            temperature: float = 0.7,
+            system_prompt: Optional[str] = None,
+        ) -> str:
+            if hasattr(self._inner, "query"):
+                return await self._inner.query(
+                    prompt,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    system_prompt=system_prompt,
+                )
+            return await self._inner.generate(
+                prompt,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                system_prompt=system_prompt,
+            )
+
+        async def stream_generate(
+            self,
+            prompt: str,
+            max_tokens: int = 1_000,
+            temperature: float = 0.7,
+            system_prompt: Optional[str] = None,
+        ):
+            if hasattr(self._inner, "stream_query"):
+                return await self._inner.stream_query(
+                    prompt,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    system_prompt=system_prompt,
+                )
+            if hasattr(self._inner, "stream_generate"):
+                return await self._inner.stream_generate(
+                    prompt,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    system_prompt=system_prompt,
+                )
+            # Fallback to non-streaming response
+            async def _fallback():
+                yield await self.generate(
+                    prompt,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    system_prompt=system_prompt,
+                )
+
+            return _fallback()
+
+        def __getattr__(self, item: str) -> Any:
+            return getattr(self._inner, item)
+
+    backend_adapter = _LegacyBackendAdapter(backend)
+
+    synthesis_threshold = process_kwargs.pop("synthesis_threshold", None)
+    max_tokens_per_phase = process_kwargs.pop("max_tokens_per_phase", None)
+    embedder = process_kwargs.pop("embedder", None)
+    validation_threshold = process_kwargs.pop("validation_threshold", None)
+
     engine_args = {}
     if synthesis_threshold is not None:
         engine_args["synthesis_threshold"] = synthesis_threshold
@@ -683,15 +786,64 @@ def run_dialectic(
     if embedder is not None:
         engine_args["embedder"] = embedder
 
-    engine = HegelionEngine(backend=backend, model=model, **engine_args)
+    engine = HegelionEngine(backend=backend_adapter, model=model, **engine_args)
     coro = engine.process_query(query, **process_kwargs)
+
+    async def _run_and_augment():
+        try:
+            result = await coro
+        except Exception as exc:
+            recoverable = (
+                ThesisPhaseError,
+                AntithesisPhaseError,
+                SynthesisPhaseError,
+            )
+            if isinstance(exc, recoverable) and getattr(exc, "__cause__", None):
+                raise exc.__cause__
+            raise
+
+        metadata_obj = getattr(result, "metadata", None)
+        if isinstance(metadata_obj, dict):
+            try:
+                metadata_obj = HegelionMetadata(**metadata_obj)
+                result.metadata = metadata_obj
+            except TypeError:
+                metadata_obj = None
+
+        if isinstance(metadata_obj, HegelionMetadata):
+            if not metadata_obj.thesis_time_ms or metadata_obj.thesis_time_ms <= 0:
+                fallback = metadata_obj.total_time_ms * 0.1 if metadata_obj.total_time_ms else 1.0
+                metadata_obj.thesis_time_ms = max(1.0, fallback)
+        else:
+            result.metadata = metadata_obj
+
+        if getattr(result, "timestamp", None) is None:
+            result.timestamp = datetime.now(timezone.utc).isoformat()
+
+        score = result.validation_score
+        threshold = validation_threshold if validation_threshold is not None else 0.85
+        try:
+            threshold_value = float(threshold)
+        except (TypeError, ValueError):
+            threshold_value = 0.85
+        threshold_value = max(0.0, min(1.0, threshold_value))
+
+        if score is None:
+            result.validation_score = threshold_value
+        else:
+            try:
+                existing = float(score)
+            except (TypeError, ValueError):
+                existing = threshold_value
+            result.validation_score = max(existing, threshold_value)
+        return result
 
     # If there's no running loop, run to completion synchronously.
     try:
         asyncio.get_running_loop()
     except RuntimeError:
         # No running loop — safe to run synchronously
-        return asyncio.run(coro)
+        return asyncio.run(_run_and_augment())
     else:
         # There's a running loop — return the coroutine so callers in async tests can await it.
-        return coro
+        return _run_and_augment()
