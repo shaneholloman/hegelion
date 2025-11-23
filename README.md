@@ -3,10 +3,38 @@
 > *“The truth is the whole. The whole, however, is merely the essential nature reaching its completeness through the process of its own development.”*  
 > — **G.W.F. Hegel**
 
+> **TL;DR**
+>
+> Wraps any LLM in a thesis → antithesis → synthesis loop
+>
+> Returns structured JSON / workflows, not just text
+>
+> Ships as an MCP server (`hegelion-server`) so tools like Claude Desktop, Cursor, VS Code can use it with zero API keys
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion)
 [![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
+
+### Why you should care
+
+- **Eval / safety teams:** Generate structured, adversarial reasoning traces.
+- **Agent devs / IDEs:** Drop-in MCP server that upgrades reasoning without touching your backend.
+- **Researchers:** Ready-made dataset + training pipeline for dialectical thinking.
+
+We’re also training a small open model (DeepSeek-R1-Distill-Qwen-1.5B) on Hegelion traces using [Shannon Control Unit (SCU)](https://github.com/Shannon-Labs/shannon-control-unit) for adaptive regularization; details in [README_TRAINING.md](README_TRAINING.md).
+
+```python
+from hegelion import dialectical_single_shot
+
+prompt = await dialectical_single_shot(
+    query="Should we implement universal basic income?",
+    use_search=True,
+    use_council=True,
+)
+
+print(prompt)  # paste into any LLM; it will run T→A→S with council + judge
+```
 
 ## Quickstart (MCP)
 
@@ -245,7 +273,7 @@ This approach makes Hegelion truly accessible to any user with any LLM setup!
 
 We are actively training the **DeepSeek-R1-Distill-Qwen-1.5B** model using Hegelion's dialectical reasoning framework. The training pipeline incorporates:
 
-- **Shannon Control Unit (SCU)**: An adaptive regularization technique that automatically balances model complexity vs. data fit using PID control. SCU dynamically adjusts regularization strength (`λ`) based on the ratio of parameter complexity (ParamBPT) to data complexity (DataBPT), preventing overfitting while maintaining model expressiveness.
+- **[Shannon Control Unit (SCU)](https://github.com/Shannon-Labs/shannon-control-unit)**: An adaptive regularization technique that automatically balances model complexity vs. data fit using PID control. SCU dynamically adjusts regularization strength (`λ`) based on the ratio of parameter complexity (ParamBPT) to data complexity (DataBPT), preventing overfitting while maintaining model expressiveness.
 
 - **MLX Optimization**: Training is optimized for Apple Silicon (M1/M2/M3/M4) using MLX, enabling efficient fine-tuning on consumer hardware.
 

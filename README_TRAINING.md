@@ -14,7 +14,7 @@ python -m hegelion.training.generator \
   --limit 500 --model kimi-cli --split train_prefs \
   > generator.log 2>&1 &
 
-# Step 2: Convert to SCU training format
+# Step 2: Convert to [SCU](https://github.com/Shannon-Labs/shannon-control-unit) training format
 python scripts/convert_for_scu.py \
   artifacts/data/hegelion_kimi_training_data.jsonl \
   artifacts/data/hegelion_scu_ready.jsonl
