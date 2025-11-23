@@ -428,10 +428,41 @@ def main() -> None:
         description="Hegelion Prompt-Driven MCP Server - Works with any LLM",
         add_help=True,
     )
-    # Remove the redundant --help argument
-    parser.parse_args()
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="Run an in-process tool check (list tools + single-shot prompt) and exit",
+    )
+    args = parser.parse_args()
 
-    anyio.run(run_server)
+    if args.self_test:
+        anyio.run(_self_test)
+    else:
+        anyio.run(run_server)
+
+
+async def _self_test() -> None:
+    """Self-test: list tools and call a sample tool so users see output."""
+
+    print("🔎 Hegelion MCP self-test (in-process)")
+    tools = await list_tools()
+    tool_names = [t.name for t in tools]
+    print("Tools:", ", ".join(tool_names))
+
+    contents, structured = await call_tool(
+        name="dialectical_single_shot",
+        arguments={
+            "query": "Self-test: Can AI be genuinely creative?",
+            "use_council": True,
+            "response_style": "json",
+        },
+    )
+
+    print("\nresponse_style: json")
+    print("Structured keys:", list(structured.keys()))
+    prompt = structured.get("prompt", "")
+    print("Prompt preview:\n", prompt[:400], "...", sep="")
+    print("\n✅ Self-test complete")
 
 
 if __name__ == "__main__":

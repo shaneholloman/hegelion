@@ -6,6 +6,8 @@ Use these exact steps to validate and use the server.
 ```bash
 pip install hegelion
 # or: uv sync
+# latest-from-main (if PyPI lags): pip install git+https://github.com/Hmbown/Hegelion.git
+# prefer venv/pipx if system Python is PEP 668 managed
 ```
 
 ## 2) Configure MCP
@@ -13,6 +15,7 @@ pip install hegelion
 hegelion-setup-mcp --write ~/.claude_desktop_config.json
 ```
 This writes the MCP snippet. If running from source, it also sets `PYTHONPATH` automatically.
+Common config paths: `~/.claude_desktop_config.json`, `~/.cursor/mcp_config.json`, `~/.gemini/antigravity/mcp_config.json`.
 
 ## 3) Run the server
 ```bash

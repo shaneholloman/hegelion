@@ -14,6 +14,8 @@
 
 ```bash
 pip install hegelion
+# latest-from-main (if PyPI lags): pip install git+https://github.com/Hmbown/Hegelion.git
+# prefer venv/pipx if system Python is PEP 668 managed
 # Optional helper: writes a ready-to-use MCP snippet for Cursor/Claude Desktop
 hegelion-setup-mcp --write ~/.claude_desktop_config.json
 python -m hegelion.mcp.server

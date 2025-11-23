@@ -87,6 +87,9 @@ def print_setup_instructions(dry_run=False):
         "Tools available: dialectical_workflow, dialectical_single_shot, thesis_prompt, antithesis_prompt, synthesis_prompt"
     )
     print("response_style options: json, sections, synthesis_only")
+    print(
+        "Common config paths: ~/.claude_desktop_config.json, ~/.cursor/mcp_config.json, ~/.gemini/antigravity/mcp_config.json"
+    )
 
     if not is_installed:
         print(f"\nNOTE: Detected source installation at {project_root}")
