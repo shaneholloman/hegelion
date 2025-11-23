@@ -25,9 +25,9 @@
 
 ### 5. Initial Dataset
 - **File**: `data/hegelion_dialectical_500.jsonl`
-- **Status**: 100/500 samples completed (20.0%) ✅ **20% MILESTONE!**
+- **Status**: 106/500 samples completed (21.2%) ✅ **20% MILESTONE PASSED!**
 - **Quality**: High-quality exemplars
-- **File Size**: ~1.9M
+- **File Size**: ~2.1M
 
 ## 📊 Sample Quality Metrics
 
@@ -40,12 +40,13 @@
 - ✅ Average research proposals: **1 per sample**
 - ✅ Total trace length: **~4,500+ characters per sample**
 
-### Sample Topics Completed (100/500)
+### Sample Topics Completed (106/500)
 
 **Samples 1-50**: Philosophy & Ethics, Political Philosophy (completed)
 **Samples 51-75**: Political Philosophy, Science & Epistemology, Technology & Society (completed)
 **Samples 76-94**: Technology & Society, Economics & Systems, Psychology & Mind (completed)
 **Samples 95-100**: AI Safety & Ethics (completed) - **20% Milestone Reached!**
+**Samples 101-106**: AI Ethics & Philosophy of Mind (completed) - Topics: AI rights, AI replacing scientists, artificial consciousness, AI weapons, AI moral responsibility, Turing test validity
 
 Detailed list of first 50 samples:
 1. Can machines possess genuine consciousness?
@@ -202,7 +203,7 @@ Hegelion/
 │   └── glm4_6_examples.jsonl         # ✅ 4 reference examples
 │
 └── data/
-    └── hegelion_dialectical_500.jsonl # 🔄 100/500 samples (20%)
+    └── hegelion_dialectical_500.jsonl # 🔄 106/500 samples (21.2%)
 ```
 
 ## 🚀 Next Steps
@@ -212,7 +213,7 @@ Hegelion/
    - Manual with Claude (highest quality, slower)
    - Hybrid (balanced)
 
-2. **Generate Remaining 400 Samples**:
+2. **Generate Remaining 394 Samples**:
    - Use resume functionality
    - Generate in batches of 50-100
    - Validate periodically
@@ -248,4 +249,4 @@ All infrastructure is ready. To complete:
 
 ---
 
-**Current Status**: Infrastructure complete, 100 high-quality samples created (20.0%), continuing toward 500-sample goal. 🎉 **20% MILESTONE ACHIEVED!** - Completed samples 95-100 covering AI Safety & Ethics topics including AGI alignment, AI development pause debate, AI risk assessment, neural network language understanding, AI explainability, and machine learning bias.
+**Current Status**: Infrastructure complete, 106 high-quality samples created (21.2%), continuing toward 500-sample goal. 🎉 **20% MILESTONE PASSED!** - Completed samples 95-100 covering AI Safety & Ethics topics including AGI alignment, AI development pause debate, AI risk assessment, neural network language understanding, AI explainability, and machine learning bias. Samples 101-106 completed covering AI Ethics & Philosophy of Mind including AI rights, AI replacing human scientists, artificial consciousness, AI weapons development, AI moral responsibility, and Turing test validity.
