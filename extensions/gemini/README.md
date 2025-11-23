@@ -64,6 +64,18 @@ Cloud Run returns a URL (`https://hegelion-prompt-abc123-uc.a.run.app`)—use th
 3. Authentication is optional; you can add a simple header check in FastAPI if needed, but by default the endpoint is public.
 4. Enable the extension inside Gemini/Claude/etc. The model will call your URL whenever it needs a prompt workflow.
 
+## Cursor & Claude MCP Quick Add
+
+Use the same repository when you want MCP-native clients (Cursor, Claude Desktop, VS Code) to call Hegelion locally—no HTTP hosting required.
+
+1. Install the package: `pip install hegelion`.
+2. Run `hegelion-setup-mcp --write` to generate the config JSON (or write directly to `~/.claude_desktop_config.json`).
+3. **Cursor**: Settings → MCP Servers → *Import JSON* → select the generated file. The entry should point to `"command": "hegelion-server"`.
+4. **Claude Desktop**: Copy the same JSON snippet into `~/Library/Application Support/Claude/mcp_config.json` (or use the `--write` flag above).
+5. Launch the client; both detect the server automatically and expose the `dialectical_*` tools.
+
+See [`docs/MCP.md`](../../docs/MCP.md) for screenshots and additional options (custom paths, multiple servers).
+
 ## Applying the Same Package Elsewhere
 
 - **Cursor MCP Gallery / Claude Tool Hub** – submit the OpenAPI spec plus a short description and point them at your hosted prompt API.

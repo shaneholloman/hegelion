@@ -4,31 +4,39 @@ Use this checklist to publish Hegelion beyond MCP-aware IDEs.
 
 ## Google Gemini Extensions (AI Studio)
 
-- Endpoint: Prompt-driven FastAPI service (`extensions/gemini/server`) – no API keys, returns prompts only
-- Spec: `extensions/gemini/openapi.yaml`
-- Submission: AI Studio → Extensions → “Import from OpenAPI”
-- Auth: Optional header check in FastAPI (leave public for easiest onboarding)
+**Goal:** register the hosted FastAPI prompt server so Gemini models can fetch dialectical workflows on demand.
+
+1. Deploy `extensions/gemini/server` (Render/Cloud Run instructions above). Confirm it responds via `curl https://<host>/dialectical_single_shot -X POST -d '{"query": "ping"}'`.
+2. Host `extensions/gemini/openapi.yaml` (GitHub raw link or any static bucket) and update the `servers` URL to your deployment.
+3. AI Studio → Extensions → **Import from OpenAPI**, paste the hosted spec URL, and click **Validate**.
+4. Fill the listing metadata (logo, category, description). Auth is optional; leave public for smooth review.
+5. Test inside Gemini by enabling the extension and running `use tool hegelion_workflow`.
+
+✅ **Submission packet:** hosted URL, OpenAPI, screenshots of the FastAPI health check.
 
 ## Cursor MCP Gallery
 
-- Listing: https://cursor.directory (submit GitHub repo + short description)
-- Requirements:
-  - Public repo with README screenshots/gifs
-  - MCP config snippet (already in `README.md`)
-  - Optional short demo video
-- Action: open PR/issue on their directory with:
-  - Server name: `hegelion`
-  - Install command: `pip install hegelion && hegelion-setup-mcp`
+**Goal:** make Cursor users add Hegelion in two clicks via the MCP gallery.
+
+1. Ensure `pip install hegelion` works (CI already publishes wheels).
+2. Generate the MCP config snippet locally: `hegelion-setup-mcp --write ./cursor-mcp.json`.
+3. Submit to <https://cursor.directory> with: name **Hegelion**, category **Reasoning**, install command `pip install hegelion && hegelion-setup-mcp`.
+4. Include the JSON snippet so their reviewers can copy/paste into Settings → MCP Servers.
+5. Optional but encouraged: attach a 20s Loom/GIF showing `dialectical_workflow` running in Cursor.
+
+✅ **Submission packet:** repo link, config snippet, screenshot/video.
 
 ## Anthropic Claude MCP Hub (Beta)
 
-- Submission form: https://www.anthropic.com/mcp-tools (requires short survey)
-- Provide:
-  - Tool name + logo (PNG 512×512)
-  - One-liner value prop (“Adversarial dialectic agent”)
-  - GitHub repo link + docs (link to `docs/MCP.md`)
-  - Contact email for verification
-- Optional: include the Railway-hosted OpenAPI endpoint to showcase Gemini compatibility.
+**Goal:** provide Claude Desktop users with the same MCP server via Anthropic’s directory.
+
+1. Run `hegelion-setup-mcp --write ~/.claude_desktop_config.json` and verify Claude launches with `hegelion` listed under Tools.
+2. Prepare collateral: 512×512 PNG logo, one-line pitch (“Adversarial dialectic prompt server”), GitHub link, contact email.
+3. Fill <https://www.anthropic.com/mcp-tools> with the above plus a short demo clip (optional).
+4. In the notes, mention compatibility with Gemini extensions + Cursor gallery to highlight multi-platform coverage.
+5. After approval, add their listing URL back into this doc for tracking.
+
+✅ **Submission packet:** config snippet, logo, repo/docs links, contact email, (optional) demo video.
 
 ## Hugging Face Tools / Agents
 
