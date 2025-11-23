@@ -24,6 +24,7 @@ class TestValidateHegelionResult:
     def test_validate_hegelion_result_valid_complete(self):
         """Test validation with a fully valid HegelionResult."""
         result = HegelionResult(
+            query="Test query",
             thesis="Test thesis",
             antithesis="Test antithesis",
             synthesis="Test synthesis",
@@ -38,6 +39,7 @@ class TestValidateHegelionResult:
     def test_validate_hegelion_result_valid_minimal(self):
         """Test validation with minimal valid HegelionResult."""
         result = HegelionResult(
+            query="Test query",
             thesis="Test thesis",
             antithesis="Test antithesis",
             synthesis="Test synthesis",
@@ -57,6 +59,7 @@ class TestValidateHegelionResult:
     def test_validate_hegelion_result_invalid_field_types(self):
         """Test validation fails with invalid field types."""
         invalid_result: Dict[str, Any] = {
+            "query": "Test query",
             "thesis": 123,  # Should be string
             "antithesis": "Test antithesis",
             "synthesis": "Test synthesis",
@@ -70,6 +73,7 @@ class TestValidateHegelionResult:
     def test_validate_hegelion_result_empty_strings(self):
         """Test validation with empty strings for required fields."""
         result = HegelionResult(
+            query="Test query",
             thesis="",
             antithesis="Test antithesis",
             synthesis="Test synthesis",
@@ -83,6 +87,7 @@ class TestValidateHegelionResult:
     def test_validate_hegelion_result_none_values(self):
         """Test validation with None values for optional fields."""
         result_dict: Dict[str, Any] = {
+            "query": "Test query",
             "thesis": "Test thesis",
             "antithesis": "Test antithesis",
             "synthesis": "Test synthesis",
@@ -97,6 +102,7 @@ class TestValidateHegelionResult:
     def test_validate_hegelion_result_invalid_validation_score(self):
         """Test validation with invalid validation score."""
         result_dict: Dict[str, Any] = {
+            "query": "Test query",
             "thesis": "Test thesis",
             "antithesis": "Test antithesis",
             "synthesis": "Test synthesis",
@@ -206,11 +212,13 @@ class TestValidateHegelionResultList:
         """Test validation with list of valid HegelionResult objects."""
         results = [
             HegelionResult(
+                query="Test query",
                 thesis="Thesis 1",
                 antithesis="Antithesis 1",
                 synthesis="Synthesis 1",
             ),
             HegelionResult(
+                query="Test query",
                 thesis="Thesis 2",
                 antithesis="Antithesis 2",
                 synthesis="Synthesis 2",
@@ -226,6 +234,7 @@ class TestValidateHegelionResultList:
         """Test validation fails when one item in list is invalid."""
         invalid_list: List[Dict[str, Any]] = [
             {
+                "query": "Test query",
                 "thesis": "Valid thesis",
                 "antithesis": "Valid antithesis",
                 "synthesis": "Valid synthesis",
@@ -250,6 +259,7 @@ class TestValidateHegelionResultList:
         """Test validation with single item list."""
         single_item_list: List[Dict[str, Any]] = [
             {
+                "query": "Test query",
                 "thesis": "Single thesis",
                 "antithesis": "Single antithesis",
                 "synthesis": "Single synthesis",
@@ -264,6 +274,7 @@ class TestValidateHegelionResultList:
         """Test validation with list of results containing optional fields."""
         results = [
             HegelionResult(
+                query="Test query",
                 thesis="Thesis 1",
                 antithesis="Antithesis 1",
                 synthesis="Synthesis 1",
@@ -271,6 +282,7 @@ class TestValidateHegelionResultList:
                 validation_score=0.95,
             ),
             HegelionResult(
+                query="Test query",
                 thesis="Thesis 2",
                 antithesis="Antithesis 2",
                 synthesis="Synthesis 2",
@@ -290,6 +302,7 @@ class TestModelCreationAndValidation:
     def test_hegelion_result_creation_and_validation(self):
         """Test creating HegelionResult and validating it."""
         result = HegelionResult(
+            query="Test query",
             thesis="Test thesis with proper content",
             antithesis="Test antithesis with proper content",
             synthesis="Test synthesis with proper content",
@@ -322,6 +335,7 @@ class TestModelCreationAndValidation:
 
         # Create HegelionResult from DialecticOutput and validate
         result_dict = {
+            "query": output.query,
             "thesis": output.thesis,
             "antithesis": output.antithesis,
             "synthesis": output.synthesis,
@@ -347,6 +361,7 @@ class TestModelCreationAndValidation:
         # Create list of HegelionResult objects (simulating results)
         results = [
             HegelionResult(
+                query=workflow.query,
                 thesis=workflow.thesis,
                 antithesis=workflow.antithesis,
                 synthesis=workflow.synthesis,
@@ -365,6 +380,7 @@ class TestValidationEdgeCases:
         """Test validation with very long string content."""
         long_string = "x" * 10000
         result = HegelionResult(
+            query="Test query",
             thesis=long_string,
             antithesis="Test antithesis",
             synthesis="Test synthesis",
@@ -378,6 +394,7 @@ class TestValidationEdgeCases:
     def test_validation_with_unicode_characters(self):
         """Test validation with unicode characters."""
         result = HegelionResult(
+            query="Test query",
             thesis="Thesis with unicode: 你好, مرحبا, здравствуйте",
             antithesis="Antithesis with emojis: 🧠💭🤔",
             synthesis="Synthesis with special chars: ∫∑∏√",
@@ -391,6 +408,7 @@ class TestValidationEdgeCases:
     def test_validation_with_special_characters(self):
         """Test validation with special characters."""
         result = HegelionResult(
+            query="Test query",
             thesis="Thesis with <html> tags & special chars: \n\t",
             antithesis='Antithesis with JSON: {"key": "value"}',
             synthesis="Synthesis with SQL: SELECT * FROM table;",
@@ -407,6 +425,7 @@ class TestValidationEdgeCases:
 
         for score in test_cases:
             result_dict: Dict[str, Any] = {
+                "query": "Test query",
                 "thesis": "Test thesis",
                 "antithesis": "Test antithesis",
                 "synthesis": "Test synthesis",
@@ -420,6 +439,7 @@ class TestValidationEdgeCases:
     def test_validation_with_malformed_timestamp(self):
         """Test validation with malformed timestamp."""
         result_dict: Dict[str, Any] = {
+            "query": "Test query",
             "thesis": "Test thesis",
             "antithesis": "Test antithesis",
             "synthesis": "Test synthesis",

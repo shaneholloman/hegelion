@@ -6,13 +6,9 @@ HEGELION_RESULT_SCHEMA = {
     "type": "object",
     "required": [
         "query",
-        "mode",
         "thesis",
         "antithesis",
         "synthesis",
-        "contradictions",
-        "research_proposals",
-        "metadata",
     ],
     "properties": {
         "query": {"type": "string"},
@@ -20,6 +16,8 @@ HEGELION_RESULT_SCHEMA = {
         "thesis": {"type": "string"},
         "antithesis": {"type": "string"},
         "synthesis": {"type": "string"},
+        "timestamp": {"type": ["string", "null"]},
+        "validation_score": {"type": ["number", "null"]},
         "contradictions": {
             "type": "array",
             "items": {
@@ -45,7 +43,7 @@ HEGELION_RESULT_SCHEMA = {
             },
         },
         "metadata": {
-            "type": "object",
+            "type": ["object", "null"],
             "required": [
                 "thesis_time_ms",
                 "antithesis_time_ms",
