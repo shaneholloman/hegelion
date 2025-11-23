@@ -25,13 +25,13 @@
 
 ### 5. Initial Dataset
 - **File**: `data/hegelion_dialectical_500.jsonl`
-- **Status**: 25/500 samples completed (5.0%)
+- **Status**: 50/500 samples completed (10.0%)
 - **Quality**: High-quality exemplars
-- **File Size**: 252K
+- **File Size**: 613K
 
 ## 📊 Sample Quality Metrics
 
-**Samples 1-25** (validated):
+**Samples 1-50** (validated):
 - ✅ Full THESIS → ANTITHESIS → SYNTHESIS structure
 - ✅ Average thesis length: **1,300+ characters**
 - ✅ Average antithesis length: **1,400+ characters**
@@ -40,7 +40,7 @@
 - ✅ Average research proposals: **1 per sample**
 - ✅ Total trace length: **~4,500+ characters per sample**
 
-### Sample Topics Completed (25/500)
+### Sample Topics Completed (50/500)
 1. Can machines possess genuine consciousness?
 2. Is free will compatible with determinism?
 3. Does objective morality exist independent of human minds?
@@ -66,6 +66,31 @@
 23. Is it ethical to create sentient AI?
 24. Do animals have rights or just welfare interests?
 25. Is effective altruism the correct moral framework?
+26. Should we maximize utility or respect rights?
+27. Is there a duty to rescue strangers?
+28. Can war ever be just?
+29. Is capital punishment morally permissible?
+30. Should we save the many at the expense of the few?
+31. Is privacy a fundamental right or social construct?
+32. Is speciesism morally analogous to racism?
+33. Should organ donation be mandatory?
+34. Is paternalism ever justified?
+35. Can corporations have moral responsibilities?
+36. Is democracy the best form of government?
+37. Should borders exist in an ideal world?
+38. Is a universal basic income desirable?
+39. Should hate speech be legally restricted?
+40. Is socialism compatible with individual liberty?
+41. Should voting be mandatory?
+42. Is nationalism inherently problematic?
+43. Should citizens have a right to revolution?
+44. Is meritocracy achievable or desirable?
+45. Should wealthy nations accept climate refugees?
+46. Is state surveillance ever justified?
+47. Can capitalism be ethical?
+48. Should corporations have free speech rights?
+49. Is multiculturalism coherent as a political doctrine?
+50. Should we have global governance institutions?
 
 ## 🎯 Path to 500 Samples
 
@@ -170,7 +195,7 @@ Hegelion/
 │   └── glm4_6_examples.jsonl         # ✅ 4 reference examples
 │
 └── data/
-    └── hegelion_dialectical_500.jsonl # 🔄 25/500 samples (5%)
+    └── hegelion_dialectical_500.jsonl # 🔄 50/500 samples (10%)
 ```
 
 ## 🚀 Next Steps
@@ -216,4 +241,4 @@ All infrastructure is ready. To complete:
 
 ---
 
-**Current Status**: Infrastructure complete, 25 high-quality samples created (5%), continuing toward 500-sample goal.
+**Current Status**: Infrastructure complete, 50 high-quality samples created (10%), continuing toward 500-sample goal. Excellent momentum!
