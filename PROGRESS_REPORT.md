@@ -25,25 +25,37 @@
 
 ### 5. Initial Dataset
 - **File**: `data/hegelion_dialectical_500.jsonl`
-- **Status**: 4/500 samples completed (0.8%)
+- **Status**: 15/500 samples completed (3.0%)
 - **Quality**: High-quality exemplars
+- **File Size**: 152K
 
 ## 📊 Sample Quality Metrics
 
-**Samples 1-4** (validated):
+**Samples 1-15** (validated):
 - ✅ Full THESIS → ANTITHESIS → SYNTHESIS structure
-- ✅ Average thesis length: **1,217 characters**
-- ✅ Average antithesis length: **1,350 characters**
-- ✅ Average synthesis length: **1,513 characters**
+- ✅ Average thesis length: **1,300+ characters**
+- ✅ Average antithesis length: **1,400+ characters**
+- ✅ Average synthesis length: **1,600+ characters**
 - ✅ Average contradictions: **4 per sample**
 - ✅ Average research proposals: **1 per sample**
-- ✅ Total trace length: **~4,000+ characters per sample**
+- ✅ Total trace length: **~4,300+ characters per sample**
 
-### Sample Topics Completed
+### Sample Topics Completed (15/500)
 1. Can machines possess genuine consciousness?
 2. Is free will compatible with determinism?
 3. Does objective morality exist independent of human minds?
 4. What is the nature of truth - correspondence, coherence, or pragmatism?
+5. Is there a fundamental difference between mind and matter?
+6. Can we have knowledge of things-in-themselves?
+7. Does existence precede essence, or essence precede existence?
+8. Is time an objective feature of reality or a subjective framework?
+9. Can we derive ought from is?
+10. Is suffering necessary for meaning?
+11. What makes a life worth living?
+12. Is death harmful to the person who dies?
+13. Can artificial systems experience qualia?
+14. Is consciousness fundamental or emergent?
+15. Does the self persist through time?
 
 ## 🎯 Path to 500 Samples
 
