@@ -757,6 +757,7 @@ def run_dialectic(*args, **process_kwargs):
                     temperature=temperature,
                     system_prompt=system_prompt,
                 )
+
             # Fallback to non-streaming response
             async def _fallback():
                 yield await self.generate(
