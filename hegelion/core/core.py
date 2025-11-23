@@ -105,7 +105,6 @@ async def run_dialectic(
     validate: Optional[bool] = None,
     stream_callback: Optional[Callable[[str, str], Any]] = None,
     progress_callback: Optional[Callable[[str, dict], Any]] = None,
-<<<<<<< HEAD:hegelion/core/core.py
     personas: Optional[Union[List[Persona], str]] = None,
     iterations: int = 1,
     # Phase 2 enhancements
@@ -210,7 +209,6 @@ async def run_dialectic(
         if cached_payload:
             return HegelionResult(**cached_payload)
 
-<<<<<<< HEAD:hegelion/core/core.py
     # Resolve iterations (use max of both inputs)
     resolved_iterations = max(iterations, max_iterations)
 
