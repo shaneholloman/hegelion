@@ -73,12 +73,9 @@ firebase-debug.log
 mcp_config.jsonl
 mcp_config.json
 
-# Training Data & Artifacts
-# Allow the main Hegelian dataset to be committed
-!data/hegelion_dialectical_500.jsonl
-# Ignore other data files
+# Training Data & Artifacts (PROPRIETARY - DO NOT COMMIT)
+# Ignore all data files including the main Hegelian dataset
 data/*
-!data/hegelion_dialectical_500.jsonl
 adapters/
 artifacts/
 hegelion/training/wrappers/__pycache__/
