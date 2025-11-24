@@ -1,83 +1,80 @@
-# Hegelion MCP Integration for Claude Code
+# Hegelion MCP Integration for Claude Code (Zero API Keys)
 
-This guide shows how to integrate Hegelion's dialectical reasoning capabilities with Claude Code via MCP (Model Context Protocol).
+This guide shows how to integrate Hegelion's dialectical reasoning capabilities with Claude Code via MCP (Model Context Protocol). **Hegelion operates as a prompt server, leveraging Claude Code's own internal LLM to execute the reasoning steps. No API keys are needed for Hegelion itself.**
 
 ## Quick Setup
 
-1. **Install Hegelion with MCP support:**
-   ```bash
-   pip install hegelion
-   ```
+1.  **Install Hegelion with MCP support:**
+    ```bash
+    pip install hegelion
+    ```
 
-2. **Configure your LLM backend** by setting environment variables:
-   ```bash
-   # For Z.AI GLM-4.6 (recommended)
-   export HEGELION_PROVIDER="openai"
-   export HEGELION_MODEL="GLM-4.6"
-   export OPENAI_BASE_URL="https://api.z.ai/api/coding/paas/v4"
-   export OPENAI_API_KEY="your-zai-api-key-here"
+2.  **Configure Claude Code (CLI) or Claude Desktop (GUI) to use Hegelion:**
 
-   # Or for Anthropic Claude (default)
-   export HEGELION_PROVIDER="anthropic"
-   export HEGELION_MODEL="claude-4.5-sonnet-latest"
-   export ANTHROPIC_API_KEY="your-anthropic-api-key-here"
-   ```
+    *   **For Claude Code (CLI):**
+        Run the setup script to generate the MCP configuration:
+        ```bash
+        hegelion-setup-mcp --write ~/.claude/mcp_config.json
+        ```
+        This command will write the necessary configuration to Claude Code's MCP file, making Hegelion's tools available.
 
-3. **Start the MCP server:**
-   ```bash
-   hegelion-server
-   ```
+    *   **For Claude Desktop (GUI):**
+        Run the setup script to generate the MCP configuration:
+        ```bash
+        hegelion-setup-mcp --write ~/.claude_desktop_config.json
+        ```
+        This will configure Claude Desktop's MCP settings.
+
+3.  **Start the MCP server** (you'll typically run this in a separate terminal or background it):
+    ```bash
+    hegelion-server
+    ```
 
 ## MCP Tools Available
 
-Once connected, Hegelion provides these tools:
+Once connected and the `hegelion-server` is running, Claude Code can access these tools:
 
-### `run_dialectic`
-Analyze a single query using dialectical reasoning (thesis → antithesis → synthesis)
+### `dialectical_single_shot`
+The primary tool for general use. It provides Claude with a single, comprehensive prompt designed to guide it through the entire Thesis → Antithesis (with optional Council critique) → Synthesis reasoning process in one go.
 
-**Input:**
+**Input Example for Claude Code:**
 ```json
 {
   "query": "Can AI be genuinely creative?",
-  "debug": false
+  "use_council": true,
+  "response_style": "sections"
 }
 ```
 
-**Output:** Structured HegelionResult with thesis, antithesis, synthesis, contradictions, and research proposals
+### `dialectical_workflow`
+For more advanced users or when building agents that require step-by-step control over the dialectical process. This tool returns a structured JSON object containing a sequence of prompts for each phase (Thesis, Antithesis, Synthesis), allowing Claude to execute them sequentially.
 
-### `run_benchmark`
-Run multiple queries from a JSONL file for batch analysis
-
-**Input:**
+**Input Example for Claude Code:**
 ```json
 {
-  "prompts_file": "benchmarks/examples_basic.jsonl",
-  "debug": false
+  "query": "Should we implement universal basic income?",
+  "use_council": true,
+  "use_judge": true,
+  "format": "workflow"
 }
 ```
-
-**Output:** Newline-delimited JSON with one HegelionResult per line
 
 ## Example Usage
 
 In Claude Code, you can now ask:
 - "Use Hegelion to analyze 'Is privacy more important than security?'"
-- "Run a Hegelion benchmark on this prompts file"
-- "What are the contradictions in the Hegelion analysis of climate change?"
+- "Run a Hegelion single-shot analysis on 'Is consciousness fundamental or emergent?' using council critiques."
+- "Generate a Hegelion workflow for 'How can we best address climate change?'"
 
 ## Configuration Options
 
-The MCP server respects all Hegelion environment variables:
+The `hegelion-server` operates without needing its own LLM provider keys because it provides prompts for Claude Code's integrated LLM. All other Hegelion feature toggles (`use_search`, `use_council`, `use_judge`) are handled via the tool arguments.
 
-- `HEGELION_PROVIDER`: anthropic, openai, google, ollama, custom_http
-- `HEGELION_MODEL`: Specific model name (e.g., GLM-4.6, claude-4.5-sonnet-latest)
-- `HEGELION_LOG_LEVEL`: Logging verbosity (DEBUG, INFO, WARNING, ERROR)
-
-For a full list of backend configurations, see the main README.md.
+For a full list of prompt server options and their effects, refer to `docs/MCP.md` and the `hegelion-server --help` output.
 
 ## Installation from PyPI
 
-Hegelion v0.2.3 is now available on PyPI:
+Hegelion v0.3.0 is now available on PyPI:
 
 ```bash
 pip install hegelion

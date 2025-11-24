@@ -109,21 +109,31 @@ All Phase 2 features work in prompt-driven mode:
 
 ### Automated Setup (Recommended)
 
-Run:
+**Claude Desktop (macOS):**
+```bash
+hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+```
+
+**Cursor:**
 ```bash
 hegelion-setup-mcp
 ```
-Copy the output to your `claude_desktop_config.json` or Cursor MCP settings.
+Copy the output into **Settings → Features → MCP**.
+
+> ⚠️ **Restart Required:** Quit and reopen Claude Desktop (or restart Cursor) after modifying the config.
 
 ### Manual Setup
 
 If you prefer to configure it manually:
 
 #### Claude Desktop
+
+Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+
 ```json
 {
   "mcpServers": {
-    "hegelion-prompt": {
+    "hegelion": {
       "command": "hegelion-server",
       "args": []
     }
@@ -131,10 +141,13 @@ If you prefer to configure it manually:
 }
 ```
 
+Then **quit and reopen Claude Desktop** for changes to take effect.
+
 #### Cursor/VS Code
 1. Install Hegelion MCP extension (or configure via command)
 2. Configure to use `hegelion-server`
-3. Works with any model you have configured
+3. Restart the editor
+4. Works with any model you have configured
 
 ## 💡 **Usage Examples**
 

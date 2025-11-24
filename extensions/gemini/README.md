@@ -1,6 +1,8 @@
 # Google Gemini Extension for Hegelion
 
-This directory packages everything you need to expose Hegelion’s dialectical agent as a Google Gemini extension (and any other marketplace that accepts OpenAPI specs).
+> **Note:** This is a backend API service for HTTP/OpenAPI integrations. It is not a web UI—for that, use the MCP server directly in Claude Desktop, Cursor, or VS Code.
+
+This directory packages everything you need to expose Hegelion's dialectical agent as a Google Gemini extension (and any other marketplace that accepts OpenAPI specs).
 
 ## Architecture Overview
 
@@ -69,9 +71,9 @@ Cloud Run returns a URL (`https://hegelion-prompt-abc123-uc.a.run.app`)—use th
 Use the same repository when you want MCP-native clients (Cursor, Claude Desktop, VS Code) to call Hegelion locally—no HTTP hosting required.
 
 1. Install the package: `pip install hegelion`.
-2. Run `hegelion-setup-mcp --write` to generate the config JSON (or write directly to `~/.claude_desktop_config.json`).
-3. **Cursor**: Settings → MCP Servers → *Import JSON* → select the generated file. The entry should point to `"command": "hegelion-server"`.
-4. **Claude Desktop**: Copy the same JSON snippet into `~/Library/Application Support/Claude/mcp_config.json` (or use the `--write` flag above).
+2. **Claude Desktop (macOS):** Run `hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"`.
+3. **Cursor:** Run `hegelion-setup-mcp`, then go to Settings → MCP Servers → *Import JSON*.
+4. **Restart required:** Quit and reopen Claude Desktop (or restart Cursor) after modifying the config.
 5. Launch the client; both detect the server automatically and expose the `dialectical_*` tools.
 
 See [`docs/MCP.md`](../../docs/MCP.md) for screenshots and additional options (custom paths, multiple servers).

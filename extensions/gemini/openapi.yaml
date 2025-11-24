@@ -4,7 +4,7 @@ info:
   description: >
     Returns Hegelian Thesis → Antithesis → Synthesis prompts/workflows that any LLM can execute.
     No API keys required—the caller runs the prompts with its own model.
-  version: "0.2.0"
+  version: "0.3.0"
 servers:
   - url: https://hegelion-prompt.example.com
     description: Replace with your Render/Cloud Run URL

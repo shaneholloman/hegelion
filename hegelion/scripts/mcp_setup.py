@@ -15,7 +15,9 @@ Use this helper to generate the MCP snippet for Cursor / Claude Desktop.
 Examples:
   hegelion-setup-mcp                # print JSON snippet
   hegelion-setup-mcp --write        # write to ./mcp_config.json
-  hegelion-setup-mcp --write ~/.claude_desktop_config.json
+  hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"  # macOS Claude Desktop
+
+Note: After modifying the config, quit and reopen Claude Desktop for changes to take effect.
 """
 
 
@@ -87,9 +89,11 @@ def print_setup_instructions(dry_run=False):
         "Tools available: dialectical_workflow, dialectical_single_shot, thesis_prompt, antithesis_prompt, synthesis_prompt"
     )
     print("response_style options: json, sections, synthesis_only")
-    print(
-        "Common config paths: ~/.claude_desktop_config.json, ~/.cursor/mcp_config.json, ~/.gemini/antigravity/mcp_config.json"
-    )
+    print("\nCommon config paths:")
+    print("  macOS Claude Desktop: ~/Library/Application Support/Claude/claude_desktop_config.json")
+    print("  Cursor:               ~/.cursor/mcp_config.json")
+    print("  Windsurf:             ~/.codeium/windsurf/mcp_config.json")
+    print("\n⚠️  Restart Required: Quit and reopen Claude Desktop after modifying the config.")
 
     if not is_installed:
         print(f"\nNOTE: Detected source installation at {project_root}")

@@ -1,10 +1,10 @@
 {
   "mcpServers": {
-    "hegelion-prompt": {
+    "hegelion": {
       "command": "uv",
       "args": [
         "run",
-        "hegelion-prompt-server"
+        "hegelion-server"
       ]
     }
   }

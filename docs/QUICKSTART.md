@@ -9,11 +9,11 @@ Get Hegelion running in 5 minutes. No docs site needed.
   - uv (recommended): `curl -LsSf https://astral.sh/uv/install.sh | sh`
   - pip (works fine)
 
-## Option A: Model-Agnostic (MCP) in Your Editor (Zero API Keys)
+## Option A: MCP Server in Your Editor (Zero API Keys)
 
 Works with any model already configured in your editor (Cursor, Claude Desktop, VS Code).
 
-1) Install Hegelion
+### 1) Install Hegelion
 
 ```bash
 pip install hegelion
@@ -21,21 +21,35 @@ pip install hegelion
 uv pip install hegelion
 ```
 
-2) Generate the MCP configuration
+### 2) Configure MCP
 
+**Claude Desktop (macOS):**
+```bash
+hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+```
+
+**Cursor:**
 ```bash
 hegelion-setup-mcp
 ```
+Copy the output into **Settings → Features → MCP**.
 
-Copy the output snippet into your editor's config:
-- **Claude Desktop:** `claude_desktop_config.json`
-- **Cursor:** `Settings → Features → MCP`
+**Manual option:** Run `hegelion-setup-mcp` without `--write` to see the JSON snippet, then paste it into your config file.
 
-3) Ask your AI to run a dialectic
+> ⚠️ **Restart Required:** Quit and reopen Claude Desktop (or restart Cursor) after modifying the config.
 
-> “Run a dialectical analysis on ‘Is AI conscious?’ using the Hegelion prompt server with council critiques.”
+### 3) Verify Installation
 
-That’s it—no API keys required. The model you already use will execute the steps using structured prompts.
+In Claude Desktop, ask:
+> "What Hegelion tools are available?"
+
+**Expected output:** You should see tools like `dialectical_workflow`, `dialectical_single_shot`, `thesis_prompt`, `antithesis_prompt`, `synthesis_prompt`.
+
+### 4) Run Your First Dialectic
+
+> "Run a dialectical analysis on 'Is AI conscious?' using the Hegelion prompt server with council critiques."
+
+That's it—no API keys required. The model you already use will execute the steps using structured prompts.
 
 ## Option B: Python API (Full Control)
 
@@ -80,11 +94,15 @@ result = await run_dialectic(
 
 ## Troubleshooting
 
-- "No backend configured" error:
+- **"No backend configured" error:**
   - Ensure `.env` contains your provider keys and `HEGELION_PROVIDER`/`HEGELION_MODEL`.
-- Claude Desktop can’t see the server:
+
+- **Claude Desktop can't see the server:**
+  - Make sure you restarted Claude Desktop after modifying the config.
   - Ensure `hegelion-server` is on PATH or use the `uv run` command in the config.
-- Results look empty:
+  - Verify the config path: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS).
+
+- **Results look empty:**
   - Try a more complex query or a stronger model; enable `debug=True` to include internal metrics.
 
 ## What’s Next
