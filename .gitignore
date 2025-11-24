@@ -73,9 +73,13 @@ firebase-debug.log
 mcp_config.jsonl
 mcp_config.json
 
+# Local patent application drafts
+apps/
+
 # Training Data & Artifacts (PROPRIETARY - DO NOT COMMIT)
 # Ignore all data files including the main Hegelian dataset
 data/*
+hegelion-data/data/
 adapters/
 artifacts/
 PROGRESS_REPORT.md
@@ -89,4 +93,3 @@ hegelion-web/
 # Process ID files
 *.pid
 *_pid.txt
-

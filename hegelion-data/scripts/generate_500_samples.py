@@ -13,13 +13,13 @@ Each sample includes:
 
 Usage:
     # Generate using configured backend (Anthropic, OpenAI, Moonshot, etc.)
-    python scripts/generate_500_samples.py --prompts hegelion_prompts_500.txt --output data/hegelion_500_samples.jsonl --limit 500
+    python scripts/generate_500_samples.py --prompts prompts/hegelion_prompts_500.txt --output data/hegelion_500_samples.jsonl --limit 500
 
     # Resume from existing file
-    python scripts/generate_500_samples.py --prompts hegelion_prompts_500.txt --output data/hegelion_500_samples.jsonl --limit 500 --resume
+    python scripts/generate_500_samples.py --prompts prompts/hegelion_prompts_500.txt --output data/hegelion_500_samples.jsonl --limit 500 --resume
 
     # Use specific provider
-    python scripts/generate_500_samples.py --prompts hegelion_prompts_500.txt --output data/hegelion_500_samples.jsonl --limit 500 --provider anthropic --model claude-sonnet-4
+    python scripts/generate_500_samples.py --prompts prompts/hegelion_prompts_500.txt --output data/hegelion_500_samples.jsonl --limit 500 --provider anthropic --model claude-sonnet-4
 """
 
 import asyncio
@@ -31,8 +31,11 @@ from typing import Optional, List
 import argparse
 from datetime import datetime
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Ensure the repository root is on sys.path for `hegelion` imports
+CURRENT_FILE = Path(__file__).resolve()
+REPO_ROOT = CURRENT_FILE.parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 try:
     from hegelion.core.core import run_dialectic
@@ -318,7 +321,9 @@ async def main():
         description="Generate 500+ Hegelian dialectical training samples"
     )
     parser.add_argument(
-        "--prompts", default="hegelion_prompts_500.txt", help="Path to prompt file (one per line)"
+        "--prompts",
+        default="prompts/hegelion_prompts_500.txt",
+        help="Path to prompt file (one per line)",
     )
     parser.add_argument(
         "--output", default="data/hegelion_500_samples.jsonl", help="Output JSONL file"

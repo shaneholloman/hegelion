@@ -1,7 +1,7 @@
 # Hegelion Example – AI Creativity
 
 - **Query:** `"Can AI be genuinely creative?"`
-- **Source:** Recorded with a Claude-compatible `glm-4.6` backend via an Anthropic-style API. The full trace lives in `examples/glm4_6_examples.jsonl` and powers the hero example in the README.
+- **Source:** Recorded with a Claude-compatible `glm-4.6` backend via an Anthropic-style API. The full trace lives in `hegelion-data/examples/glm4_6_examples.jsonl` and powers the hero example in the README.
 - **Why it matters:** This run showcases the complete Thesis → Antithesis → Synthesis arc, structured contradictions, research proposals, and provenance metadata that align with the official `HegelionResult` contract.
 
 ## Highlights

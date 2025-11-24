@@ -34,7 +34,7 @@ Structure your response with clear THESIS, ANTITHESIS, and SYNTHESIS sections. I
 ## Example Workflow
 
 1. Copy the system prompt into your AI chat
-2. For each question in `hegelion_prompts_500.txt`:
+2. For each question in `prompts/hegelion_prompts_500.txt`:
    - Paste the user prompt template
    - Replace `[QUESTION HERE]` with the actual question
    - Get the response
@@ -96,54 +96,20 @@ For each response, verify:
 
 ## Automation Script
 
-Save this as `format_manual_dialectic.py`:
+Use the bundled `scripts/format_manual_dialectic.py` helper to turn Claude's markdown into JSONL without copy/paste errors.
 
-```python
-#!/usr/bin/env python3
-"""Helper to format manual dialectical responses into JSONL"""
+```bash
+# Example: read response.md and append formatted JSON to data/manual.jsonl
+python scripts/format_manual_dialectic.py \
+  "Can artificial intelligence be truly creative?" \
+  response.md \
+  --output data/manual.jsonl
+```
 
-import json
-import sys
+The script also works with stdin:
 
-def parse_response(query, response_text):
-    # Extract sections
-    thesis = ""
-    antithesis = ""
-    synthesis = ""
-
-    # Simple parser - improve as needed
-    parts = response_text.split("**ANTITHESIS**")
-    if len(parts) >= 2:
-        thesis = parts[0].replace("**THESIS**", "").strip()
-        remaining = parts[1]
-
-        syn_parts = remaining.split("**SYNTHESIS**")
-        if len(syn_parts) >= 2:
-            antithesis = syn_parts[0].strip()
-            synthesis = syn_parts[1].strip()
-
-    entry = {
-        "query": query,
-        "mode": "synthesis",
-        "thesis": thesis,
-        "antithesis": antithesis,
-        "synthesis": synthesis,
-        "contradictions": [],
-        "research_proposals": [],
-        "metadata": {"source": "manual"},
-        "trace": {
-            "thesis": thesis,
-            "antithesis": antithesis,
-            "synthesis": synthesis
-        }
-    }
-
-    return entry
-
-# Usage: python format_manual_dialectic.py "query" "response" >> data/manual.jsonl
-if __name__ == "__main__":
-    query = sys.argv[1]
-    response = sys.argv[2]
-    entry = parse_response(query, response)
-    print(json.dumps(entry, ensure_ascii=False))
+```bash
+pbpaste | python scripts/format_manual_dialectic.py \
+  "Does fusion deserve public subsidies?" \
+  - >> data/manual.jsonl
 ```

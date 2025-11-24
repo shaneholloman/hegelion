@@ -4,7 +4,7 @@ This directory houses recorded traces and runnable demos.
 
 ## Recorded JSONL Traces
 
-- `glm4_6_examples.jsonl` — four canonical runs recorded during development:
+- `../hegelion-data/examples/glm4_6_examples.jsonl` — four canonical runs recorded during development:
   - **Philosophical**: "Can AI be genuinely creative?"
   - **Factual**: "What is the capital of France?"
   - **Scientific**: "Explain what photosynthesis does for a plant."

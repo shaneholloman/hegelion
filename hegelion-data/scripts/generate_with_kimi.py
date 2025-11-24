@@ -250,7 +250,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate Hegelian dialectical samples using Kimi API"
     )
-    parser.add_argument("--prompts", default="hegelion_prompts_500.txt", help="Prompt file")
+    parser.add_argument("--prompts", default="prompts/hegelion_prompts_500.txt", help="Prompt file")
     parser.add_argument("--output", default="data/hegelion_kimi_500.jsonl", help="Output file")
     parser.add_argument("--limit", type=int, default=500, help="Number of samples to generate")
     parser.add_argument("--resume", action="store_true", default=True, help="Resume from existing")

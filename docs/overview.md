@@ -26,12 +26,13 @@ workflow = await dialectical_workflow(
 ## Example: single-shot
 ```python
 prompt = await dialectical_single_shot(
-    query="Can AI be genuinely creative?",
+    query="Is consciousness fundamental or emergent?",
     use_search=True,
     use_council=True,
     response_style="sections",
 )
 ```
+[View the full output of this query in our Showcase →](../docs/showcase.md)
 
 ## Structural bias: why it produces different answers
 - **Forced conflict:** Antithesis step attacks the thesis.
@@ -41,7 +42,7 @@ prompt = await dialectical_single_shot(
 ## Training and data
 - Dialectical traces collected for training a small open model (DeepSeek-R1-Distill-Qwen-1.5B).
 - SCU (Shannon Control Unit) for adaptive regularization on training runs.
-- See `README_TRAINING.md` and `README_DATASET_GENERATION.md` for details.
+- See `README_TRAINING.md` and `hegelion-data/README.md` for details.
 
 ## Where to go next
 - Quickstart for humans: `docs/QUICKSTART.md`

@@ -24,7 +24,7 @@ def count_existing(output_file):
 
 
 def main():
-    prompt_file = "hegelion_prompts_500.txt"
+    prompt_file = "prompts/hegelion_prompts_500.txt"
     output_file = "data/hegelion_dialectical_500.jsonl"
 
     existing = count_existing(output_file)

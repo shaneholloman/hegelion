@@ -33,7 +33,7 @@ Edit `.env` to point at Anthropic, OpenAI, Ollama, or a custom HTTP backend as d
 The project maintainers currently verify two providers end-to-end:
 
 - **Anthropic Claude** (default in `env.example`).
-- **GLM 4.6** — configure `HEGELION_PROVIDER=openai`, `HEGELION_MODEL=GLM-4.6`, `OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4`, and your Z.AI API key. Reference transcripts live in `examples/glm4_6_examples.jsonl`; replay with `hegelion-bench` to diff against new runs.
+- **GLM 4.6** — configure `HEGELION_PROVIDER=openai`, `HEGELION_MODEL=GLM-4.6`, `OPENAI_BASE_URL=https://api.z.ai/api/coding/paas/v4`, and your Z.AI API key. Reference transcripts live in `hegelion-data/examples/glm4_6_examples.jsonl`; replay with `hegelion-bench` to diff against new runs.
 
 We welcome confirmation for other Anthropic/OpenAI-compatible deployments (Azure OpenAI, custom base URLs, etc.).
 

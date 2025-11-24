@@ -3,10 +3,12 @@
 ## 🎯 Mission
 Generate 500+ high-quality training samples to teach language models Hegelian dialectical reasoning: **THESIS → ANTITHESIS → SYNTHESIS**.
 
+> All paths and commands assume you're working from the `hegelion-data/` directory. You can copy this folder into a private repository and keep iterating without touching the rest of the project.
+
 ## 📦 What's Included
 
 ### 1. Prompt Library
-- **File**: `hegelion_prompts_500.txt`
+- **File**: `prompts/hegelion_prompts_500.txt`
 - **Contents**: 580 carefully curated questions across 30+ domains
 - **Domains**: Philosophy, Ethics, AI, Science, Politics, Economics, and more
 - **Design**: Each prompt naturally invites dialectical tension
@@ -62,6 +64,7 @@ Generate 500+ high-quality training samples to teach language models Hegelian di
 - **QUICKSTART_500_SAMPLES.md**: Step-by-step generation guide
 - **DATASET_GENERATION_GUIDE.md**: Comprehensive reference
 - **manual_dialectic_template.md**: Manual generation fallback
+- **claude_system_prompt.md**: Drop-in instructions for Claude/Anthropic workflows
 
 ### 5. Reference Examples
 
@@ -80,7 +83,7 @@ export OPENAI_API_KEY="your-api-key"
 
 # 2. Generate 10 test samples
 python scripts/generate_with_kimi.py \
-  --prompts hegelion_prompts_500.txt \
+  --prompts prompts/hegelion_prompts_500.txt \
   --output data/test_10.jsonl \
   --limit 10 \
   --base-url "https://api.moonshot.cn/v1" \
@@ -98,7 +101,7 @@ head -1 data/test_10.jsonl | jq '.'
 ```bash
 # Generate all 500 (auto-resumes if interrupted)
 python scripts/generate_with_kimi.py \
-  --prompts hegelion_prompts_500.txt \
+  --prompts prompts/hegelion_prompts_500.txt \
   --output data/hegelion_500.jsonl \
   --limit 500 \
   --resume
@@ -111,6 +114,28 @@ python scripts/clean_dataset.py \
 # Final validation
 python scripts/validate_hegelian_dataset.py \
   data/hegelion_500_clean.jsonl
+```
+
+## 🤖 Claude Plug-and-Play Workflow
+
+This folder is ready to copy into its own private repository while reusing your existing Anthropic tokens.
+
+1. `python scripts/batch_generate_claude.py` — surfaces the next prompts and remaining sample count.
+2. Open Claude (Desktop, claude.ai, Claude Code, or API) and load `claude_system_prompt.md` as the system prompt.
+3. Paste the user template from that file, drop in the next prompt, and let Claude produce THESIS/ANTITHESIS/SYNTHESIS plus the JSON object.
+4. Append each JSON line to `data/hegelion_dialectical_500.jsonl` (or any file you configure in the scripts).
+5. Every 25–50 samples, run `python scripts/validate_hegelian_dataset.py data/hegelion_dialectical_500.jsonl` and `python scripts/clean_dataset.py` to dedupe.
+6. Track spending with Claude's usage console; the scripts never transmit your keys—you're operating entirely within your own sandbox.
+
+**API option:**
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+python scripts/generate_500_samples.py \
+  --provider anthropic \
+  --model claude-sonnet-4 \
+  --prompts prompts/hegelion_prompts_500.txt \
+  --output data/hegelion_500_samples.jsonl
 ```
 
 ## 🎨 Sample Output Structure
@@ -247,30 +272,31 @@ python scripts/generate_with_kimi.py \
 
 ```
 Hegelion/
-├── hegelion_prompts_500.txt           # 580 prompts
-├── QUICKSTART_500_SAMPLES.md          # Quick start guide
-├── DATASET_GENERATION_GUIDE.md        # Detailed guide
-├── README_DATASET_GENERATION.md       # This file
-│
-├── scripts/
-│   ├── generate_with_kimi.py          # Main generator
-│   ├── generate_500_samples.py        # Hegelion engine generator
-│   ├── validate_hegelian_dataset.py   # Quality validator
-│   ├── clean_dataset.py               # Deduplicator
-│   └── manual_dialectic_template.md   # Manual generation guide
-│
-├── examples/
-│   └── glm4_6_examples.jsonl          # 4 reference samples
-│
-├── data/                               # Generated datasets (gitignored)
-│   ├── test_10.jsonl                  # Test runs
-│   ├── hegelion_500.jsonl             # Raw generation
-│   └── hegelion_500_clean.jsonl       # Final cleaned dataset
-│
-└── hegelion/training/                  # Training infrastructure
-    ├── mlx_trainer.py                 # MLX training (Apple Silicon)
-    ├── unsloth_trainer.py             # Unsloth training (CUDA)
-    └── generator.py                   # Original generator
+├── hegelion-data/
+│   ├── README.md                      # This file
+│   ├── claude_system_prompt.md        # Drop-in Claude system prompt
+│   ├── prompts/
+│   │   └── hegelion_prompts_500.txt   # 580 prompts
+│   ├── scripts/
+│   │   ├── generate_with_kimi.py          # Main generator
+│   │   ├── generate_500_samples.py        # Hegelion engine generator
+│   │   ├── validate_hegelian_dataset.py   # Quality validator
+│   │   ├── clean_dataset.py               # Deduplicator
+│   │   ├── batch_generate_claude.py       # Manual batching helper
+│   │   ├── format_manual_dialectic.py     # Markdown → JSONL formatter
+│   │   └── manual_dialectic_template.md   # Manual generation guide
+│   ├── examples/
+│   │   └── glm4_6_examples.jsonl      # 4 reference samples
+│   └── data/                          # Generated datasets (gitignored)
+│       ├── test_10.jsonl              # Test runs
+│       ├── hegelion_500.jsonl         # Raw generation
+│       └── hegelion_500_clean.jsonl   # Final cleaned dataset
+├── hegelion/
+│   └── training/                      # Training infrastructure
+│       ├── mlx_trainer.py             # MLX training (Apple Silicon)
+│       ├── unsloth_trainer.py         # Unsloth training (CUDA)
+│       └── generator.py               # Original generator
+└── ...
 ```
 
 ## 🎓 Training Pipeline
@@ -282,9 +308,9 @@ After generating clean dataset:
 python scripts/validate_hegelian_dataset.py data/hegelion_500_clean.jsonl
 
 # 2. Train model (MLX - Apple Silicon)
-cd hegelion/training
+cd ../hegelion/training
 python mlx_trainer.py \
-  --data ../../data/hegelion_500_clean.jsonl \
+  --data ../../hegelion-data/data/hegelion_500_clean.jsonl \
   --model allenai/OLMo-7B-0724-hf \
   --output models/olmo-7b-hegelian
 
@@ -333,7 +359,7 @@ If you use this dataset or infrastructure in research:
 
 To improve this infrastructure:
 
-1. **Add prompts**: Contribute to `hegelion_prompts_500.txt`
+1. **Add prompts**: Contribute to `prompts/hegelion_prompts_500.txt`
 2. **Improve scripts**: Enhance generation/validation logic
 3. **Share results**: Report quality metrics from different models
 4. **Fix bugs**: Submit issues or PRs
