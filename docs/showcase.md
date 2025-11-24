@@ -3,7 +3,7 @@
 This is a raw, unedited output from the Hegelion dialectical process. It demonstrates how the system moves beyond simple answers by forcing a rigorous **Thesis → Antithesis → Synthesis** loop.
 
 **Query:** "Is consciousness fundamental or emergent?"
-**Model:** Claude Sonnet 4 (via Hegelion)
+**Model:** Claude Sonnet 4.5 (via Hegelion)
 
 ---
 

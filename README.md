@@ -28,7 +28,7 @@ See dialectical reasoning in action:
 - **Antifragile reasoning**: Built-in antithesis step hunts hallucinations, weak assumptions, and bias before a final answer ships.
 - **Agent-grade outputs**: Returns structured workflows (JSON) for autonomous agents, plus friendly sectioned prose for humans.
 - **Pluggable everywhere**: MCP server for Claude/Cursor/VS Code, Python agent for code, prompt server for any LLM.
-- **Research-ready**: Training pipeline + `hegelion-data` to fine-tune open models (Llama, Qwen) for dialectical thinking.
+- **Research-ready (Coming Soon)**: Future roadmap includes a training pipeline to fine-tune open models for dialectical thinking.
 - **Auditability**: Every run emits a trace of thesis, critiques, and synthesis so you can verify how the answer formed.
 
 ### When to use it
@@ -120,7 +120,7 @@ Consciousness likely emerges, but only when neural dynamics achieve integrated i
 - **[Human Quickstart](docs/QUICKSTART.md)**: Detailed guide for getting started.
 - **[AI/Agent Quickstart](AI_README.md)**: How to integrate Hegelion into agentic workflows.
 - **[MCP Reference](docs/MCP.md)**: Advanced configuration for the Model Context Protocol.
-- **[Training Data](hegelion-data/README.md)**: How we built the dataset and how to train your own models.
+- **[Training Data](hegelion-data/README.md)**: *Planned: Guidelines for building dialectical datasets.*
 - **[Showcase](docs/showcase.md)**: Full consciousness example trace.
 
 ---
