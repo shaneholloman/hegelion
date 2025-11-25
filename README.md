@@ -154,17 +154,77 @@ Structured trace + final answer
 
 Hegelion ships as an **MCP server** and a **Python agent**. You can try it locally with no provider keys.
 
+### For Claude Desktop Users (GUI App)
+
 ```bash
 # Install
 pip install hegelion
 
-# Claude Desktop auto-config (macOS)
+# Auto-config (recommended)
 hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+
+# Or manual setup - add to mcpServers section:
+{
+  "hegelion": {
+    "command": "python",
+    "args": ["-m", "hegelion.mcp.server"]
+  }
+}
 ```
 
-> ⚠️ **Restart Required:** Quit and reopen Claude Desktop after modifying the config.
+> ⚠️ **Restart Required:** Quit and reopen Claude Desktop (Cmd+Q) after modifying the config.
 
 **Verify installation:** In Claude Desktop, ask: *"What Hegelion tools are available?"* — you should see `dialectical_workflow`, `thesis_prompt`, etc.
+
+### For Claude Code Users (Terminal/CLI)
+
+```bash
+# Install
+pip install hegelion
+
+# Add the MCP server
+claude mcp add hegelion python -- -m hegelion.mcp.server
+
+# Verify it's added
+claude mcp list
+
+# Restart Claude Code
+exit  # Then reopen terminal
+```
+
+**Verify installation:** In Claude Code, ask: *"Use Hegelion to analyze: [your question]"*
+
+### Common Setup Issues
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `spawn hegelion-server ENOENT` | `hegelion-server` not in PATH | Use `python -m hegelion.mcp.server` instead |
+| `ModuleNotFoundError: hegelion` | **Running from source without installation** | **Install with `pip install -e .` from repo root** |
+| Server disconnects on startup | Python path issues or missing deps | Check log file at `~/Library/Logs/Claude/mcp-server-hegelion.log` |
+
+**IMPORTANT: Running from Source?**
+If you cloned Hegelion and are running from source (not from PyPI), you MUST install it first:
+
+```bash
+# From the repo root
+pip install -e .
+
+# If you get "externally-managed-environment" error:
+pip install --break-system-packages -e .
+```
+
+This installs Hegelion in "editable" mode so:
+- ✅ No PYTHONPATH tricks needed
+- ✅ Changes to source code are reflected immediately
+- ✅ Works reliably with MCP servers
+
+**Pro tip:** Always use the full Python path if you use pyenv/conda/venv:
+```bash
+# Find your Python path
+which python
+# Example output: /Users/username/.pyenv/shims/python
+# Use this exact path in your config
+```
 
 ```bash
 # Or use the Python agent directly

@@ -1,12 +1,19 @@
-# Hegelion
+# Hegelion MCP Integration
 
-> *“The truth is the whole. The whole, however, is merely the essential nature reaching its completeness through the process of its own development.”*  
+> *"The truth is the whole. The whole, however, is merely the essential nature reaching its completeness through the process of its own development."*
 > — **G.W.F. Hegel**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI version](https://badge.fury.io/py/hegelion.svg)](https://badge.fury.io/py/hegelion)
 [![Status](https://img.shields.io/badge/status-actively--maintained-brightgreen.svg)](https://github.com/Hmbown/Hegelion)
+
+## 🚨 Quick Setup Required
+
+**New to MCP?** Start with the [Complete Setup Guide](../MCP_COMPLETE_SETUP_GUIDE.md)
+
+- **[Claude Desktop Users](../README.md#for-claude-desktop-users-gui-app)** - GUI app setup
+- **[Claude Code Users](../README.md#for-claude-code-users-terminalcli)** - Terminal/CLI setup
 
 ## Model-Agnostic Hegelion: Works with Any LLM
 
@@ -128,7 +135,22 @@ If you prefer to configure it manually:
 
 #### Claude Desktop
 
+**RECOMMENDED APPROACH** (Most reliable):
+
 Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "python",
+      "args": ["-m", "hegelion.mcp.server"]
+    }
+  }
+}
+```
+
+**Alternative approach** (if hegelion-server is in your PATH):
 
 ```json
 {
@@ -140,6 +162,11 @@ Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (m
   }
 }
 ```
+
+**Troubleshooting:**
+- If you get "spawn hegelion-server ENOENT" error, use the python module approach above
+- Find your Python path with `which python` and use the full path if needed
+- If running from source, add `PYTHONPATH` environment variable pointing to the repo root
 
 Then **quit and reopen Claude Desktop** for changes to take effect.
 
