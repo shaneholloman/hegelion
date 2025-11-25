@@ -40,24 +40,44 @@ See dialectical reasoning in action:
 
 ## ⚙️ How it Works
 
-1. **Thesis**: Generate the best initial argument.
-2. **Antithesis**: Attack the thesis (optionally with a council of Logician / Empiricist / Ethicist) to expose gaps.
-3. **Synthesis**: Reconcile the tension into a higher-order, evidence-backed answer.
+Hegelion is **multi-call orchestration**—similar to sequential thinking or multi-turn reasoning patterns. Each phase is a separate LLM call, not a single prompt asking the model to roleplay all three roles.
 
-### Architecture at a glance
+### The Dialectical Loop
+
+1. **Thesis** (Call 1): Generate the best initial argument.
+2. **Antithesis** (Call 2+): Attack the thesis to expose gaps. With Council mode, this spawns 3 concurrent critic calls (Logician, Empiricist, Ethicist).
+3. **Synthesis** (Final call): Reconcile the tension into a higher-order, evidence-backed answer.
+
+### API Calls & Cost
+
+| Mode | API Calls | Cost vs Raw |
+| :--- | :--- | :--- |
+| Basic | 3 sequential | ~3-4× |
+| + Council | 5 (3 concurrent) | ~5-6× |
+| + Judge | 4-6+ (with retries) | ~6-10× |
+
+**This is the tradeoff:** More calls = more cost, but each phase builds on the previous one's output, catching blind spots a single pass misses.
+
+### Architecture
 
 ```
 User / Agent
    │
    ▼
 Hegelion (MCP server or Python agent)
-   │  prompts / JSON workflow
-   ▼
-LLM provider (your choice)
-   │  thesis → antithesis → synthesis
+   │
+   ├─► [Call 1] Thesis prompt → LLM → thesis output
+   │
+   ├─► [Call 2] Antithesis prompt (includes thesis) → LLM → critique
+   │   (Council mode: 3 concurrent critic calls)
+   │
+   └─► [Call 3] Synthesis prompt (includes both) → LLM → final answer
+   │
    ▼
 Structured trace + final answer
 ```
+
+**MCP mode note:** When using Hegelion as an MCP server with Claude Desktop or Cursor, Hegelion returns the prompts and the *host LLM* executes them. You're using your existing model's tokens—Hegelion doesn't call external APIs in this mode.
 
 ### Feature toggles
 
@@ -121,7 +141,7 @@ Consciousness likely emerges, but only when neural dynamics achieve integrated i
 ## 📚 Documentation
 
 - **[Human Quickstart](docs/QUICKSTART.md)**: Detailed guide for getting started.
-- **[AI/Agent Quickstart](AI_README.md)**: How to integrate Hegelion into agentic workflows.
+- **[MCP Setup for Claude Code](docs/development/CLAUDE_CODE_SETUP.md)**: How to integrate Hegelion into agentic workflows.
 - **[MCP Reference](docs/MCP.md)**: Advanced configuration for the Model Context Protocol.
 - **[Training Data](hegelion-data/README.md)**: *Planned: Guidelines for building dialectical datasets.*
 - **[Showcase](docs/showcase.md)**: Full consciousness example trace.
