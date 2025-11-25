@@ -1,1 +1,0 @@
-Analyze the Hegelion project (a dialectical reasoning harness for LLMs: Thesis → Antithesis → Synthesis). Provide your perspective on its potential and suggest ways to make it highly appealing for a broad audience, similar to how a Google-quality project would be presented on platforms like Hacker News or X.
