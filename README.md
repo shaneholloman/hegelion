@@ -160,19 +160,33 @@ Hegelion ships as an **MCP server** and a **Python agent**. You can try it local
 # Install
 pip install hegelion
 
+# If running from source (cloned repo):
+pip install -e .
+# Or if you get "externally-managed-environment" error:
+pip install --break-system-packages -e .
+
 # Auto-config (recommended)
 hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
 # Or manual setup - add to mcpServers section:
 {
-  "hegelion": {
-    "command": "python",
-    "args": ["-m", "hegelion.mcp.server"]
+  "mcpServers": {
+    "hegelion": {
+      "command": "/full/path/to/python",
+      "args": ["-m", "hegelion.mcp.server"]
+    }
   }
 }
 ```
 
 > ⚠️ **Restart Required:** Quit and reopen Claude Desktop (Cmd+Q) after modifying the config.
+
+**Find your Python path:**
+```bash
+which python
+# Example output: /usr/local/bin/python
+# Use this exact path in the config above
+```
 
 **Verify installation:** In Claude Desktop, ask: *"What Hegelion tools are available?"* — you should see `dialectical_workflow`, `thesis_prompt`, etc.
 

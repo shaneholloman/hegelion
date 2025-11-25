@@ -36,16 +36,16 @@ TARGET_COUNTS = {
 def load_existing_hegelion():
     """Load existing Hegelion data as set of queries."""
     existing = {}
-    with open(HEGELION_DATA, 'r') as f:
+    with open(HEGELION_DATA, "r") as f:
         for line in f:
             try:
                 data = json.loads(line.strip())
-                query = data['query'].strip()
+                query = data["query"].strip()
                 existing[query.lower()] = {
-                    'query': query,
-                    'thesis': data.get('thesis', ''),
-                    'antithesis': data.get('antithesis', ''),
-                    'synthesis': data.get('synthesis', ''),
+                    "query": query,
+                    "thesis": data.get("thesis", ""),
+                    "antithesis": data.get("antithesis", ""),
+                    "synthesis": data.get("synthesis", ""),
                 }
             except:
                 continue
@@ -55,11 +55,11 @@ def load_existing_hegelion():
 def load_all_prompts():
     """Load all prompts from the prompts file."""
     prompts = []
-    with open(PROMPTS_FILE, 'r') as f:
+    with open(PROMPTS_FILE, "r") as f:
         for i, line in enumerate(f, 1):
             text = line.strip()
-            if text and not text.startswith('#'):
-                prompts.append({'line': i, 'text': text})
+            if text and not text.startswith("#"):
+                prompts.append({"line": i, "text": text})
     return prompts
 
 
@@ -84,18 +84,20 @@ def main():
     # Categorize and check for existing data
     categorized = defaultdict(list)
     for p in all_prompts:
-        category = categorize_prompt(p['line'])
+        category = categorize_prompt(p["line"])
         if category:
-            has_existing = p['text'].lower() in existing
-            categorized[category].append({
-                'line': p['line'],
-                'text': p['text'],
-                'has_existing': has_existing,
-            })
+            has_existing = p["text"].lower() in existing
+            categorized[category].append(
+                {
+                    "line": p["line"],
+                    "text": p["text"],
+                    "has_existing": has_existing,
+                }
+            )
 
     print("\n--- Available prompts by category ---")
     for cat, prompts in categorized.items():
-        with_data = sum(1 for p in prompts if p['has_existing'])
+        with_data = sum(1 for p in prompts if p["has_existing"])
         print(f"  {cat}: {len(prompts)} total, {with_data} with existing Hegelion data")
 
     # Select prompts - prioritize those with existing data
@@ -106,25 +108,27 @@ def main():
         available = categorized[category]
 
         # Sort: existing data first
-        available.sort(key=lambda p: (not p['has_existing'], p['line']))
+        available.sort(key=lambda p: (not p["has_existing"], p["line"]))
 
         chosen = available[:target]
 
-        with_data = sum(1 for p in chosen if p['has_existing'])
+        with_data = sum(1 for p in chosen if p["has_existing"])
         print(f"\n{category}: Selected {len(chosen)}/{target}, {with_data} with existing data")
 
         for p in chosen:
-            selected.append({
-                'id': f'P{prompt_id:03d}',
-                'category': category,
-                'text': p['text'],
-                'source_line': p['line'],
-                'has_existing_hegelion': p['has_existing'],
-            })
+            selected.append(
+                {
+                    "id": f"P{prompt_id:03d}",
+                    "category": category,
+                    "text": p["text"],
+                    "source_line": p["line"],
+                    "has_existing_hegelion": p["has_existing"],
+                }
+            )
             prompt_id += 1
 
     # Summary
-    total_with_existing = sum(1 for p in selected if p['has_existing_hegelion'])
+    total_with_existing = sum(1 for p in selected if p["has_existing_hegelion"])
     print(f"\n=== SUMMARY ===")
     print(f"Total selected: {len(selected)}")
     print(f"With existing Hegelion data: {total_with_existing}")
@@ -132,22 +136,22 @@ def main():
 
     # Save
     output = {
-        'version': '2.0',
-        'selection_strategy': 'prioritize_existing_hegelion_data',
-        'total_prompts': len(selected),
-        'with_existing_data': total_with_existing,
-        'needs_generation': len(selected) - total_with_existing,
-        'category_counts': {cat: TARGET_COUNTS[cat] for cat in TARGET_COUNTS},
-        'prompts': selected,
+        "version": "2.0",
+        "selection_strategy": "prioritize_existing_hegelion_data",
+        "total_prompts": len(selected),
+        "with_existing_data": total_with_existing,
+        "needs_generation": len(selected) - total_with_existing,
+        "category_counts": {cat: TARGET_COUNTS[cat] for cat in TARGET_COUNTS},
+        "prompts": selected,
     }
 
-    with open(OUTPUT_FILE, 'w') as f:
+    with open(OUTPUT_FILE, "w") as f:
         json.dump(output, f, indent=2)
 
     print(f"\nSaved to: {OUTPUT_FILE}")
 
     # Show which need generation
-    needs_gen = [p for p in selected if not p['has_existing_hegelion']]
+    needs_gen = [p for p in selected if not p["has_existing_hegelion"]]
     if needs_gen:
         print(f"\n--- Prompts needing Hegelion generation ({len(needs_gen)}) ---")
         for p in needs_gen:

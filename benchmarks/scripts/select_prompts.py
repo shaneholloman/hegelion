@@ -134,7 +134,7 @@ def select_prompts(seed: int = 42) -> List[Dict]:
                 chosen = preferred[:count]
                 if len(chosen) < count:
                     random.shuffle(remaining)
-                    chosen.extend(remaining[:count - len(chosen)])
+                    chosen.extend(remaining[: count - len(chosen)])
             else:
                 # Random selection for other categories
                 random.shuffle(available)
@@ -144,12 +144,14 @@ def select_prompts(seed: int = 42) -> List[Dict]:
 
         # Add to selected list
         for line_num, prompt in category_prompts:
-            selected.append({
-                "id": f"P{prompt_id:03d}",
-                "category": category,
-                "text": prompt,
-                "source_line": line_num,
-            })
+            selected.append(
+                {
+                    "id": f"P{prompt_id:03d}",
+                    "category": category,
+                    "text": prompt,
+                    "source_line": line_num,
+                }
+            )
             prompt_id += 1
 
     return selected

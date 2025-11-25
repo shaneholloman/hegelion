@@ -52,10 +52,12 @@ def load_response_stats() -> Dict[str, Dict]:
         for filepath in method_dir.glob("*.json"):
             with open(filepath, "r") as f:
                 data = json.load(f)
-                stats[method].append({
-                    "tokens": data.get("estimated_tokens", 0),
-                    "calls": data.get("call_count", 1),
-                })
+                stats[method].append(
+                    {
+                        "tokens": data.get("estimated_tokens", 0),
+                        "calls": data.get("call_count", 1),
+                    }
+                )
 
     return stats
 
@@ -131,7 +133,13 @@ def calculate_average_scores(evaluations: List[Dict]) -> Dict[str, Dict]:
             if values:
                 averages[method][criterion] = {
                     "mean": sum(values) / len(values),
-                    "std": math.sqrt(sum((x - sum(values)/len(values))**2 for x in values) / len(values)) if len(values) > 1 else 0,
+                    "std": (
+                        math.sqrt(
+                            sum((x - sum(values) / len(values)) ** 2 for x in values) / len(values)
+                        )
+                        if len(values) > 1
+                        else 0
+                    ),
                     "n": len(values),
                 }
             else:
@@ -142,9 +150,7 @@ def calculate_average_scores(evaluations: List[Dict]) -> Dict[str, Dict]:
 
 def calculate_category_breakdown(evaluations: List[Dict]) -> Dict[str, Dict]:
     """Calculate win rates by category."""
-    category_results = defaultdict(lambda: {
-        "raw": 0, "enhanced": 0, "hegelion": 0, "total": 0
-    })
+    category_results = defaultdict(lambda: {"raw": 0, "enhanced": 0, "hegelion": 0, "total": 0})
 
     for eval_result in evaluations:
         category = eval_result.get("category", "unknown")
@@ -167,7 +173,7 @@ def paired_ttest(scores1: List[float], scores2: List[float]) -> Tuple[float, flo
     diffs = [s1 - s2 for s1, s2 in zip(scores1, scores2)]
     n = len(diffs)
     mean_diff = sum(diffs) / n
-    var_diff = sum((d - mean_diff)**2 for d in diffs) / (n - 1)
+    var_diff = sum((d - mean_diff) ** 2 for d in diffs) / (n - 1)
     se = math.sqrt(var_diff / n) if var_diff > 0 else 1e-10
 
     t_stat = mean_diff / se
@@ -188,8 +194,8 @@ def cohens_d(scores1: List[float], scores2: List[float]) -> float:
     mean1 = sum(scores1) / len(scores1)
     mean2 = sum(scores2) / len(scores2)
 
-    var1 = sum((x - mean1)**2 for x in scores1) / len(scores1)
-    var2 = sum((x - mean2)**2 for x in scores2) / len(scores2)
+    var1 = sum((x - mean1) ** 2 for x in scores1) / len(scores1)
+    var2 = sum((x - mean2) ** 2 for x in scores2) / len(scores2)
 
     pooled_std = math.sqrt((var1 + var2) / 2)
     if pooled_std == 0:
@@ -237,17 +243,17 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
 
     # Statistical tests
     hegelion_vs_enhanced = paired_ttest(
-        total_scores.get("hegelion", []),
-        total_scores.get("enhanced", [])
+        total_scores.get("hegelion", []), total_scores.get("enhanced", [])
     )
-    effect_size = cohens_d(
-        total_scores.get("hegelion", []),
-        total_scores.get("enhanced", [])
-    )
+    effect_size = cohens_d(total_scores.get("hegelion", []), total_scores.get("enhanced", []))
 
     # Calculate cost metrics
-    total_tokens = {method: sum(s["tokens"] for s in stats) for method, stats in response_stats.items()}
-    total_calls = {method: sum(s["calls"] for s in stats) for method, stats in response_stats.items()}
+    total_tokens = {
+        method: sum(s["tokens"] for s in stats) for method, stats in response_stats.items()
+    }
+    total_calls = {
+        method: sum(s["calls"] for s in stats) for method, stats in response_stats.items()
+    }
 
     # Build report
     report = []
@@ -289,7 +295,9 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
         effect_interp = "large"
 
     report.append(f"Effect size (Cohen's d): **{effect_size:.2f}** ({effect_interp})")
-    report.append(f"Statistical significance: t={hegelion_vs_enhanced[0]:.2f}, p≈{hegelion_vs_enhanced[1]:.3f}")
+    report.append(
+        f"Statistical significance: t={hegelion_vs_enhanced[0]:.2f}, p≈{hegelion_vs_enhanced[1]:.3f}"
+    )
     report.append("")
 
     # Win Rates Table
@@ -299,7 +307,9 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
     report.append("|--------|-----------|-----------|-----------|----------|")
     for method in ["hegelion", "enhanced", "raw"]:
         r = win_rates[method]
-        report.append(f"| {method.capitalize()} | {r['wins']} | {r['second']} | {r['third']} | {r['win_rate']*100:.1f}% |")
+        report.append(
+            f"| {method.capitalize()} | {r['wins']} | {r['second']} | {r['third']} | {r['win_rate']*100:.1f}% |"
+        )
     report.append("")
 
     # Average Scores by Criterion
@@ -312,7 +322,9 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
         raw_score = avg_scores.get("raw", {}).get(criterion, {}).get("mean", 0)
         enhanced_score = avg_scores.get("enhanced", {}).get(criterion, {}).get("mean", 0)
         hegelion_score = avg_scores.get("hegelion", {}).get(criterion, {}).get("mean", 0)
-        report.append(f"| {criterion.capitalize()} | {raw_score:.2f} | {enhanced_score:.2f} | {hegelion_score:.2f} |")
+        report.append(
+            f"| {criterion.capitalize()} | {raw_score:.2f} | {enhanced_score:.2f} | {hegelion_score:.2f} |"
+        )
     report.append("")
 
     # Category Breakdown
@@ -321,7 +333,9 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
     report.append("| Category | Raw Wins | Enhanced Wins | Hegelion Wins | Total |")
     report.append("|----------|----------|---------------|---------------|-------|")
     for category, counts in sorted(category_breakdown.items()):
-        report.append(f"| {category.capitalize()} | {counts['raw']} | {counts['enhanced']} | {counts['hegelion']} | {counts['total']} |")
+        report.append(
+            f"| {category.capitalize()} | {counts['raw']} | {counts['enhanced']} | {counts['hegelion']} | {counts['total']} |"
+        )
     report.append("")
 
     # Cost Analysis
@@ -340,7 +354,9 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
     # Key Insight
     report.append("## Key Insight: Control Theory for LLMs")
     report.append("")
-    report.append("This benchmark tests whether **staged intervention** (redirecting the model at each dialectical phase) ")
+    report.append(
+        "This benchmark tests whether **staged intervention** (redirecting the model at each dialectical phase) "
+    )
     report.append("adds value over giving the same instructions in a single longer turn.")
     report.append("")
     report.append("- **Enhanced Baseline**: Single prompt asking for thesis, antithesis, synthesis")
@@ -350,17 +366,33 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
     hegelion_total = avg_scores.get("hegelion", {}).get("total", {}).get("mean", 0)
     enhanced_total = avg_scores.get("enhanced", {}).get("total", {}).get("mean", 0)
     quality_ratio = hegelion_total / enhanced_total if enhanced_total > 0 else 0
-    cost_ratio = total_calls.get("hegelion", 3) / total_calls.get("enhanced", 1) if total_calls.get("enhanced", 1) > 0 else 3
+    cost_ratio = (
+        total_calls.get("hegelion", 3) / total_calls.get("enhanced", 1)
+        if total_calls.get("enhanced", 1) > 0
+        else 3
+    )
 
     if quality_ratio > cost_ratio:
-        report.append(f"**Result**: Hegelion's quality improvement ({quality_ratio:.2f}x) exceeds its cost ratio ({cost_ratio:.1f}x). ")
-        report.append("The structured dialectic process adds value beyond what can be achieved with a single extended prompt.")
+        report.append(
+            f"**Result**: Hegelion's quality improvement ({quality_ratio:.2f}x) exceeds its cost ratio ({cost_ratio:.1f}x). "
+        )
+        report.append(
+            "The structured dialectic process adds value beyond what can be achieved with a single extended prompt."
+        )
     elif quality_ratio > 1:
-        report.append(f"**Result**: Hegelion shows quality improvement ({quality_ratio:.2f}x) but at higher cost ({cost_ratio:.1f}x). ")
-        report.append("The value proposition depends on how much quality matters vs. cost constraints.")
+        report.append(
+            f"**Result**: Hegelion shows quality improvement ({quality_ratio:.2f}x) but at higher cost ({cost_ratio:.1f}x). "
+        )
+        report.append(
+            "The value proposition depends on how much quality matters vs. cost constraints."
+        )
     else:
-        report.append(f"**Result**: Enhanced baseline achieves comparable or better quality at lower cost. ")
-        report.append("The structured dialectic may not provide sufficient benefit for these query types.")
+        report.append(
+            f"**Result**: Enhanced baseline achieves comparable or better quality at lower cost. "
+        )
+        report.append(
+            "The structured dialectic may not provide sufficient benefit for these query types."
+        )
     report.append("")
 
     # Methodology
@@ -368,7 +400,9 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
     report.append("")
     report.append("- **Model**: Claude Sonnet 4.5 for response generation")
     report.append("- **Judge**: Claude Opus 4.5 (blind evaluation, randomized order)")
-    report.append("- **Criteria**: Nuance, Counterargument Handling, Epistemic Calibration, Synthesis Quality, Insight Density")
+    report.append(
+        "- **Criteria**: Nuance, Counterargument Handling, Epistemic Calibration, Synthesis Quality, Insight Density"
+    )
     report.append("- **Scale**: 1-5 per criterion, 5-25 total")
     report.append("")
 

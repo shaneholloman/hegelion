@@ -133,6 +133,7 @@ Respond with ONLY the JSON, no other text."""
 @dataclass
 class BlindPair:
     """A blinded comparison for judging."""
+
     pair_id: str
     prompt_id: str
     prompt_text: str
@@ -149,6 +150,7 @@ class BlindPair:
 @dataclass
 class EvaluationResult:
     """Result of evaluating one blind pair."""
+
     pair_id: str
     prompt_id: str
     category: str
@@ -266,7 +268,7 @@ def parse_judge_response(response: str) -> Optional[Dict]:
     """Parse judge response JSON."""
     try:
         # Try to find JSON in response
-        json_match = re.search(r'\{[\s\S]*\}', response)
+        json_match = re.search(r"\{[\s\S]*\}", response)
         if json_match:
             return json.loads(json_match.group())
     except json.JSONDecodeError:
@@ -300,9 +302,30 @@ async def evaluate_pair(backend, pair: BlindPair) -> EvaluationResult:
         # Fallback: create neutral scores
         print(f"  WARNING: Failed to parse judge response, using fallback scores")
         parsed = {
-            "response_a": {"nuance": 3, "counterargument": 3, "epistemic": 3, "synthesis": 3, "insight": 3, "total": 15},
-            "response_b": {"nuance": 3, "counterargument": 3, "epistemic": 3, "synthesis": 3, "insight": 3, "total": 15},
-            "response_c": {"nuance": 3, "counterargument": 3, "epistemic": 3, "synthesis": 3, "insight": 3, "total": 15},
+            "response_a": {
+                "nuance": 3,
+                "counterargument": 3,
+                "epistemic": 3,
+                "synthesis": 3,
+                "insight": 3,
+                "total": 15,
+            },
+            "response_b": {
+                "nuance": 3,
+                "counterargument": 3,
+                "epistemic": 3,
+                "synthesis": 3,
+                "insight": 3,
+                "total": 15,
+            },
+            "response_c": {
+                "nuance": 3,
+                "counterargument": 3,
+                "epistemic": 3,
+                "synthesis": 3,
+                "insight": 3,
+                "total": 15,
+            },
             "ranking": ["a", "b", "c"],
             "reasoning": "Parse error - fallback scores",
         }
@@ -425,10 +448,12 @@ def main():
             BLIND_PAIRS_FILE.unlink()
         print("Blind pairs will be recreated")
 
-    asyncio.run(run_evaluation(
-        dry_run=args.dry_run,
-        resume=not args.no_resume,
-    ))
+    asyncio.run(
+        run_evaluation(
+            dry_run=args.dry_run,
+            resume=not args.no_resume,
+        )
+    )
 
 
 if __name__ == "__main__":

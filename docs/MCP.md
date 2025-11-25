@@ -28,7 +28,26 @@ This version of Hegelion works with **whatever LLM is currently calling the MCP 
 
 `hegelion-server` returns **structured prompts** and never makes API calls. It works out of the box in IDEs with zero API keys. Add it to your MCP config and your editor/agent can run every step locally.
 
-Minimal MCP config:
+**IMPORTANT**: First install Hegelion:
+```bash
+pip install hegelion
+# If running from source:
+pip install -e .
+```
+
+Minimal MCP config (most reliable):
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "python",
+      "args": ["-m", "hegelion.mcp.server"]
+    }
+  }
+}
+```
+
+Alternative (if hegelion-server is in your PATH):
 ```json
 {
   "mcpServers": {

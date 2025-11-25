@@ -52,6 +52,7 @@ Be thorough. Acknowledge uncertainty. Identify where reasonable people disagree.
 @dataclass
 class ResponseResult:
     """Result from generating a single response."""
+
     prompt_id: str
     method: str
     response_text: str
@@ -69,6 +70,7 @@ class ResponseResult:
 @dataclass
 class Checkpoint:
     """Tracks generation progress."""
+
     run_id: str
     started_at: str
     last_updated: str
@@ -182,8 +184,8 @@ async def generate_hegelion(prompt_id: str, prompt_text: str) -> ResponseResult:
     full_response = f"## Thesis\n{result.thesis}\n\n## Antithesis\n{result.antithesis}\n\n## Synthesis\n{result.synthesis}"
 
     # Truncate research proposal markers if present
-    full_response = re.sub(r'\nRESEARCH_PROPOSAL:.*$', '', full_response, flags=re.MULTILINE)
-    full_response = re.sub(r'\nTESTABLE_PREDICTION:.*$', '', full_response, flags=re.MULTILINE)
+    full_response = re.sub(r"\nRESEARCH_PROPOSAL:.*$", "", full_response, flags=re.MULTILINE)
+    full_response = re.sub(r"\nTESTABLE_PREDICTION:.*$", "", full_response, flags=re.MULTILINE)
 
     return ResponseResult(
         prompt_id=prompt_id,
@@ -301,7 +303,9 @@ async def run_generation(dry_run: bool = False, resume: bool = True):
                 checkpoint.total_call_count += result.call_count
                 checkpoint.last_updated = datetime.utcnow().isoformat()
                 save_checkpoint(checkpoint)
-                print(f"Done ({result.duration_ms:.0f}ms, ~{result.estimated_tokens} tokens, 3 calls)")
+                print(
+                    f"Done ({result.duration_ms:.0f}ms, ~{result.estimated_tokens} tokens, 3 calls)"
+                )
             except Exception as e:
                 print(f"ERROR: {e}")
         else:
@@ -333,10 +337,12 @@ def main():
     parser.add_argument("--no-resume", action="store_true", help="Start fresh, ignore checkpoint")
     args = parser.parse_args()
 
-    asyncio.run(run_generation(
-        dry_run=args.dry_run,
-        resume=not args.no_resume,
-    ))
+    asyncio.run(
+        run_generation(
+            dry_run=args.dry_run,
+            resume=not args.no_resume,
+        )
+    )
 
 
 if __name__ == "__main__":

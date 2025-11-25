@@ -4,35 +4,54 @@ This guide shows how to integrate Hegelion's dialectical reasoning capabilities 
 
 ## Quick Setup
 
-1.  **Install Hegelion with MCP support:**
-    ```bash
-    pip install hegelion
-    ```
+### 1. Install Hegelion
 
-2.  **Configure Claude Code (CLI) or Claude Desktop (GUI) to use Hegelion:**
+**If installing from PyPI:**
+```bash
+pip install hegelion
+```
 
-    *   **For Claude Code (CLI):**
-        Run the setup script to generate the MCP configuration:
-        ```bash
-        hegelion-setup-mcp --write ~/.claude/mcp_config.json
-        ```
-        This command will write the necessary configuration to Claude Code's MCP file, making Hegelion's tools available.
+**If running from source (cloned repo):**
+```bash
+pip install -e .
+# If you get "externally-managed-environment" error:
+pip install --break-system-packages -e .
+```
 
-    *   **For Claude Desktop (GUI):**
-        Run the setup script to generate the MCP configuration:
-        ```bash
-        hegelion-setup-mcp --write ~/.claude_desktop_config.json
-        ```
-        This will configure Claude Desktop's MCP settings.
+### 2. Configure Claude Code (CLI)
 
-3.  **Start the MCP server** (you'll typically run this in a separate terminal or background it):
-    ```bash
-    hegelion-server
-    ```
+**Method 1: Using the CLI (Recommended)**
+```bash
+# Add the MCP server
+claude mcp add hegelion python -- -m hegelion.mcp.server
+
+# Verify it's added
+claude mcp list
+
+# Restart Claude Code (exit and reopen terminal)
+exit
+```
+
+**Method 2: Using the setup script**
+```bash
+# Generate config (you'll need to manually copy the output)
+hegelion-setup-mcp
+```
+
+Then manually add the output to your Claude Code config file.
+
+### 3. Configure Claude Desktop (GUI)
+
+```bash
+# Auto-config (recommended)
+hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+
+# Or manually edit the config file
+```
 
 ## MCP Tools Available
 
-Once connected and the `hegelion-server` is running, Claude Code can access these tools:
+Once connected, Claude Code can access these tools:
 
 ### `dialectical_single_shot`
 The primary tool for general use. It provides Claude with a single, comprehensive prompt designed to guide it through the entire Thesis → Antithesis (with optional Council critique) → Synthesis reasoning process in one go.
@@ -81,3 +100,16 @@ pip install hegelion
 ```
 
 This includes the MCP server (`hegelion-server`) and all CLI tools.
+
+## Common Issues
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `ModuleNotFoundError: hegelion` | Running from source without installation | Install with `pip install -e .` from repo root |
+| `Failed to connect` | Server not starting | Check Python path in config |
+| `Command not found: python` | Wrong python command | Use `python3` or full path to Python |
+
+## Configuration Files
+
+- **Claude Desktop**: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+- **Claude Code**: `~/.claude.json` (user) or `.claude.json` (project-local)

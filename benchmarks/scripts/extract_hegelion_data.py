@@ -78,7 +78,7 @@ def extract_and_save(prompts: list[dict], jsonl_data: dict[str, dict], output_di
 {entry["antithesis"]}
 
 ## SYNTHESIS
-{entry["synthesis"]}"""
+{entry["synthesis"]}""",
             }
 
             # Save to file

@@ -59,26 +59,22 @@ Examples:
   python run_mvb.py --dry-run          # Quick test with 5 prompts
   python run_mvb.py --step generate    # Only run generation
   python run_mvb.py --step evaluate --dry-run  # Quick eval test
-        """
+        """,
     )
 
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Run with 5 prompts only (for testing)"
+        "--dry-run", action="store_true", help="Run with 5 prompts only (for testing)"
     )
 
     parser.add_argument(
         "--step",
         choices=["select", "generate", "evaluate", "report", "all"],
         default="all",
-        help="Run a specific step (default: all)"
+        help="Run a specific step (default: all)",
     )
 
     parser.add_argument(
-        "--no-resume",
-        action="store_true",
-        help="Start fresh, don't resume from checkpoints"
+        "--no-resume", action="store_true", help="Start fresh, don't resume from checkpoints"
     )
 
     args = parser.parse_args()
