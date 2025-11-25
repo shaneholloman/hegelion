@@ -38,6 +38,66 @@ See dialectical reasoning in action:
 
 ---
 
+## 📊 Benchmark: Does Multi-Call Matter?
+
+The key question: **Does separating thesis → antithesis → synthesis into distinct API calls produce better reasoning than asking for all three in a single prompt?**
+
+We compared three approaches on the same question:
+
+| Method | API Calls | Approach |
+| :--- | :---: | :--- |
+| **Raw** | 1 | Simple prompt, no structure |
+| **Enhanced** | 1 | Single prompt requesting thesis/antithesis/synthesis |
+| **Hegelion** | 3 | Separate calls with forced redirection between phases |
+
+### Test Case: *"Is free will compatible with determinism?"*
+
+<details>
+<summary><b>Raw (1 call)</b> — Click to expand</summary>
+
+> The compatibility of free will and determinism depends heavily on how we define free will. Compatibilists argue that yes, they can coexist, while incompatibilists say no... Ultimately, **the debate often turns on whether we prioritize metaphysical concerns about causal chains or practical concerns about autonomy and moral responsibility.**
+
+*Conclusion: Survey of positions, ends with "it depends on priorities."*
+</details>
+
+<details>
+<summary><b>Enhanced (1 call)</b> — Click to expand</summary>
+
+> A mature view likely requires what Wilfrid Sellars called **'stereoscopic vision'—holding both perspectives while recognizing their distinct purposes.** We are both determined and deciding, caused and choosing, and the apparent contradiction may reflect complementary levels of description rather than metaphysical inconsistency.
+
+*Conclusion: Comprehensive analysis, ends with "hold both views" (Sellars).*
+</details>
+
+<details>
+<summary><b>Hegelion (3 calls)</b> — Click to expand</summary>
+
+> The deadlock dissolves when we recognize free will is not binary (present/absent) but exists on a **spectrum of self-authorship**:
+>
+> 1. **Minimal freedom**: Acting on desires without external coercion
+> 2. **Reflective freedom**: Second-order endorsement—I want to want this
+> 3. **Narrative freedom**: Acting consistently with a coherent life narrative
+> 4. **Constitutive freedom**: Recursive self-modification through deliberate habituation
+>
+> **RESOLVING MANIPULATION**: The manipulated agent lacks freedom not because their desires are caused externally, but because the causation *bypasses their enduring character*. When I choose coffee because I've cultivated a taste through years of reflection, my choice is deeply mine—even though that cultivation was itself caused.
+>
+> **RESEARCH PROPOSAL**: Use fMRI to scan participants making decisions under (1) snap judgments, (2) brief reflection, (3) extended deliberation. Hypothesis: Condition (3) shows strongest correlation between brain patterns and self-reported decision "ownership."
+
+*Conclusion: Novel 4-level framework that resolves the manipulation argument, with testable predictions.*
+</details>
+
+### Why the difference?
+
+Both **Enhanced** and **Hegelion** ask for dialectical reasoning. But:
+
+- **Enhanced** (1 call): The model knows where it's going. It can construct a balanced synthesis without genuinely confronting contradictions.
+- **Hegelion** (3 calls): The model must commit to a thesis, then attack it in a separate call (no hedging), then synthesize. The forced redirection surfaces insights the single-call approach shortcuts.
+
+The "self-authorship spectrum" didn't emerge from asking for thesis/antithesis/synthesis in one breath. It emerged from *actually arguing with itself* across separate calls.
+
+**You decide**: Is the 3× cost worth the difference? [Full responses available in `benchmarks/data/responses/`]
+
+---
+
 ## ⚙️ How it Works
 
 Hegelion is **multi-call orchestration**—similar to sequential thinking or multi-turn reasoning patterns. Each phase is a separate LLM call, not a single prompt asking the model to roleplay all three roles.
