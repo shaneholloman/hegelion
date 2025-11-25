@@ -75,7 +75,9 @@ def _extract_research(text: str) -> List[Dict[str, str]]:
                 "testable_prediction": "",
             }
             results.append(current)
-        elif (upper.startswith("TESTABLE_PREDICTION") or upper.startswith("PREDICTION")) and current:
+        elif (
+            upper.startswith("TESTABLE_PREDICTION") or upper.startswith("PREDICTION")
+        ) and current:
             current["testable_prediction"] = line.split(":", 1)[1].strip()
     return [r for r in results if r.get("description")]
 
@@ -121,7 +123,10 @@ def main() -> None:
         help="Path to the Claude output (text/markdown). Use '-' to read from stdin.",
     )
     parser.add_argument(
-        "--output", "-o", default="-", help="File to append JSONL to (default: stdout)",
+        "--output",
+        "-o",
+        default="-",
+        help="File to append JSONL to (default: stdout)",
     )
     args = parser.parse_args()
 
