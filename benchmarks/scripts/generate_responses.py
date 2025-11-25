@@ -27,7 +27,7 @@ from typing import Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from hegelion import run_dialectic
-from hegelion.core.config import get_backend_from_env, resolve_backend_for_model
+from hegelion.core.config import resolve_backend_for_model
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent

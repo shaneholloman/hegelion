@@ -20,7 +20,7 @@ import time
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 # Add parent to path for hegelion imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -300,7 +300,7 @@ async def evaluate_pair(backend, pair: BlindPair) -> EvaluationResult:
 
     if parsed is None:
         # Fallback: create neutral scores
-        print(f"  WARNING: Failed to parse judge response, using fallback scores")
+        print("  WARNING: Failed to parse judge response, using fallback scores")
         parsed = {
             "response_a": {
                 "nuance": 3,
@@ -401,7 +401,7 @@ async def run_evaluation(dry_run: bool = False, resume: bool = True):
 
         print(f"\n[{i+1}/{len(pairs)}] {pair.pair_id} ({pair.category})")
         print(f"  Question: {pair.prompt_text[:60]}...")
-        print(f"  Evaluating...", end=" ", flush=True)
+        print("  Evaluating...", end=" ", flush=True)
 
         try:
             result = evaluate_pair(backend, pair)

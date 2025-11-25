@@ -47,7 +47,7 @@ def load_existing_hegelion():
                     "antithesis": data.get("antithesis", ""),
                     "synthesis": data.get("synthesis", ""),
                 }
-            except:
+            except Exception:
                 continue
     return existing
 
@@ -129,7 +129,7 @@ def main():
 
     # Summary
     total_with_existing = sum(1 for p in selected if p["has_existing_hegelion"])
-    print(f"\n=== SUMMARY ===")
+    print("\n=== SUMMARY ===")
     print(f"Total selected: {len(selected)}")
     print(f"With existing Hegelion data: {total_with_existing}")
     print(f"Need to generate: {len(selected) - total_with_existing}")

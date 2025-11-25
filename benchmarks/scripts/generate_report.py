@@ -271,7 +271,6 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
 
     hegelion_wins = win_rates["hegelion"]["wins"]
     enhanced_wins = win_rates["enhanced"]["wins"]
-    raw_wins = win_rates["raw"]["wins"]
     total = win_rates["hegelion"]["total"]
 
     if hegelion_wins > enhanced_wins:
@@ -388,7 +387,7 @@ def generate_report(evaluations: List[Dict], response_stats: Dict) -> str:
         )
     else:
         report.append(
-            f"**Result**: Enhanced baseline achieves comparable or better quality at lower cost. "
+            "**Result**: Enhanced baseline achieves comparable or better quality at lower cost. "
         )
         report.append(
             "The structured dialectic may not provide sufficient benefit for these query types."
