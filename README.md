@@ -275,7 +275,8 @@ Consciousness likely emerges, but only when neural dynamics achieve integrated i
 ## 📚 Documentation
 
 - **[Human Quickstart](docs/QUICKSTART.md)**: Detailed guide for getting started.
-- **[MCP Setup for Claude Code](docs/development/CLAUDE_CODE_SETUP.md)**: How to integrate Hegelion into agentic workflows.
+- **[MCP Setup for Claude Desktop](docs/CLAUDE_DESKTOP_SETUP.md)**: GUI app integration guide.
+- **[MCP Setup for Claude Code](docs/development/CLAUDE_CODE_SETUP.md)**: CLI integration guide.
 - **[MCP Reference](docs/MCP.md)**: Advanced configuration for the Model Context Protocol.
 - **[Training Data](hegelion-data/README.md)**: *Planned: Guidelines for building dialectical datasets.*
 - **[Showcase](docs/showcase.md)**: Full consciousness example trace.
