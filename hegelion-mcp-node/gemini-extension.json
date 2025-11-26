@@ -1,0 +1,14 @@
+{
+    "name": "hegelion-mcp-node",
+    "version": "0.3.1",
+    "contextFileName": "GEMINI.md",
+    "mcpServers": {
+        "nodeServer": {
+            "command": "node",
+            "args": [
+                "${extensionPath}/dist/index.js"
+            ],
+            "cwd": "${extensionPath}"
+        }
+    }
+}
