@@ -1,7 +1,7 @@
 {
     "name": "hegelion-mcp-node",
     "version": "0.3.1",
-    "description": "Hegelian dialectical reasoning tools (Thesis-Antithesis-Synthesis) for Gemini CLI",
+    "description": "Hegelian Dialectical Architecture (Thesis-Antithesis-Synthesis) for Gemini CLI",
     "type": "module",
     "main": "dist/index.js",
     "scripts": {
