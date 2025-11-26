@@ -208,6 +208,16 @@ exit  # Then reopen terminal
 
 **Verify installation:** In Claude Code, ask: *"Use Hegelion to analyze: [your question]"*
 
+### For Gemini CLI Users
+
+```bash
+# Install directly from GitHub
+gemini extensions install https://github.com/Hmbown/Hegelion --branch main --path hegelion-mcp-node
+```
+
+**Verify installation:** In Gemini CLI, ask: *"Use Hegelion to analyze: [your question]"*
+
+
 ### Common Setup Issues
 
 | Error | Cause | Fix |

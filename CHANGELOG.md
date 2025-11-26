@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 – Gemini CLI Extension Support
+
+- **New: Gemini CLI Extension:** Added official support for the Gemini CLI. You can now install Hegelion directly as an extension to use dialectical tools within your Gemini CLI workflows.
+- **New: `GEMINI.md` Context:** Included a persistent context file to guide the Gemini model on how to use Hegelion's dialectical tools effectively.
+
 ## 0.3.0 – Model-Agnostic Support & Feature Expansion
 
 - **New: Model-Agnostic MCP Server:** Introduced `hegelion-prompt-server` which allows using Hegelion with *any* model configured in your editor/IDE (Cursor, VS Code, Claude Desktop) without needing API keys.

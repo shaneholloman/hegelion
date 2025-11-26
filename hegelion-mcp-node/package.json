@@ -1,7 +1,7 @@
 {
     "name": "hegelion-mcp-node",
     "version": "0.3.1",
-    "description": "Node.js MCP server for Hegelion with MCP-UI support",
+    "description": "Hegelian dialectical reasoning tools (Thesis-Antithesis-Synthesis) for Gemini CLI",
     "type": "module",
     "main": "dist/index.js",
     "scripts": {
