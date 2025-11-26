@@ -12,16 +12,7 @@ It wraps any model in a structured **claim → critique → refined answer** loo
 
 ---
 
-## ⚡️ Showcase
 
-See dialectical reasoning in action:
-
-### **[Is consciousness fundamental or emergent?](docs/showcase.md)**
-> *Full trace showing how Hegelion drives thesis → antithesis → synthesis to reach a sharper answer.*
-
-[**View the full trace →**](docs/showcase.md)
-
----
 
 ## 💎 Why Hegelion?
 
@@ -38,7 +29,7 @@ See dialectical reasoning in action:
 
 ---
 
-## 📊 Benchmark: Does Multi-Call Matter?
+## ⚡️ Showcase: Does Multi-Call Matter?
 
 The key question: **Does separating thesis → antithesis → synthesis into distinct API calls produce better reasoning than asking for all three in a single prompt?**
 
