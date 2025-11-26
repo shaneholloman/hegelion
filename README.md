@@ -265,22 +265,7 @@ PY
 
 ---
 
-## 🧠 See the reasoning
 
-```text
-## THESIS
-Consciousness is emergent from complex neural computation...
-
-## ANTITHESIS
-- Lacks account for phenomenology (hard problem)
-- Underestimates quantum/field perspectives
-- Offers no falsifiable mechanism for emergence
-
-## SYNTHESIS
-Consciousness likely emerges, but only when neural dynamics achieve integrated information thresholds; empirical tests should combine IIT-style metrics with perturbational complexity on neuromorphic systems.
-```
-
----
 
 ## 📚 Documentation
 
