@@ -209,6 +209,14 @@ def print_rich_result(result: HegelionResult):
                 console.print(f"   [dim]Prediction: {p['testable_prediction']}[/]")
 
 
+def parse_command_string(line: str) -> tuple[str, list[str]]:
+    """Parse an interactive command line into command and arguments."""
+    parts = line.strip().split()
+    if not parts:
+        return "", []
+    return parts[0].lower(), parts[1:]
+
+
 async def async_input(prompt: str) -> str:
     """Non-blocking input for async context."""
     loop = asyncio.get_event_loop()
