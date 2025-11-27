@@ -83,6 +83,8 @@ hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desk
 
 Verify by asking: *"What Hegelion tools are available?"*
 
+**Agent Instructions:** If you are configuring an AI agent to use Hegelion, see [MCP_INSTRUCTIONS.md](MCP_INSTRUCTIONS.md) for system prompt guidelines.
+
 **Other editors:** See [MCP Integration Guide](docs/guides/mcp-integration.md)
 
 ### Python API
@@ -107,6 +109,19 @@ Configure your backend in `.env`:
 HEGELION_PROVIDER=anthropic
 HEGELION_MODEL=claude-4.5-sonnet-latest
 ANTHROPIC_API_KEY=your-key
+```
+
+### CLI & Visualization
+
+Run dialectics directly from the command line with rich output:
+
+```bash
+hegelion "Is mathematics invented or discovered?"
+```
+
+**Interactive Mode:**
+```bash
+hegelion --interactive
 ```
 
 ---

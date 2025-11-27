@@ -94,6 +94,7 @@ function App() {
 
         {/* Showcase Section */}
         <section className="container mx-auto px-4 py-24">
+
           <div className="mb-16 flex flex-col md:flex-row justify-between items-end gap-6 border-b border-foreground pb-6">
             <div>
               <h2 className="font-serif text-5xl mb-4">Showcase</h2>
