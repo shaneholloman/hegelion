@@ -19,11 +19,7 @@ try:
     from rich.progress import Progress, SpinnerColumn, TextColumn
     from rich.theme import Theme
 
-    custom_theme = Theme({
-        "info": "dim cyan",
-        "warning": "magenta",
-        "danger": "bold red"
-    })
+    custom_theme = Theme({"info": "dim cyan", "warning": "magenta", "danger": "bold red"})
     console = Console(theme=custom_theme)
 except ImportError:
     console = None
@@ -83,7 +79,11 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 def _load_demo_examples() -> list[dict]:
     """Load bundled demo examples from the installed package."""
     try:
-        data = files("hegelion.examples_data").joinpath("glm4_6_examples.jsonl").read_text(encoding="utf-8")
+        data = (
+            files("hegelion.examples_data")
+            .joinpath("glm4_6_examples.jsonl")
+            .read_text(encoding="utf-8")
+        )
         return [json.loads(line) for line in data.splitlines() if line.strip()]
     except Exception:
         return []
@@ -184,6 +184,7 @@ def format_summary(result) -> str:
 
     return "\n".join(lines)
 
+
 def print_rich_result(result: HegelionResult):
     """Print the result using Rich panels and markdown."""
     if not console:
@@ -191,11 +192,17 @@ def print_rich_result(result: HegelionResult):
         return
 
     console.print(f"\n[bold]Query:[/bold] {result.query}")
-    
+
     console.print(Panel(Markdown(result.thesis), title="[bold cyan]Thesis[/]", border_style="cyan"))
-    console.print(Panel(Markdown(result.antithesis), title="[bold magenta]Antithesis[/]", border_style="magenta"))
-    console.print(Panel(Markdown(result.synthesis), title="[bold green]Synthesis[/]", border_style="green"))
-    
+    console.print(
+        Panel(
+            Markdown(result.antithesis), title="[bold magenta]Antithesis[/]", border_style="magenta"
+        )
+    )
+    console.print(
+        Panel(Markdown(result.synthesis), title="[bold green]Synthesis[/]", border_style="green")
+    )
+
     if result.contradictions:
         console.print("\n[bold red]Contradictions Identified:[/]")
         for i, c in enumerate(result.contradictions, 1):
