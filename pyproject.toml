@@ -33,6 +33,7 @@ dependencies = [
     "scikit-learn>=1.2.0",
     "datasets>=4.4.1",
     "psutil>=5.9.0",
+    "rich>=13.0.0",
     # Phase 2 dependencies
     "duckduckgo-search>=6.0.0",
     "instructor>=1.0.0",
@@ -70,7 +71,7 @@ hegelion-dataset = "hegelion.scripts.hegelion_dataset:main"
 [project.urls]
 Homepage = "https://github.com/Hmbown/Hegelion"
 Repository = "https://github.com/Hmbown/Hegelion"
-Documentation = "https://github.com/Hmbown/Hegelion/blob/main/HEGELION_SPEC.md"
+Documentation = "https://github.com/Hmbown/Hegelion/blob/main/docs/HEGELION_SPEC.md"
 "Bug Tracker" = "https://github.com/Hmbown/Hegelion/issues"
 
 [build-system]

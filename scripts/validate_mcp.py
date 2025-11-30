@@ -1,7 +1,7 @@
 """Fast validation script for AI assistants.
 
 Run:
-    python AI_TEST.py
+    python scripts/validate_mcp.py
 
 Checks that dialectical workflow generation works and shows response_style options.
 """

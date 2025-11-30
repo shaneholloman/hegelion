@@ -34,7 +34,7 @@ Hegelion is a research tool designed for robustness, clarity, and extensibility.
 -   **Clarity over cleverness:** Write code that is easy to understand and maintain.
 -   **Robustness is key:** The tool should handle real-world model outputs and fail gracefully.
 -   **Extensibility by design:** The architecture should make it easy to add new backends, features, and evaluation metrics.
--   **Documentation is paramount:** Changes should be reflected in the `README.md` and `HEGELION_SPEC.md`.
+-   **Documentation is paramount:** Changes should be reflected in the `README.md` and `docs/HEGELION_SPEC.md`.
 
 ---
 
@@ -97,7 +97,7 @@ Create a descriptive branch name based on the type of change:
 
 -   Write clear, atomic commits.
 -   Ensure new features are covered by tests.
--   Update the `README.md`, `HEGELION_SPEC.md`, and any other relevant documentation if you are changing user-facing behavior.
+-   Update the `README.md`, `docs/HEGELION_SPEC.md`, and any other relevant documentation if you are changing user-facing behavior.
 
 ### Code Quality
 

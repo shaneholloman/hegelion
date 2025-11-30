@@ -83,7 +83,7 @@ hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desk
 
 Verify by asking: *"What Hegelion tools are available?"*
 
-**Agent Instructions:** If you are configuring an AI agent to use Hegelion, see [MCP_INSTRUCTIONS.md](MCP_INSTRUCTIONS.md) for system prompt guidelines.
+**Agent Instructions:** If you are configuring an AI agent to use Hegelion, see [MCP_INSTRUCTIONS.md](docs/guides/mcp_instructions.md) for system prompt guidelines.
 
 **Other editors:** See [MCP Integration Guide](docs/guides/mcp-integration.md)
 
@@ -173,7 +173,9 @@ More calls = more cost, but each phase builds on the previous, catching blind sp
 - **[CLI Reference](docs/guides/cli-reference.md)** — Command-line usage
 - **[Configuration](docs/getting-started/configuration.md)** — Backends and feature toggles
 - **[Showcase](docs/examples/showcase.md)** — Full example traces
-- **[Technical Specification](HEGELION_SPEC.md)** — Output schemas, phase specs
+- **[Technical Specification](docs/HEGELION_SPEC.md)** — Output schemas, phase specs
+- **[Training Guide](docs/guides/training_guide.md)** — Fine-tuning models on dialectical data
+- **[Agents Protocol](docs/guides/agents.md)** — Using Hegelion as an agent loop
 
 ### Concepts
 
