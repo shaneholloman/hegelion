@@ -351,6 +351,23 @@ Generate critiques from each perspective, then synthesize them."""
 No markdown, no commentary outside the JSON."""
     elif response_style == "synthesis_only":
         output_instructions = """Return ONLY the SYNTHESIS as 2-3 tight paragraphs. Do not include thesis, antithesis, headings, or lists."""
+    elif response_style == "conversational":
+        output_instructions = """Adopt a natural, conversational tone. Present the dialectical analysis as if you are a thoughtful colleague explaining your reasoning.
+        
+Structure:
+1. Start with your initial thoughts (Thesis)
+2. Then, "but on the other hand..." (Antithesis)
+3. Finally, "so perhaps the best way forward is..." (Synthesis)
+
+Avoid rigid headings like ## THESIS. Use natural transitions."""
+    elif response_style == "bullet_points":
+        output_instructions = """Format the response as a concise set of bullet points.
+
+*   **Thesis**: [Key point]
+*   **Antithesis**: [Key counter-point]
+*   **Synthesis**: [Resolution]
+
+Keep it brief and scannable."""
     else:
         output_instructions = f"""Structure your complete response as:
 

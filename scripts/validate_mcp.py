@@ -21,7 +21,7 @@ def main() -> None:
     print("✅ Hegelion MCP server prompt generation is operational")
     print(f"✅ Generated workflow with {len(workflow['steps'])} steps")
     print("✅ Call tools: dialectical_workflow, dialectical_single_shot")
-    print("✅ response_style values: json, sections, synthesis_only")
+    print("✅ response_style values: conversational, bullet_points, json, sections, synthesis_only")
 
 
 if __name__ == "__main__":

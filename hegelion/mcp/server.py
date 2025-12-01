@@ -85,6 +85,8 @@ async def list_tools() -> list[Tool]:
                             "sections",
                             "synthesis_only",
                             "json",
+                            "conversational",
+                            "bullet_points",
                         ],
                         "description": (
                             "Shape of the final output you want from the LLM: full thesis/antithesis/synthesis sections,"
@@ -125,6 +127,8 @@ async def list_tools() -> list[Tool]:
                             "sections",
                             "synthesis_only",
                             "json",
+                            "conversational",
+                            "bullet_points",
                         ],
                         "description": (
                             "Format you want the model to return: full sections, synthesis-only, or JSON with thesis/antithesis/synthesis."
@@ -219,6 +223,10 @@ def _response_style_summary(style: str) -> str:
             return "LLM should return a JSON object with thesis/antithesis/synthesis fields."
         case "synthesis_only":
             return "LLM should only return the synthesis (no thesis/antithesis sections)."
+        case "conversational":
+            return "LLM should return a natural, conversational response."
+        case "bullet_points":
+            return "LLM should return a concise bulleted list."
         case _:
             return "LLM should return full Thesis → Antithesis → Synthesis sections."
 

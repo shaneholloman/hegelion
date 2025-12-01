@@ -1,7 +1,12 @@
 # Changelog
 
-## 0.3.1 – Gemini CLI Extension Support
+## 0.3.1 – Response Styles & Gemini CLI Extension Support
 
+### Added
+- **New Response Styles:** Added two new response formats for dialectical workflows:
+  - `conversational`: Natural dialogue format with smooth transitions like "but on the other hand..." and "so perhaps the best way forward is..."
+  - `bullet_points`: Concise bullet-point format with clearly marked Thesis, Antithesis, and Synthesis sections for quick scanning
+  - Full compatibility with existing `json`, `sections`, and `synthesis_only` styles
 - **New: Gemini CLI Extension:** Added official support for the Gemini CLI. You can now install Hegelion directly as an extension to use dialectical tools within your Gemini CLI workflows.
 - **New: `GEMINI.md` Context:** Included a persistent context file to guide the Gemini model on how to use Hegelion's dialectical tools effectively.
 

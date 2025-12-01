@@ -18,7 +18,7 @@ async def main() -> None:
     print("Tools registered:", [t.name for t in tools])
 
     print("\nTesting response styles on dialectical_single_shot:")
-    for style in ["json", "sections", "synthesis_only"]:
+    for style in ["conversational", "bullet_points", "json", "sections", "synthesis_only"]:
         contents, structured = await server.call_tool(
             "dialectical_single_shot",
             {"query": "test query", "response_style": style},
