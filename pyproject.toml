@@ -113,5 +113,6 @@ line-length = 100
 extend-exclude = """
 (
     hegelion/engine.py
+  | .gemini/
 )
 """

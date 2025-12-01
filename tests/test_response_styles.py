@@ -10,8 +10,7 @@ class TestResponseStyles:
     def test_conversational_style_format(self):
         """Test that conversational style includes proper formatting instructions."""
         prompt = create_single_shot_dialectic_prompt(
-            query="Test query for conversational style",
-            response_style="conversational"
+            query="Test query for conversational style", response_style="conversational"
         )
 
         # Check for conversational-specific instructions
@@ -25,8 +24,7 @@ class TestResponseStyles:
     def test_bullet_points_style_format(self):
         """Test that bullet_points style includes proper formatting instructions."""
         prompt = create_single_shot_dialectic_prompt(
-            query="Test query for bullet points style",
-            response_style="bullet_points"
+            query="Test query for bullet points style", response_style="bullet_points"
         )
 
         # Check for bullet points specific instructions
@@ -39,8 +37,7 @@ class TestResponseStyles:
     def test_json_style_unchanged(self):
         """Test that json style still works as before."""
         prompt = create_single_shot_dialectic_prompt(
-            query="Test query for json style",
-            response_style="json"
+            query="Test query for json style", response_style="json"
         )
 
         # Check for JSON-specific instructions
@@ -53,8 +50,7 @@ class TestResponseStyles:
     def test_sections_style_unchanged(self):
         """Test that sections style still works as before."""
         prompt = create_single_shot_dialectic_prompt(
-            query="Test query for sections style",
-            response_style="sections"
+            query="Test query for sections style", response_style="sections"
         )
 
         # Should use default formatting with sections
@@ -65,8 +61,7 @@ class TestResponseStyles:
     def test_synthesis_only_style_unchanged(self):
         """Test that synthesis_only style still works as before."""
         prompt = create_single_shot_dialectic_prompt(
-            query="Test query for synthesis only style",
-            response_style="synthesis_only"
+            query="Test query for synthesis only style", response_style="synthesis_only"
         )
 
         # Should only include synthesis
@@ -78,20 +73,20 @@ class TestResponseStyles:
         # The function doesn't raise an error for invalid styles,
         # it falls back to default formatting
         prompt = create_single_shot_dialectic_prompt(
-            query="Test query",
-            response_style="invalid_style"
+            query="Test query", response_style="invalid_style"
         )
         # Should include the query
         assert "Test query" in prompt
         # Should have default formatting
         assert "## THESIS" in prompt
 
-    @pytest.mark.parametrize("style", ["conversational", "bullet_points", "json", "sections", "synthesis_only"])
+    @pytest.mark.parametrize(
+        "style", ["conversational", "bullet_points", "json", "sections", "synthesis_only"]
+    )
     def test_all_styles_include_core_content(self, style):
         """Test that all styles include the core query content."""
         prompt = create_single_shot_dialectic_prompt(
-            query="Test query with specific content: 12345",
-            response_style=style
+            query="Test query with specific content: 12345", response_style=style
         )
 
         # All prompts should include the input content
@@ -100,8 +95,7 @@ class TestResponseStyles:
     def test_conversational_style_transitions(self):
         """Test conversational style includes natural transitions."""
         prompt = create_single_shot_dialectic_prompt(
-            query="Query about complex topic",
-            response_style="conversational"
+            query="Query about complex topic", response_style="conversational"
         )
 
         # Should include natural transitions
@@ -112,8 +106,7 @@ class TestResponseStyles:
     def test_bullet_points_style_conciseness(self):
         """Test bullet_points style emphasizes conciseness."""
         prompt = create_single_shot_dialectic_prompt(
-            query="Query about detailed analysis",
-            response_style="bullet_points"
+            query="Query about detailed analysis", response_style="bullet_points"
         )
 
         # Should emphasize clarity and brevity
