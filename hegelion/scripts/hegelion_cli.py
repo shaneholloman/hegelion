@@ -69,6 +69,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Run in interactive mode for an exploratory session",
     )
+    parser.add_argument(
+        "--stream",
+        action="store_true",
+        help="Stream output in real-time as each phase is generated",
+    )
     return parser
 
 
@@ -312,21 +317,21 @@ async def interactive_session() -> None:
                 else:
                     print(f"Unknown setting: {setting}")
             else:
-                # Treat as a new query
+                # Treat as a new query - use streaming by default in interactive mode
+                stream_cb, progress_cb = await create_stream_callbacks(console)
+                latest_result = await run_dialectic(
+                    query=query, 
+                    debug=debug_mode,
+                    stream_callback=stream_cb,
+                    progress_callback=progress_cb,
+                )
+                # Show a brief summary after streaming
                 if console:
-                    with Progress(
-                        SpinnerColumn(),
-                        TextColumn("[progress.description]{task.description}"),
-                        console=console,
-                        transient=True,
-                    ) as progress:
-                        progress.add_task(description="Running dialectic...", total=None)
-                        latest_result = await run_dialectic(query=query, debug=debug_mode)
-                    print_rich_result(latest_result)
+                    console.print(f"\n[dim]Query completed in {latest_result.metadata.get('total_time_ms', 0):.0f}ms[/]")
+                    console.print("Type 'show <section>' to examine parts of the result.")
                 else:
-                    print("Running dialectic...")
-                    latest_result = await run_dialectic(query=query, debug=debug_mode)
-                    print(format_summary(latest_result))
+                    print(f"\nQuery completed in {latest_result.metadata.get('total_time_ms', 0):.0f}ms")
+                    print("Type 'show <section>' to examine parts of the result.")
 
         except (EOFError, KeyboardInterrupt):
             print("\nExiting.")
@@ -350,6 +355,47 @@ def print_interactive_help() -> None:
     print("  exit, quit               - Exit the interactive session.\n")
 
 
+async def create_stream_callbacks(console):
+    """Create callbacks for streaming output to terminal."""
+    current_phase = {"name": None}
+    
+    async def on_progress(event: str, payload: dict):
+        """Handle phase lifecycle events."""
+        if event == "phase_started":
+            phase = payload.get("phase", "unknown")
+            current_phase["name"] = phase
+            # Handle council mode persona names
+            if ":" in phase:
+                phase_name, persona = phase.split(":", 1)
+                display_phase = f"{phase_name.upper()}: {persona.upper()}"
+            else:
+                display_phase = phase.upper()
+            
+            # Print phase header
+            color = {"thesis": "cyan", "antithesis": "magenta", "synthesis": "green"}.get(phase.split(":")[0], "white")
+            if console:
+                console.print(f"\n[bold {color}]━━━ {display_phase} ━━━[/]")
+            else:
+                print(f"\n--- {display_phase} ---")
+        elif event == "phase_completed":
+            phase = payload.get("phase")
+            time_ms = payload.get("time_ms", 0)
+            if console:
+                console.print(f"\n[dim]({phase.split(':')[0]} completed in {time_ms:.0f}ms)[/]")
+            else:
+                print(f"({phase.split(':')[0]} completed in {time_ms:.0f}ms)")
+    
+    async def on_stream(phase: str, chunk: str):
+        """Handle streaming text chunks."""
+        # Print chunk without newline, allowing text to flow
+        if console:
+            console.print(chunk, end="", highlight=False)
+        else:
+            print(chunk, end="", flush=True)
+    
+    return on_stream, on_progress
+
+
 async def _run(args: argparse.Namespace) -> None:
     if args.interactive:
         await interactive_session()
@@ -368,7 +414,22 @@ async def _run(args: argparse.Namespace) -> None:
         raise SystemExit("Error: QUERY is required unless --interactive or --demo is specified.")
 
     try:
-        if console and args.format == "rich":
+        if args.stream:
+            # Streaming mode - show real-time output
+            stream_cb, progress_cb = await create_stream_callbacks(console)
+            result = await run_dialectic(
+                query=args.query,
+                debug=args.debug,
+                stream_callback=stream_cb,
+                progress_callback=progress_cb,
+            )
+            # Show summary after streaming completes
+            if console:
+                console.print(f"\n[dim]Total time: {result.metadata.get('total_time_ms', 0):.0f}ms[/]")
+            else:
+                print(f"\nTotal time: {result.metadata.get('total_time_ms', 0):.0f}ms")
+        elif console and args.format == "rich":
+            # Non-streaming rich mode with spinner
             with Progress(
                 SpinnerColumn(),
                 TextColumn("[progress.description]{task.description}"),
@@ -378,6 +439,7 @@ async def _run(args: argparse.Namespace) -> None:
                 progress.add_task(description="Synthesizing Truth...", total=None)
                 result = await run_dialectic(query=args.query, debug=args.debug)
         else:
+            # Non-streaming plain mode
             result = await run_dialectic(query=args.query, debug=args.debug)
 
     except ConfigurationError as exc:
