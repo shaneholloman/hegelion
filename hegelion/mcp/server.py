@@ -231,6 +231,22 @@ def _response_style_summary(style: str) -> str:
             return "LLM should return full Thesis → Antithesis → Synthesis sections."
 
 
+async def _send_progress(message: str, progress: float, total: float = 3.0) -> None:
+    """Send a progress notification if a progress token is available."""
+    try:
+        ctx = app.request_context
+        if ctx.meta and ctx.meta.progressToken:
+            await ctx.session.send_progress_notification(
+                ctx.meta.progressToken,
+                progress,
+                total=total,
+                message=message,
+            )
+    except (LookupError, AttributeError):
+        # No request context or progress token available
+        pass
+
+
 @app.call_tool()
 async def call_tool(name: str, arguments: Dict[str, Any]):
     """Execute dialectical reasoning tools."""
@@ -243,13 +259,18 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         format_type = arguments.get("format", "workflow")
         response_style = arguments.get("response_style", "sections")
 
+        # Send progress notification
+        await _send_progress("━━━ Preparing dialectical workflow ━━━", 1.0)
+
         if format_type == "single_prompt":
+            await _send_progress("━━━ Generating single-shot prompt ━━━", 2.0)
             prompt = create_single_shot_dialectic_prompt(
                 query=query,
                 use_search=use_search,
                 use_council=use_council,
                 response_style=response_style,
             )
+            await _send_progress("━━━ Prompt ready ━━━", 3.0)
             structured = {
                 "query": query,
                 "format": "single_prompt",
@@ -260,6 +281,9 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             }
             return ([TextContent(type="text", text=prompt)], structured)
         else:
+            await _send_progress("━━━ THESIS prompt ready ━━━", 1.0)
+            await _send_progress("━━━ ANTITHESIS prompt ready ━━━", 2.0)
+            await _send_progress("━━━ SYNTHESIS prompt ready ━━━", 3.0)
             workflow = create_dialectical_workflow(
                 query=query,
                 use_search=use_search,
@@ -310,6 +334,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         return (contents, structured)
 
     elif name == "thesis_prompt":
+        await _send_progress("━━━ THESIS ━━━ Generating prompt...", 1.0, 1.0)
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
         query = arguments["query"]
@@ -333,6 +358,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         return ([TextContent(type="text", text=response)], structured)
 
     elif name == "antithesis_prompt":
+        await _send_progress("━━━ ANTITHESIS ━━━ Generating prompt...", 1.0, 1.0)
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
         query = arguments["query"]
@@ -381,6 +407,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         return ([TextContent(type="text", text=response)], structured)
 
     elif name == "synthesis_prompt":
+        await _send_progress("━━━ SYNTHESIS ━━━ Generating prompt...", 1.0, 1.0)
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
         query = arguments["query"]
