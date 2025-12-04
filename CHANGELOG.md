@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.2 – MCP Server Simplification
+
+### Removed
+- **MCP `run_dialectic` tool:** Removed the server-side execution tool that required LLM API configuration. Users on Cursor, Claude Desktop, VS Code, etc. should use `dialectical_single_shot` or `dialectical_workflow` instead—these generate prompts that your editor's LLM executes directly, with no API keys needed.
+
+### Changed
+- **Updated `mcp_instructions.md`:** Documentation now guides agents to use prompt-generation tools (`dialectical_single_shot`, `dialectical_workflow`) rather than server-side execution.
+
+### Why This Change
+The `run_dialectic` MCP tool required server-side API keys (e.g., `HEGELION_PROVIDER`, `ANTHROPIC_API_KEY`), which was confusing for MCP users who expected a zero-config experience. The prompt-generation tools provide the same dialectical reasoning without any server-side LLM configuration.
+
+---
+
 ## 0.3.1 – Response Styles & Gemini CLI Extension Support
 
 ### Added

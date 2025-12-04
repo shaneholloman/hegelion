@@ -212,42 +212,6 @@ async def list_tools() -> list[Tool]:
                 "required": ["query", "thesis", "antithesis"],
             },
         ),
-        Tool(
-            name="run_dialectic",
-            description=(
-                "Execute a full dialectical reasoning process on the server. "
-                "This runs the LLM directly on the server and streams progress updates."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "The question or topic to analyze dialectically",
-                    },
-                    "model": {
-                        "type": "string",
-                        "description": "Optional model to use (e.g. 'claude-3-opus-20240229')",
-                    },
-                    "use_search": {
-                        "type": "boolean",
-                        "description": "Include instructions to use search tools",
-                        "default": False,
-                    },
-                    "use_council": {
-                        "type": "boolean",
-                        "description": "Use council-based multi-perspective critique",
-                        "default": False,
-                    },
-                    "use_judge": {
-                        "type": "boolean",
-                        "description": "Include quality evaluation step",
-                        "default": False,
-                    },
-                },
-                "required": ["query"],
-            },
-        ),
     ]
     return tools
 
@@ -468,53 +432,6 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
 **Expected Format:** {prompt_obj.expected_format}"""
 
         return ([TextContent(type="text", text=response)], structured)
-
-    elif name == "run_dialectic":
-        from hegelion.core.core import run_dialectic
-
-        query = arguments["query"]
-        model = arguments.get("model")
-        use_search = arguments.get("use_search", False)
-        use_council = arguments.get("use_council", False)
-        use_judge = arguments.get("use_judge", False)
-
-        # Progress callback to bridge core engine events to MCP progress
-        async def progress_bridge(event: str, payload: Dict[str, Any]):
-            if event == "phase_started":
-                phase = payload.get("phase", "unknown")
-                await _send_progress(f"━━━ Starting {phase.upper()} ━━━", 0.0)
-            elif event == "phase_completed":
-                phase = payload.get("phase", "unknown")
-                await _send_progress(f"━━━ Completed {phase.upper()} ━━━", 1.0)
-
-        # Run the dialectic
-        result = await run_dialectic(
-            query=query,
-            model=model,
-            use_search=use_search,
-            use_council=use_council,
-            use_judge=use_judge,
-            progress_callback=progress_bridge,
-        )
-
-        # Format the output
-        response_text = f"""# Dialectical Analysis: {query}
-
-## Thesis
-{result.thesis}
-
-## Antithesis
-{result.antithesis}
-
-## Synthesis
-{result.synthesis}
-"""
-        if result.research_proposals:
-            response_text += "\n## Research Proposals\n"
-            for prop in result.research_proposals:
-                response_text += f"- {prop}\n"
-
-        return ([TextContent(type="text", text=response_text)], result.to_dict())
 
     else:
         return CallToolResult(

@@ -3,41 +3,80 @@
 If you are an AI agent (like Claude, Gemini, or a Cursor agent) connected to the Hegelion MCP server, follow these instructions to use the tools effectively.
 
 ## Core Capability
+
 Hegelion is a **Dialectical Reasoning Engine**. It does not just "answer" questions; it forces a structured conflict between ideas to produce a higher-order truth.
 
 ## When to Use Hegelion
-Use the `run_dialectic` tool when the user asks:
+
+Use Hegelion tools when the user asks:
 - High-stakes philosophical or strategic questions.
 - Questions involving "truth", "bias", or "nuance".
 - "Analyze this dialectically."
 - "What are the contradictions in X?"
 - Any query where a simple summary is insufficient and deep reasoning is required.
 
-## Tool Usage: `run_dialectic`
+## Available Tools
 
-**Do not** attempt to manually simulate Thesis/Antithesis/Synthesis steps. The tool handles the entire loop internally to ensure strict separation of reasoning states.
+| Tool | Best For |
+|------|----------|
+| `dialectical_single_shot` | Quick analysis - returns one prompt you execute |
+| `dialectical_workflow` | Step-by-step - returns thesis/antithesis/synthesis prompts |
+| `thesis_prompt` | Manual control - get just the thesis prompt |
+| `antithesis_prompt` | Manual control - critique a thesis |
+| `synthesis_prompt` | Manual control - synthesize thesis + antithesis |
 
-1.  **Call the tool:**
-    ```json
-    {
-      "query": "Is open source software sustainable?"
-    }
-    ```
+## Recommended: `dialectical_single_shot`
 
-2.  **Interpret the Output:**
-    The tool returns a structured JSON object. You should parse it and present it as follows:
-    
-    *   **The Synthesis:** This is the primary answer. Present this first or most prominently.
-    *   **The Conflict:** Briefly explain *why* the Thesis and Antithesis disagreed (using the `contradictions` field).
-    *   **The "Why":** If the user asks for details, show the `thesis` (initial view) and `antithesis` (critique).
-    *   **Next Steps:** Present the `research_proposals` as actionable follow-ups.
+For most cases, use `dialectical_single_shot`. It returns a single comprehensive prompt that guides you through the entire dialectical process.
 
-## Example Response Style
+**Call the tool:**
+```json
+{
+  "query": "Is open source software sustainable?",
+  "response_style": "sections"
+}
+```
 
-> **Synthesis:** [Insert Synthesis Text]
+**Response styles:**
+- `"sections"` - Full Thesis/Antithesis/Synthesis sections (default)
+- `"synthesis_only"` - Just the final resolution
+- `"json"` - Structured JSON with all fields (good for programmatic use)
+
+**Then execute the returned prompt.** The prompt contains instructions for you to perform the dialectical reasoning.
+
+## Alternative: `dialectical_workflow`
+
+For more control, use `dialectical_workflow`. It returns a sequence of prompts you execute in order:
+
+```json
+{
+  "query": "Is open source software sustainable?",
+  "format": "workflow",
+  "response_style": "json"
+}
+```
+
+This returns:
+1. A thesis prompt - execute it and save the output
+2. An antithesis prompt - requires the thesis output
+3. A synthesis prompt - requires both thesis and antithesis
+
+## Presenting Results
+
+After executing the dialectical reasoning, present it to the user:
+
+> **Synthesis:** [The resolution that transcends both positions]
 >
 > **The Core Tension:** The initial view (Thesis) argued X, but the critique (Antithesis) identified that Y. The synthesis resolves this by Z.
->
-> **Key Contradictions:**
-> *   [Contradiction 1]
-> *   [Contradiction 2]
+
+If relevant, include:
+- **Key Contradictions** found during the antithesis phase
+- **Research Proposals** for further investigation
+
+## Advanced Options
+
+Both tools support optional enhancements:
+
+- `use_search: true` - Adds instructions to use search tools for real-world grounding
+- `use_council: true` - Enables multi-perspective critique (Logician, Empiricist, Ethicist)
+- `use_judge: true` - Adds a quality evaluation step (workflow only)
