@@ -119,6 +119,26 @@ Run dialectics directly from the command line with rich output:
 hegelion "Is mathematics invented or discovered?"
 ```
 
+**Streaming Mode** — Watch the dialectic unfold in real-time:
+```bash
+hegelion --stream "Is consciousness fundamental or emergent?"
+```
+
+Output streams phase-by-phase with visual headers:
+```
+━━━ THESIS ━━━
+Consciousness appears to be a fundamental feature of reality...
+(thesis completed in 8,234ms)
+
+━━━ ANTITHESIS ━━━
+The thesis commits several critical errors...
+(antithesis completed in 12,891ms)
+
+━━━ SYNTHESIS ━━━
+The deadlock dissolves when we recognize...
+(synthesis completed in 15,442ms)
+```
+
 **Interactive Mode:**
 ```bash
 hegelion --interactive
@@ -197,5 +217,31 @@ This is a structural implementation of dialectical reasoning. The format forces 
 ## Contributing
 
 Issues and PRs welcome. For significant changes, open a discussion first.
+
+---
+
+## Recent Changes
+
+### v0.4.x (December 2024)
+
+#### CLI Streaming Support
+
+- New `--stream` flag for real-time output as each phase generates
+- Visual phase headers with timing: `━━━ THESIS ━━━`, `━━━ ANTITHESIS ━━━`, `━━━ SYNTHESIS ━━━`
+- Interactive mode now streams by default
+- Graceful fallback when Rich library is not installed
+
+#### MCP Progress Notifications
+
+- MCP server now emits progress notifications during tool execution
+- Compatible clients (Claude Desktop, etc.) can display phase status in real-time
+- Progress messages: `━━━ THESIS prompt ready ━━━ (1.0/3.0)`
+
+#### Infrastructure
+
+- Comprehensive streaming test suite (`tests/test_streaming.py`)
+- All 460+ tests passing
+
+---
 
 **License:** MIT
