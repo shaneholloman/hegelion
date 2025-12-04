@@ -19,7 +19,7 @@ from .core.models import HegelionResult
 from .training.datasets import export_training_data, to_dpo_dataset, to_instruction_tuning_dataset
 from .core.agent import HegelionAgent
 
-__version__ = "0.3.0"
+__version__ = "0.3.2"
 __author__ = "Hegelion Contributors"
 
 __all__ = [

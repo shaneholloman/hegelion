@@ -1,6 +1,6 @@
 [project]
 name = "hegelion"
-version = "0.3.1"
+version = "0.3.2"
 description = "Dialectical reasoning harness for LLMs (thesis → antithesis → synthesis)"
 requires-python = ">=3.10"
 readme = "README.md"
