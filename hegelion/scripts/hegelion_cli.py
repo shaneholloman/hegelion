@@ -320,17 +320,21 @@ async def interactive_session() -> None:
                 # Treat as a new query - use streaming by default in interactive mode
                 stream_cb, progress_cb = await create_stream_callbacks(console)
                 latest_result = await run_dialectic(
-                    query=query, 
+                    query=query,
                     debug=debug_mode,
                     stream_callback=stream_cb,
                     progress_callback=progress_cb,
                 )
                 # Show a brief summary after streaming
                 if console:
-                    console.print(f"\n[dim]Query completed in {latest_result.metadata.get('total_time_ms', 0):.0f}ms[/]")
+                    console.print(
+                        f"\n[dim]Query completed in {latest_result.metadata.get('total_time_ms', 0):.0f}ms[/]"
+                    )
                     console.print("Type 'show <section>' to examine parts of the result.")
                 else:
-                    print(f"\nQuery completed in {latest_result.metadata.get('total_time_ms', 0):.0f}ms")
+                    print(
+                        f"\nQuery completed in {latest_result.metadata.get('total_time_ms', 0):.0f}ms"
+                    )
                     print("Type 'show <section>' to examine parts of the result.")
 
         except (EOFError, KeyboardInterrupt):
@@ -358,7 +362,7 @@ def print_interactive_help() -> None:
 async def create_stream_callbacks(console):
     """Create callbacks for streaming output to terminal."""
     current_phase = {"name": None}
-    
+
     async def on_progress(event: str, payload: dict):
         """Handle phase lifecycle events."""
         if event == "phase_started":
@@ -370,9 +374,11 @@ async def create_stream_callbacks(console):
                 display_phase = f"{phase_name.upper()}: {persona.upper()}"
             else:
                 display_phase = phase.upper()
-            
+
             # Print phase header
-            color = {"thesis": "cyan", "antithesis": "magenta", "synthesis": "green"}.get(phase.split(":")[0], "white")
+            color = {"thesis": "cyan", "antithesis": "magenta", "synthesis": "green"}.get(
+                phase.split(":")[0], "white"
+            )
             if console:
                 console.print(f"\n[bold {color}]━━━ {display_phase} ━━━[/]")
             else:
@@ -384,7 +390,7 @@ async def create_stream_callbacks(console):
                 console.print(f"\n[dim]({phase.split(':')[0]} completed in {time_ms:.0f}ms)[/]")
             else:
                 print(f"({phase.split(':')[0]} completed in {time_ms:.0f}ms)")
-    
+
     async def on_stream(phase: str, chunk: str):
         """Handle streaming text chunks."""
         # Print chunk without newline, allowing text to flow
@@ -392,7 +398,7 @@ async def create_stream_callbacks(console):
             console.print(chunk, end="", highlight=False)
         else:
             print(chunk, end="", flush=True)
-    
+
     return on_stream, on_progress
 
 
@@ -425,7 +431,9 @@ async def _run(args: argparse.Namespace) -> None:
             )
             # Show summary after streaming completes
             if console:
-                console.print(f"\n[dim]Total time: {result.metadata.get('total_time_ms', 0):.0f}ms[/]")
+                console.print(
+                    f"\n[dim]Total time: {result.metadata.get('total_time_ms', 0):.0f}ms[/]"
+                )
             else:
                 print(f"\nTotal time: {result.metadata.get('total_time_ms', 0):.0f}ms")
         elif console and args.format == "rich":
