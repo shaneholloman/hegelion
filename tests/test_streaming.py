@@ -2,7 +2,7 @@
 """Tests for Hegelion streaming functionality."""
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 import pytest
 
 from hegelion import run_dialectic
@@ -88,7 +88,7 @@ class TestStreamingCallbacks:
             with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
-                result = await run_dialectic(
+                await run_dialectic(
                     "Test query",
                     stream_callback=capture,
                 )
@@ -117,7 +117,7 @@ class TestStreamingCallbacks:
             with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
-                result = await run_dialectic(
+                await run_dialectic(
                     "Test query",
                     progress_callback=capture,
                 )
@@ -155,7 +155,7 @@ class TestStreamingCallbacks:
             with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
-                result = await run_dialectic(
+                await run_dialectic(
                     "Test query",
                     use_council=True,
                     progress_callback=capture_phase,
@@ -202,7 +202,7 @@ class TestStreamingCallbacks:
             with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
-                result = await run_dialectic(
+                await run_dialectic(
                     "Test query",
                     stream_callback=capture,
                 )
@@ -228,7 +228,7 @@ class TestStreamingCallbacks:
             with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
-                result = await run_dialectic(
+                await run_dialectic(
                     "Test query",
                     stream_callback=capture_stream,
                     progress_callback=capture_progress,
@@ -282,7 +282,7 @@ class TestCLIStreaming:
             with patch("hegelion.core.core.get_engine_settings") as mock_settings:
                 mock_settings.return_value = MockSettings()
 
-                result = await run_dialectic(
+                await run_dialectic(
                     "What is consciousness?",
                     stream_callback=capture_stream,
                     progress_callback=capture_progress,
