@@ -34,12 +34,8 @@ class TestTavilySearchProvider:
 
     def test_tavily_provider_raises_without_package(self):
         with patch.dict("sys.modules", {"tavily": None}):
-            with pytest.raises(RuntimeError) as exc_info:
-                # This should raise because tavily package is mocked as not installed
+            with pytest.raises(RuntimeError):
                 TavilySearchProvider(api_key="test-key")
-
-            # The actual error message depends on import behavior
-            # Just verify it raises a RuntimeError
 
     @pytest.mark.asyncio
     async def test_tavily_search_success(self):
