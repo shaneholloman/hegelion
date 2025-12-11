@@ -6,7 +6,15 @@ Use this checklist to publish Hegelion beyond MCP-aware IDEs.
 
 **Goal:** register the hosted FastAPI prompt server so Gemini models can fetch dialectical workflows on demand.
 
-1. Deploy `extensions/gemini/server` (Render/Cloud Run instructions above). Confirm it responds via `curl https://<host>/dialectical_single_shot -X POST -d '{"query": "ping"}'`.
+> **Note:** This is optional and separate from the main MCP server. Gemini Extensions require an HTTP API, so we provide a FastAPI wrapper in `extensions/gemini/server`.
+
+1. Deploy `extensions/gemini/server` to any Python hosting (Cloud Run, Railway, Fly.io, etc.). Example:
+   ```bash
+   cd extensions/gemini/server
+   pip install -r requirements.txt
+   uvicorn app:app --host 0.0.0.0 --port $PORT
+   ```
+   Confirm it responds via `curl https://<host>/health`.
 2. Host `extensions/gemini/openapi.yaml` (GitHub raw link or any static bucket) and update the `servers` URL to your deployment.
 3. AI Studio → Extensions → **Import from OpenAPI**, paste the hosted spec URL, and click **Validate**.
 4. Fill the listing metadata (logo, category, description). Auth is optional; leave public for smooth review.
