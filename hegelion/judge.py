@@ -185,7 +185,7 @@ Respond with EXACTLY this JSON structure:
         validity_match = re.search(
             r'critique_validity["\']?\s*:\s*(true|false)', response, re.IGNORECASE
         )
-        critique_validity = validity_match and validity_match.group(1).lower() == "true"
+        critique_validity = bool(validity_match and validity_match.group(1).lower() == "true")
 
         # Use the full response as reasoning
         reasoning = response[:500] + "..." if len(response) > 500 else response

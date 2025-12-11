@@ -50,7 +50,7 @@ class HegelionResult:
     This is the public API output that excludes internal conflict scoring.
     """
 
-    query: str = None  # Default to None to fail validation if missing (as per corrected tests)
+    query: Optional[str] = None  # Default to None to fail validation if missing (as per corrected tests)
     mode: str = "synthesis"
     thesis: str = ""
     antithesis: str = ""
@@ -162,6 +162,29 @@ class HegelionTrace:
 
 
 @dataclass
+class HegelionDebugInfo:
+    """Debug information for Phase 2 features (council, judge, etc.)."""
+
+    internal_conflict_score: Optional[float] = None
+    judge_score: Optional[float] = None
+    judge_reasoning: Optional[str] = None
+    critique_validity: Optional[bool] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        result: Dict[str, Any] = {}
+        if self.internal_conflict_score is not None:
+            result["internal_conflict_score"] = self.internal_conflict_score
+        if self.judge_score is not None:
+            result["judge_score"] = self.judge_score
+        if self.judge_reasoning is not None:
+            result["judge_reasoning"] = self.judge_reasoning
+        if self.critique_validity is not None:
+            result["critique_validity"] = self.critique_validity
+        return result
+
+
+@dataclass
 class HegelionMetadata:
     """Metadata about Hegelion execution."""
 
@@ -171,7 +194,8 @@ class HegelionMetadata:
     total_time_ms: float
     backend_provider: Optional[str] = None
     backend_model: Optional[str] = None
-    debug: Optional[Dict[str, Any]] = None  # Debug information including internal scores
+    debug: Optional["HegelionDebugInfo"] = None  # Debug information for Phase 2 features
+    council_perspectives: Optional[int] = None  # Number of council perspectives used
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -186,7 +210,12 @@ class HegelionMetadata:
         if self.backend_model:
             result["backend_model"] = self.backend_model
         if self.debug:
-            result["debug"] = self.debug
+            if hasattr(self.debug, "to_dict"):
+                result["debug"] = self.debug.to_dict()
+            else:
+                result["debug"] = self.debug
+        if self.council_perspectives is not None:
+            result["council_perspectives"] = self.council_perspectives
         return result
 
 

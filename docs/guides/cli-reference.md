@@ -19,17 +19,14 @@ hegelion --demo
 ### Output Formats
 
 ```bash
-# Human-readable summary (default)
-hegelion "Your question" --format summary
-
-# Full sections
-hegelion "Your question" --format sections
-
-# Raw JSON
+# Raw JSON (default)
 hegelion "Your question" --format json
 
-# Synthesis only
-hegelion "Your question" --format synthesis
+# Human-readable summary
+hegelion "Your question" --format summary
+
+# Rich terminal output with formatted panels
+hegelion "Your question" --format rich
 ```
 
 ### Debug Output
@@ -38,21 +35,20 @@ hegelion "Your question" --format synthesis
 hegelion "Your question" --debug --format json
 ```
 
-## Feature Flags
+## Additional Options
 
 ```bash
-# Enable council critics
-hegelion "Your question" --council
+# Stream output in real-time as each phase is generated
+hegelion "Your question" --stream
 
-# Enable quality judge
-hegelion "Your question" --judge
+# Run in interactive mode for an exploratory session
+hegelion "Your question" --interactive
 
-# Enable search grounding
-hegelion "Your question" --search
-
-# Combine options
-hegelion "Your question" --council --judge --search
+# Save output to a file
+hegelion "Your question" --output result.json
 ```
+
+> **Note:** Phase 2 features like `use_council`, `use_judge`, and `use_search` are available via the Python API but not as CLI flags. Use the Python API for these advanced features.
 
 ## Benchmarking
 

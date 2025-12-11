@@ -28,7 +28,7 @@ result = await run_dialectic(
     iterations=2,            # Multiple dialectical passes
     use_search=True,         # Ground with web search
     use_judge=True,          # Add quality evaluation
-    response_style="json",   # Output format
+    use_council=True,        # Enable multi-perspective council
     debug=True               # Include internal metrics
 )
 ```
@@ -38,12 +38,16 @@ result = await run_dialectic(
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `query` | str | required | The question to analyze |
-| `personas` | str | `None` | `"council"` for Logician/Empiricist/Ethicist |
-| `iterations` | int | `1` | Number of dialectical passes |
-| `use_search` | bool | `False` | Enable search grounding |
-| `use_judge` | bool | `False` | Add quality evaluation |
-| `response_style` | str | `"sections"` | `"json"`, `"sections"`, or `"synthesis_only"` |
 | `debug` | bool | `False` | Include internal metrics |
+| `backend` | LLMBackend | `None` | Custom LLM backend |
+| `model` | str | `None` | Model name override |
+| `personas` | str/List | `None` | `"council"` for Logician/Empiricist/Ethicist |
+| `iterations` | int | `1` | Number of refinement loops |
+| `use_search` | bool | `False` | Enable search grounding (Phase 2) |
+| `use_council` | bool | `False` | Enable multi-perspective council (Phase 2) |
+| `use_judge` | bool | `False` | Add quality evaluation (Phase 2) |
+| `min_judge_score` | int | `5` | Minimum acceptable judge score (0-10) |
+| `max_iterations` | int | `1` | Maximum iterations for quality improvement |
 
 **Returns:** `HegelionResult`
 
@@ -158,7 +162,7 @@ print(step.action)
 ## Error Handling
 
 ```python
-from hegelion.core.exceptions import (
+from hegelion.core.engine import (
     ThesisPhaseError,
     AntithesisPhaseError,
     SynthesisPhaseError

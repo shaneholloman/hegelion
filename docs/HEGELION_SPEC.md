@@ -57,9 +57,10 @@ Hegelion implements a computational version of Hegelian dialectics:
 - **`backends.py`**: LLM provider abstractions
 - **`parsing.py`**: Contradiction and research proposal extraction
 - **`models.py`**: Dataclasses and serialization helpers
-- **`prompts.py`**: Prompt templates for each phase
+- **`prompt_dialectic.py`**: Prompt templates for dialectical phases
+- **`prompt_autocoding.py`**: Prompt templates for autocoding workflow
 - **`config.py`**: Environment-driven configuration
-- **`mcp_server.py`**: Model Context Protocol server implementation
+- **`mcp/server.py`**: Model Context Protocol server implementation
 
 ## Output Schema
 
@@ -158,15 +159,40 @@ The function returns `list[HegelionResult]`. When an `output_file` is provided (
 
 ### MCP Tools
 
-The MCP stdio server (`python -m hegelion.mcp_server`) publishes two tools:
+The MCP stdio server (`python -m hegelion.mcp.server`) publishes the following tools:
 
-1. **`run_dialectic`**
-   - **Input schema**: `{ "query": string, "debug"?: boolean }`
-   - **Output**: A single JSON object following the `HegelionResult` schema (pretty-printed in MCP responses). When `debug=true`, `metadata.debug` includes internal metrics such as conflict scores.
+#### Dialectical Reasoning Tools
 
-2. **`run_benchmark`**
-   - **Input schema**: `{ "prompts_file": string, "debug"?: boolean }`
-   - **Behavior**: Validates that the JSONL file exists, runs every prompt, and returns newline-delimited JSON (one result per line, identical to `HegelionResult.to_dict()`).
+1. **`dialectical_single_shot`**
+   - **Input schema**: `{ "query": string, "response_style"?: string, "use_council"?: boolean, "use_search"?: boolean }`
+   - **Output**: A comprehensive prompt for running thesis → antithesis → synthesis in one LLM call
+   - **response_style**: `"sections"` (default), `"synthesis_only"`, `"json"`, `"conversational"`, or `"bullet_points"`
+
+2. **`dialectical_workflow`**
+   - **Input schema**: `{ "query": string, "format"?: string, "response_style"?: string, "use_council"?: boolean, "use_judge"?: boolean, "use_search"?: boolean }`
+   - **Output**: Step-by-step workflow prompts for guided dialectical reasoning
+
+3. **`thesis_prompt`** / **`antithesis_prompt`** / **`synthesis_prompt`**
+   - Individual phase prompts for step-by-step dialectical reasoning
+   - Useful when you want fine-grained control over each phase
+
+#### Autocoding Tools (Player-Coach Loop)
+
+4. **`autocoding_init`**
+   - **Input schema**: `{ "requirements": string, "max_turns"?: number, "approval_threshold"?: number }`
+   - **Output**: Initializes an autocoding session with requirements as source of truth
+
+5. **`player_prompt`** / **`coach_prompt`**
+   - Generate implementation (player) and verification (coach) prompts for the current session state
+
+6. **`autocoding_advance`**
+   - Advances the autocoding state after coach review
+
+7. **`autocoding_single_shot`**
+   - Combined prompt for self-directed autocoding
+
+8. **`autocoding_save`** / **`autocoding_load`**
+   - Session persistence for resuming autocoding workflows
 
 ## Phase Specifications
 

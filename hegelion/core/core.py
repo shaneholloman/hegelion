@@ -318,7 +318,9 @@ async def _run_enhanced_dialectic(
                 enhanced_antithesis = council.synthesize_council_input(council_results)
 
                 # Store council info for trace
-                thesis_result.metadata.council_perspectives = len(council_results)
+                from .models import HegelionMetadata
+                if thesis_result.metadata is not None and isinstance(thesis_result.metadata, HegelionMetadata):
+                    thesis_result.metadata.council_perspectives = len(council_results)
                 if debug and hasattr(thesis_result, "trace") and thesis_result.trace:
                     thesis_result.trace.council_critiques = [
                         f"{name}: {critique.member.expertise}"
@@ -367,17 +369,13 @@ async def _run_enhanced_dialectic(
                     )
 
                     # Store judge info in metadata
-                    if (
-                        not hasattr(thesis_result.metadata, "debug")
-                        or not thesis_result.metadata.debug
-                    ):
-                        from .models import HegelionDebugInfo
-
-                        thesis_result.metadata.debug = HegelionDebugInfo()
-
-                    thesis_result.metadata.debug.judge_score = judge_result.score
-                    thesis_result.metadata.debug.judge_reasoning = judge_result.reasoning
-                    thesis_result.metadata.debug.critique_validity = judge_result.critique_validity
+                    from .models import HegelionDebugInfo, HegelionMetadata
+                    if thesis_result.metadata is not None and isinstance(thesis_result.metadata, HegelionMetadata):
+                        if thesis_result.metadata.debug is None:
+                            thesis_result.metadata.debug = HegelionDebugInfo()
+                        thesis_result.metadata.debug.judge_score = judge_result.score
+                        thesis_result.metadata.debug.judge_reasoning = judge_result.reasoning
+                        thesis_result.metadata.debug.critique_validity = judge_result.critique_validity
 
                     if debug:
                         print(f"⚖️ Judge Score: {judge_result.score}/10")

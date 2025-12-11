@@ -234,9 +234,9 @@ class HegelionEngine:
         antithesis_text = ""
         contradictions: List[str] = []
         antithesis_time_ms = 0.0
+        antithesis_start = time.perf_counter()
 
         try:
-            antithesis_start = time.perf_counter()
             await self._emit_progress(progress_callback, "phase_started", {"phase": "antithesis"})
             log_phase("antithesis_start", personas=len(personas) if personas else 0)
 
@@ -308,8 +308,8 @@ class HegelionEngine:
         synthesis_text = ""
         research_proposals: List[str] = []
         synthesis_time_ms = 0.0
+        synthesis_start = time.perf_counter()
         try:
-            synthesis_start = time.perf_counter()
             await self._emit_progress(progress_callback, "phase_started", {"phase": "synthesis"})
             log_phase("synthesis_start")
 

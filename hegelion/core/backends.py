@@ -255,7 +255,9 @@ class OllamaLLMBackend:
                         continue
                     try:
                         data = json.loads(line)
-                    except Exception:
+                    except json.JSONDecodeError:
+                        # Skip malformed JSON lines in streaming response
+                        # This is expected for some streaming protocols that send metadata lines
                         continue
                     chunk = data.get("response") or data.get("data")
                     if chunk:
