@@ -21,10 +21,7 @@ from hegelion.core.prompt_dialectic import (
     create_single_shot_dialectic_prompt,
 )
 from hegelion.core.autocoding_state import AutocodingState, save_session, load_session
-from hegelion.core.prompt_autocoding import (
-    PromptDrivenAutocoding,
-    create_autocoding_workflow,
-)
+from hegelion.core.prompt_autocoding import PromptDrivenAutocoding
 
 app = Server("hegelion-server")
 
