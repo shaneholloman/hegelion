@@ -50,7 +50,9 @@ class HegelionResult:
     This is the public API output that excludes internal conflict scoring.
     """
 
-    query: Optional[str] = None  # Default to None to fail validation if missing (as per corrected tests)
+    query: Optional[str] = (
+        None  # Default to None to fail validation if missing (as per corrected tests)
+    )
     mode: str = "synthesis"
     thesis: str = ""
     antithesis: str = ""

@@ -319,7 +319,10 @@ async def _run_enhanced_dialectic(
 
                 # Store council info for trace
                 from .models import HegelionMetadata
-                if thesis_result.metadata is not None and isinstance(thesis_result.metadata, HegelionMetadata):
+
+                if thesis_result.metadata is not None and isinstance(
+                    thesis_result.metadata, HegelionMetadata
+                ):
                     thesis_result.metadata.council_perspectives = len(council_results)
                 if debug and hasattr(thesis_result, "trace") and thesis_result.trace:
                     thesis_result.trace.council_critiques = [
@@ -370,12 +373,17 @@ async def _run_enhanced_dialectic(
 
                     # Store judge info in metadata
                     from .models import HegelionDebugInfo, HegelionMetadata
-                    if thesis_result.metadata is not None and isinstance(thesis_result.metadata, HegelionMetadata):
+
+                    if thesis_result.metadata is not None and isinstance(
+                        thesis_result.metadata, HegelionMetadata
+                    ):
                         if thesis_result.metadata.debug is None:
                             thesis_result.metadata.debug = HegelionDebugInfo()
                         thesis_result.metadata.debug.judge_score = judge_result.score
                         thesis_result.metadata.debug.judge_reasoning = judge_result.reasoning
-                        thesis_result.metadata.debug.critique_validity = judge_result.critique_validity
+                        thesis_result.metadata.debug.critique_validity = (
+                            judge_result.critique_validity
+                        )
 
                     if debug:
                         print(f"⚖️ Judge Score: {judge_result.score}/10")

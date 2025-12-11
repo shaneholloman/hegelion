@@ -16,9 +16,7 @@ class TestCouncilMember:
 
     def test_council_member_creation(self):
         member = CouncilMember(
-            name="Test Expert",
-            expertise="Testing",
-            prompt_modifier="You are a test expert."
+            name="Test Expert", expertise="Testing", prompt_modifier="You are a test expert."
         )
         assert member.name == "Test Expert"
         assert member.expertise == "Testing"
@@ -38,7 +36,7 @@ class TestCouncilCritique:
         critique = CouncilCritique(
             member=member,
             critique="This is a critique",
-            contradictions=["Contradiction 1", "Contradiction 2"]
+            contradictions=["Contradiction 1", "Contradiction 2"],
         )
         assert critique.member == member
         assert critique.critique == "This is a critique"
@@ -68,12 +66,13 @@ class TestDialecticalCouncil:
     @pytest.mark.asyncio
     async def test_generate_council_antithesis_all_members(self):
         mock_backend = AsyncMock()
-        mock_backend.generate = AsyncMock(return_value="CONTRADICTION: Test issue\nEVIDENCE: Test evidence")
+        mock_backend.generate = AsyncMock(
+            return_value="CONTRADICTION: Test issue\nEVIDENCE: Test evidence"
+        )
 
         council = DialecticalCouncil(mock_backend)
         results = await council.generate_council_antithesis(
-            query="Test query",
-            thesis="Test thesis"
+            query="Test query", thesis="Test thesis"
         )
 
         assert len(results) == 3
@@ -88,9 +87,7 @@ class TestDialecticalCouncil:
 
         council = DialecticalCouncil(mock_backend)
         results = await council.generate_council_antithesis(
-            query="Test query",
-            thesis="Test thesis",
-            selected_members=["The Logician"]
+            query="Test query", thesis="Test thesis", selected_members=["The Logician"]
         )
 
         assert len(results) == 1
@@ -105,7 +102,7 @@ class TestDialecticalCouncil:
         results = await council.generate_council_antithesis(
             query="Test query",
             thesis="Test thesis",
-            search_context=["Search result 1", "Search result 2"]
+            search_context=["Search result 1", "Search result 2"],
         )
 
         assert len(results) == 3
@@ -118,6 +115,7 @@ class TestDialecticalCouncil:
         mock_backend = AsyncMock()
 
         call_count = [0]
+
         async def failing_generate(prompt):
             call_count[0] += 1
             if call_count[0] == 2:  # Second member fails
@@ -128,8 +126,7 @@ class TestDialecticalCouncil:
 
         council = DialecticalCouncil(mock_backend)
         results = await council.generate_council_antithesis(
-            query="Test query",
-            thesis="Test thesis"
+            query="Test query", thesis="Test thesis"
         )
 
         # All members should have results (failed ones get fallback critique)
@@ -175,9 +172,7 @@ class TestDialecticalCouncil:
         council = DialecticalCouncil(MagicMock())
         member = CouncilMember(name="Test Expert", expertise="Testing", prompt_modifier="Test")
         critique = CouncilCritique(
-            member=member,
-            critique="This is a critique",
-            contradictions=["Contradiction 1"]
+            member=member, critique="This is a critique", contradictions=["Contradiction 1"]
         )
 
         result = council.synthesize_council_input({"Test Expert": critique})
@@ -198,10 +193,7 @@ class TestDialecticalCouncil:
         critique1 = CouncilCritique(member=member1, critique="Critique 1", contradictions=["C1"])
         critique2 = CouncilCritique(member=member2, critique="Critique 2", contradictions=["C2"])
 
-        result = council.synthesize_council_input({
-            "Expert 1": critique1,
-            "Expert 2": critique2
-        })
+        result = council.synthesize_council_input({"Expert 1": critique1, "Expert 2": critique2})
 
         assert "EXPERT 1" in result
         assert "EXPERT 2" in result
@@ -218,9 +210,7 @@ class TestRunCouncilDialectic:
         mock_backend.generate = AsyncMock(return_value="CONTRADICTION: Test")
 
         results = await run_council_dialectic(
-            backend=mock_backend,
-            query="Test query",
-            thesis="Test thesis"
+            backend=mock_backend, query="Test query", thesis="Test thesis"
         )
 
         assert len(results) == 3
@@ -235,7 +225,7 @@ class TestRunCouncilDialectic:
             query="Test query",
             thesis="Test thesis",
             search_context=["Context"],
-            council_members=["The Logician", "The Empiricist"]
+            council_members=["The Logician", "The Empiricist"],
         )
 
         assert len(results) == 2

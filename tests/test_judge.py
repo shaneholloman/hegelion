@@ -16,7 +16,7 @@ class TestJudgeResult:
             critique_validity=True,
             reasoning="Good dialectical reasoning",
             strength_areas=["Clear thesis", "Strong synthesis"],
-            improvement_areas=["More evidence needed"]
+            improvement_areas=["More evidence needed"],
         )
         assert result.score == 8
         assert result.critique_validity is True
@@ -25,19 +25,11 @@ class TestJudgeResult:
 
     def test_judge_result_score_validation_min(self):
         with pytest.raises(ValueError):
-            JudgeResult(
-                score=-1,
-                critique_validity=True,
-                reasoning="Test"
-            )
+            JudgeResult(score=-1, critique_validity=True, reasoning="Test")
 
     def test_judge_result_score_validation_max(self):
         with pytest.raises(ValueError):
-            JudgeResult(
-                score=11,
-                critique_validity=True,
-                reasoning="Test"
-            )
+            JudgeResult(score=11, critique_validity=True, reasoning="Test")
 
     def test_judge_result_score_boundaries(self):
         # Test minimum valid score
@@ -49,11 +41,7 @@ class TestJudgeResult:
         assert result_max.score == 10
 
     def test_judge_result_default_lists(self):
-        result = JudgeResult(
-            score=5,
-            critique_validity=True,
-            reasoning="Average quality"
-        )
+        result = JudgeResult(score=5, critique_validity=True, reasoning="Average quality")
         assert result.strength_areas == []
         assert result.improvement_areas == []
 
@@ -63,7 +51,7 @@ class TestJudgeResult:
             critique_validity=True,
             reasoning="Good",
             strength_areas=["A"],
-            improvement_areas=["B"]
+            improvement_areas=["B"],
         )
         json_str = result.model_dump_json()
         data = json.loads(json_str)
@@ -95,7 +83,7 @@ class TestIronJudge:
             query="Test query",
             thesis="Test thesis",
             antithesis="Test antithesis",
-            synthesis="Test synthesis"
+            synthesis="Test synthesis",
         )
 
         assert "Test query" in prompt
@@ -108,20 +96,21 @@ class TestIronJudge:
     @pytest.mark.asyncio
     async def test_evaluate_with_structured_prompt_valid_json(self):
         mock_backend = AsyncMock()
-        mock_backend.generate = AsyncMock(return_value=json.dumps({
-            "score": 7,
-            "critique_validity": True,
-            "reasoning": "Good analysis",
-            "strength_areas": ["Clear"],
-            "improvement_areas": ["More depth"]
-        }))
+        mock_backend.generate = AsyncMock(
+            return_value=json.dumps(
+                {
+                    "score": 7,
+                    "critique_validity": True,
+                    "reasoning": "Good analysis",
+                    "strength_areas": ["Clear"],
+                    "improvement_areas": ["More depth"],
+                }
+            )
+        )
 
         judge = IronJudge(mock_backend, use_instructor=False)
         result = await judge.evaluate_dialectic(
-            query="Test",
-            thesis="Thesis",
-            antithesis="Antithesis",
-            synthesis="Synthesis"
+            query="Test", thesis="Thesis", antithesis="Antithesis", synthesis="Synthesis"
         )
 
         assert result.score == 7
@@ -131,20 +120,19 @@ class TestIronJudge:
     @pytest.mark.asyncio
     async def test_evaluate_with_structured_prompt_json_in_text(self):
         mock_backend = AsyncMock()
-        mock_backend.generate = AsyncMock(return_value="""
+        mock_backend.generate = AsyncMock(
+            return_value="""
         Here is my evaluation:
 
         {"score": 6, "critique_validity": false, "reasoning": "Average", "strength_areas": [], "improvement_areas": []}
 
         That concludes my analysis.
-        """)
+        """
+        )
 
         judge = IronJudge(mock_backend, use_instructor=False)
         result = await judge.evaluate_dialectic(
-            query="Test",
-            thesis="Thesis",
-            antithesis="Antithesis",
-            synthesis="Synthesis"
+            query="Test", thesis="Thesis", antithesis="Antithesis", synthesis="Synthesis"
         )
 
         assert result.score == 6
@@ -153,18 +141,17 @@ class TestIronJudge:
     @pytest.mark.asyncio
     async def test_evaluate_with_fallback_parsing(self):
         mock_backend = AsyncMock()
-        mock_backend.generate = AsyncMock(return_value="""
+        mock_backend.generate = AsyncMock(
+            return_value="""
         Score: 8
         critique_validity: true
         The reasoning is good overall.
-        """)
+        """
+        )
 
         judge = IronJudge(mock_backend, use_instructor=False)
         result = await judge.evaluate_dialectic(
-            query="Test",
-            thesis="Thesis",
-            antithesis="Antithesis",
-            synthesis="Synthesis"
+            query="Test", thesis="Thesis", antithesis="Antithesis", synthesis="Synthesis"
         )
 
         # Should use fallback parsing
@@ -175,7 +162,9 @@ class TestIronJudge:
         mock_backend = MagicMock()
         judge = IronJudge(mock_backend, use_instructor=False)
 
-        result = judge._parse_fallback_response("score: 7\ncritique_validity: true\nSome reasoning here.")
+        result = judge._parse_fallback_response(
+            "score: 7\ncritique_validity: true\nSome reasoning here."
+        )
         assert result.score == 7
         assert result.critique_validity is True
 
@@ -214,13 +203,17 @@ class TestJudgeDialectic:
     @pytest.mark.asyncio
     async def test_judge_dialectic_passes_threshold(self):
         mock_backend = AsyncMock()
-        mock_backend.generate = AsyncMock(return_value=json.dumps({
-            "score": 7,
-            "critique_validity": True,
-            "reasoning": "Good",
-            "strength_areas": [],
-            "improvement_areas": []
-        }))
+        mock_backend.generate = AsyncMock(
+            return_value=json.dumps(
+                {
+                    "score": 7,
+                    "critique_validity": True,
+                    "reasoning": "Good",
+                    "strength_areas": [],
+                    "improvement_areas": [],
+                }
+            )
+        )
 
         result = await judge_dialectic(
             backend=mock_backend,
@@ -228,7 +221,7 @@ class TestJudgeDialectic:
             thesis="Thesis",
             antithesis="Antithesis",
             synthesis="Synthesis",
-            min_score=5
+            min_score=5,
         )
 
         assert result.score == 7
@@ -236,13 +229,17 @@ class TestJudgeDialectic:
     @pytest.mark.asyncio
     async def test_judge_dialectic_fails_threshold(self):
         mock_backend = AsyncMock()
-        mock_backend.generate = AsyncMock(return_value=json.dumps({
-            "score": 3,
-            "critique_validity": False,
-            "reasoning": "Poor quality",
-            "strength_areas": [],
-            "improvement_areas": []
-        }))
+        mock_backend.generate = AsyncMock(
+            return_value=json.dumps(
+                {
+                    "score": 3,
+                    "critique_validity": False,
+                    "reasoning": "Poor quality",
+                    "strength_areas": [],
+                    "improvement_areas": [],
+                }
+            )
+        )
 
         with pytest.raises(ValueError) as exc_info:
             await judge_dialectic(
@@ -251,7 +248,7 @@ class TestJudgeDialectic:
                 thesis="Thesis",
                 antithesis="Antithesis",
                 synthesis="Synthesis",
-                min_score=5
+                min_score=5,
             )
 
         assert "below threshold" in str(exc_info.value)
@@ -260,13 +257,17 @@ class TestJudgeDialectic:
     @pytest.mark.asyncio
     async def test_judge_dialectic_default_min_score(self):
         mock_backend = AsyncMock()
-        mock_backend.generate = AsyncMock(return_value=json.dumps({
-            "score": 6,
-            "critique_validity": True,
-            "reasoning": "Acceptable",
-            "strength_areas": [],
-            "improvement_areas": []
-        }))
+        mock_backend.generate = AsyncMock(
+            return_value=json.dumps(
+                {
+                    "score": 6,
+                    "critique_validity": True,
+                    "reasoning": "Acceptable",
+                    "strength_areas": [],
+                    "improvement_areas": [],
+                }
+            )
+        )
 
         # Default min_score is 5
         result = await judge_dialectic(
@@ -274,7 +275,7 @@ class TestJudgeDialectic:
             query="Test",
             thesis="Thesis",
             antithesis="Antithesis",
-            synthesis="Synthesis"
+            synthesis="Synthesis",
         )
 
         assert result.score == 6
@@ -282,13 +283,17 @@ class TestJudgeDialectic:
     @pytest.mark.asyncio
     async def test_judge_dialectic_exact_threshold(self):
         mock_backend = AsyncMock()
-        mock_backend.generate = AsyncMock(return_value=json.dumps({
-            "score": 5,
-            "critique_validity": True,
-            "reasoning": "At threshold",
-            "strength_areas": [],
-            "improvement_areas": []
-        }))
+        mock_backend.generate = AsyncMock(
+            return_value=json.dumps(
+                {
+                    "score": 5,
+                    "critique_validity": True,
+                    "reasoning": "At threshold",
+                    "strength_areas": [],
+                    "improvement_areas": [],
+                }
+            )
+        )
 
         # Score exactly at threshold should pass
         result = await judge_dialectic(
@@ -297,7 +302,7 @@ class TestJudgeDialectic:
             thesis="Thesis",
             antithesis="Antithesis",
             synthesis="Synthesis",
-            min_score=5
+            min_score=5,
         )
 
         assert result.score == 5

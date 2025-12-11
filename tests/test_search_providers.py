@@ -50,11 +50,13 @@ class TestTavilySearchProvider:
             "results": [
                 {"content": "Result 1 content", "url": "https://example.com/1"},
                 {"content": "Result 2 content", "url": "https://example.com/2"},
-            ]
+            ],
         }
 
         with patch.dict("sys.modules", {"tavily": MagicMock()}):
-            with patch("hegelion.search_providers.TavilySearchProvider.__init__", return_value=None):
+            with patch(
+                "hegelion.search_providers.TavilySearchProvider.__init__", return_value=None
+            ):
                 provider = TavilySearchProvider.__new__(TavilySearchProvider)
                 provider.client = mock_tavily_client
                 provider.api_key = "test-key"
@@ -71,7 +73,9 @@ class TestTavilySearchProvider:
         mock_client.search.side_effect = Exception("API error")
 
         with patch.dict("sys.modules", {"tavily": MagicMock()}):
-            with patch("hegelion.search_providers.TavilySearchProvider.__init__", return_value=None):
+            with patch(
+                "hegelion.search_providers.TavilySearchProvider.__init__", return_value=None
+            ):
                 provider = TavilySearchProvider.__new__(TavilySearchProvider)
                 provider.client = mock_client
                 provider.api_key = "test-key"
@@ -93,7 +97,9 @@ class TestDuckDuckGoSearchProvider:
         ]
 
         with patch.dict("sys.modules", {"duckduckgo_search": MagicMock()}):
-            with patch("hegelion.search_providers.DuckDuckGoSearchProvider.__init__", return_value=None):
+            with patch(
+                "hegelion.search_providers.DuckDuckGoSearchProvider.__init__", return_value=None
+            ):
                 provider = DuckDuckGoSearchProvider.__new__(DuckDuckGoSearchProvider)
                 provider.ddgs = mock_ddgs
 
@@ -109,7 +115,9 @@ class TestDuckDuckGoSearchProvider:
         mock_ddgs.text.side_effect = Exception("Network error")
 
         with patch.dict("sys.modules", {"duckduckgo_search": MagicMock()}):
-            with patch("hegelion.search_providers.DuckDuckGoSearchProvider.__init__", return_value=None):
+            with patch(
+                "hegelion.search_providers.DuckDuckGoSearchProvider.__init__", return_value=None
+            ):
                 provider = DuckDuckGoSearchProvider.__new__(DuckDuckGoSearchProvider)
                 provider.ddgs = mock_ddgs
 
@@ -123,7 +131,9 @@ class TestDuckDuckGoSearchProvider:
         mock_ddgs.text.return_value = []
 
         with patch.dict("sys.modules", {"duckduckgo_search": MagicMock()}):
-            with patch("hegelion.search_providers.DuckDuckGoSearchProvider.__init__", return_value=None):
+            with patch(
+                "hegelion.search_providers.DuckDuckGoSearchProvider.__init__", return_value=None
+            ):
                 provider = DuckDuckGoSearchProvider.__new__(DuckDuckGoSearchProvider)
                 provider.ddgs = mock_ddgs
 
