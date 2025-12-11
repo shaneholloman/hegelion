@@ -632,7 +632,11 @@ The session is ready. Next step: call `player_prompt` with the returned state.
 
         if state.phase != "player":
             return CallToolResult(
-                content=[TextContent(type="text", text=f"Error: Expected player phase, got {state.phase}")],
+                content=[
+                    TextContent(
+                        type="text", text=f"Error: Expected player phase, got {state.phase}"
+                    )
+                ],
                 structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "player"},
                 isError=True,
             )
@@ -671,7 +675,9 @@ The session is ready. Next step: call `player_prompt` with the returned state.
 
         if state.phase != "coach":
             return CallToolResult(
-                content=[TextContent(type="text", text=f"Error: Expected coach phase, got {state.phase}")],
+                content=[
+                    TextContent(type="text", text=f"Error: Expected coach phase, got {state.phase}")
+                ],
                 structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "coach"},
                 isError=True,
             )
@@ -710,7 +716,9 @@ The session is ready. Next step: call `player_prompt` with the returned state.
 
         if state.phase != "coach":
             return CallToolResult(
-                content=[TextContent(type="text", text=f"Error: Expected coach phase, got {state.phase}")],
+                content=[
+                    TextContent(type="text", text=f"Error: Expected coach phase, got {state.phase}")
+                ],
                 structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "coach"},
                 isError=True,
             )
@@ -812,13 +820,17 @@ Session saved successfully. Use `autocoding_load` with the filepath to restore."
             state = load_session(filepath)
         except FileNotFoundError:
             return CallToolResult(
-                content=[TextContent(type="text", text=f"Error: Session file not found: {filepath}")],
+                content=[
+                    TextContent(type="text", text=f"Error: Session file not found: {filepath}")
+                ],
                 structuredContent={"error": f"File not found: {filepath}"},
                 isError=True,
             )
         except json.JSONDecodeError as e:
             return CallToolResult(
-                content=[TextContent(type="text", text=f"Error: Invalid JSON in session file: {e}")],
+                content=[
+                    TextContent(type="text", text=f"Error: Invalid JSON in session file: {e}")
+                ],
                 structuredContent={"error": f"Invalid JSON: {str(e)}"},
                 isError=True,
             )

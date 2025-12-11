@@ -21,7 +21,7 @@ Both modes use the same principle: **force the model to oppose itself** before c
 
 ## Autocoding: Player-Coach Loop
 
-**New in v0.4.0** — Based on [g3's adversarial cooperation research](https://github.com/dhanji/g3).
+**New in v0.4.0** — Based on [g3's adversarial cooperation research](https://block.xyz/documents/adversarial-cooperation-in-code-synthesis.pdf).
 
 ### The Problem
 
