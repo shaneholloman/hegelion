@@ -21,7 +21,7 @@ Both modes use the same principle: **force the model to oppose itself** before c
 
 ## Autocoding: Player-Coach Loop
 
-**New in v0.4.0** — Based on [g3's adversarial cooperation research](https://block.xyz/documents/adversarial-cooperation-in-code-synthesis.pdf).
+**New in v0.4.0** — Based on [Block AI's g3 agent research](https://block.xyz/documents/adversarial-cooperation-in-code-synthesis.pdf).
 
 ### The Problem
 
@@ -226,7 +226,7 @@ Issues and PRs welcome. For significant changes, open a discussion first.
 
 ### v0.4.0 (December 2025)
 
-- **Autocoding system**: Player-coach dialectical loop based on g3 research
+- **Autocoding system**: Player-coach dialectical loop based on Block AI's g3 agent
 - MCP tools: `autocoding_init`, `player_prompt`, `coach_prompt`, `autocoding_advance`
 - Session persistence with `autocoding_save` / `autocoding_load`
 - Single-shot mode for simpler use cases
