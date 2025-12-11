@@ -31,8 +31,10 @@ pip install -e .
 |-------------|-----------------|-------|
 | Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) | [Auto](#claude-desktop) or [Manual](#claude-desktop-1) |
 | Claude Code | `~/.claude.json` | [CLI](#claude-code) |
-| Cursor | Settings → Features → MCP | [Manual](#cursor) |
-| VS Code | MCP extension settings | [Manual](#vs-code) |
+| Cursor | `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project) | [Manual](#cursor) |
+| VS Code + Copilot | `.vscode/mcp.json` | [Manual](#vs-code--github-copilot) |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | [Manual](#windsurf) |
+| Google Antigravity | MCP Store → Manage → `mcp_config.json` | [Manual](#google-antigravity) |
 | Gemini CLI | Extension install | [CLI](#gemini-cli) |
 
 ## Setup by Environment
@@ -90,16 +92,102 @@ exit  # Then reopen terminal
 
 ### Cursor
 
-1. Run `hegelion-setup-mcp` (without `--write`)
-2. Copy the output JSON
-3. Paste into **Settings → Features → MCP**
-4. Restart Cursor
+Cursor supports MCP with up to 40 tools. Config can be global or project-specific.
 
-### VS Code
+**Option 1: Global config** (all projects)
 
-Configure your MCP extension to use:
-- Command: `python`
-- Args: `["-m", "hegelion.mcp.server"]`
+Create or edit `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "/full/path/to/python",
+      "args": ["-m", "hegelion.mcp.server"]
+    }
+  }
+}
+```
+
+**Option 2: Project config**
+
+Create `.cursor/mcp.json` in your project root with the same JSON.
+
+**Option 3: Settings UI**
+
+1. Go to **File → Preferences → Cursor Settings**
+2. Select **MCP** option
+3. Paste the JSON config
+
+After adding, restart Cursor.
+
+### VS Code + GitHub Copilot
+
+VS Code 1.99+ supports MCP natively with GitHub Copilot. MCP is generally available starting from VS Code 1.102.
+
+> **Note:** For Copilot Business/Enterprise, the "MCP servers in Copilot" policy must be enabled by your org admin.
+
+Create `.vscode/mcp.json` in your project:
+
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "/full/path/to/python",
+      "args": ["-m", "hegelion.mcp.server"]
+    }
+  }
+}
+```
+
+A "Start" button will appear in the file. Click it to start the MCP server.
+
+For more details, see [VS Code MCP documentation](https://code.visualstudio.com/docs/copilot/customization/mcp-servers).
+
+### Windsurf
+
+Windsurf (Codeium's IDE) supports MCP through its Cascade AI assistant.
+
+1. Open **Windsurf Settings** (Cmd+Shift+P → "Open Windsurf Settings")
+2. Go to the **Cascade** section
+3. Scroll to **MCP Servers**
+4. Or directly edit `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "/full/path/to/python",
+      "args": ["-m", "hegelion.mcp.server"]
+    }
+  }
+}
+```
+
+Press the refresh button after adding. Windsurf supports up to 100 tools.
+
+For more details, see [Windsurf MCP documentation](https://docs.windsurf.com/windsurf/cascade/mcp).
+
+### Google Antigravity
+
+Google's agent-first IDE (released November 2025) has a built-in MCP Store.
+
+1. Click **Agent session** → **"..."** dropdown → **MCP Servers**
+2. Select **Manage MCP Servers** at the top
+3. Click **View raw config** to edit `mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "/full/path/to/python",
+      "args": ["-m", "hegelion.mcp.server"]
+    }
+  }
+}
+```
+
+For more details, see [Antigravity MCP guide](https://medium.com/@jaintarun7/google-antigravity-custom-mcp-server-integration-to-improve-vibe-coding-f92ddbc1c22d).
 
 ### Gemini CLI
 
@@ -127,6 +215,28 @@ Generate a Hegelion workflow for: "Should we regulate AI?" with use_council=true
 - `thesis_prompt` — Generate thesis only
 - `antithesis_prompt` — Generate antithesis only (requires thesis)
 - `synthesis_prompt` — Generate synthesis (requires both)
+
+### Autocoding Tools (v0.4.0+)
+
+Player-coach loop for verified code implementations:
+
+| Tool | Purpose |
+|------|---------|
+| `autocoding_init` | Start session with requirements checklist |
+| `player_prompt` | Generate implementation prompt |
+| `coach_prompt` | Generate verification prompt |
+| `autocoding_advance` | Update state after coach review |
+| `autocoding_single_shot` | Combined prompt for simpler tasks |
+| `autocoding_save` | Save session to file |
+| `autocoding_load` | Resume saved session |
+
+**Example:**
+```
+Use autocoding_init with these requirements:
+- Add user authentication to src/api.py
+- Add tests in tests/test_auth.py
+- All tests must pass
+```
 
 ## Feature Toggles
 
@@ -240,7 +350,9 @@ After setup, ask in your editor:
 
 > "What Hegelion tools are available?"
 
-You should see: `dialectical_workflow`, `dialectical_single_shot`, `thesis_prompt`, `antithesis_prompt`, `synthesis_prompt`.
+You should see:
+- **Dialectical:** `dialectical_workflow`, `dialectical_single_shot`, `thesis_prompt`, `antithesis_prompt`, `synthesis_prompt`
+- **Autocoding:** `autocoding_init`, `player_prompt`, `coach_prompt`, `autocoding_advance`, `autocoding_single_shot`, `autocoding_save`, `autocoding_load`
 
 ## Getting Help
 

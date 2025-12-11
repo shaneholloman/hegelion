@@ -193,7 +193,7 @@ hegelion --stream "Is consciousness fundamental or emergent?"
 pip install hegelion
 ```
 
-For MCP integration (Claude Desktop, Cursor, VS Code):
+For MCP integration (works with any MCP-enabled editor):
 
 ```bash
 # Claude Desktop (macOS)
@@ -202,13 +202,15 @@ hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desk
 # Then restart Claude Desktop
 ```
 
-See [MCP Integration Guide](docs/guides/mcp-integration.md) for other editors.
+**Supported editors:** Claude Desktop, Claude Code, Cursor, VS Code + GitHub Copilot, Windsurf, Google Antigravity, Gemini CLI
+
+See [MCP Integration Guide](docs/guides/mcp-integration.md) for setup instructions.
 
 ---
 
 ## Documentation
 
-- **[MCP Integration](docs/guides/mcp-integration.md)** — Setup for Claude Desktop, Cursor, VS Code, Gemini CLI
+- **[MCP Integration](docs/guides/mcp-integration.md)** — Setup for Claude Desktop, Cursor, VS Code + Copilot, Windsurf, Antigravity, Gemini CLI
 - **[Python API](docs/guides/python-api.md)** — Full API reference
 - **[CLI Reference](docs/guides/cli-reference.md)** — Command-line usage
 - **[Configuration](docs/getting-started/configuration.md)** — Backends and feature toggles
