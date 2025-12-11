@@ -20,6 +20,11 @@ from hegelion.core.prompt_dialectic import (
     create_dialectical_workflow,
     create_single_shot_dialectic_prompt,
 )
+from hegelion.core.autocoding_state import AutocodingState, save_session, load_session
+from hegelion.core.prompt_autocoding import (
+    PromptDrivenAutocoding,
+    create_autocoding_workflow,
+)
 
 app = Server("hegelion-server")
 
@@ -210,6 +215,158 @@ async def list_tools() -> list[Tool]:
                     },
                 },
                 "required": ["query", "thesis", "antithesis"],
+            },
+        ),
+        # === AUTOCODING TOOLS (based on g3 paper) ===
+        Tool(
+            name="autocoding_init",
+            description=(
+                "Initialize a dialectical autocoding session with requirements. "
+                "Returns session state to pass to subsequent tool calls. "
+                "Based on the g3 paper's coach-player adversarial cooperation paradigm."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "requirements": {
+                        "type": "string",
+                        "description": "The requirements document (source of truth). Should be structured as a checklist.",
+                    },
+                    "max_turns": {
+                        "type": "integer",
+                        "description": "Maximum turns before timeout (default: 10)",
+                        "default": 10,
+                    },
+                    "approval_threshold": {
+                        "type": "number",
+                        "description": "Minimum compliance score for approval (0-1, default: 0.9)",
+                        "default": 0.9,
+                    },
+                },
+                "required": ["requirements"],
+            },
+        ),
+        Tool(
+            name="player_prompt",
+            description=(
+                "Generate the implementation prompt for the player agent in autocoding. "
+                "The player focuses on implementing requirements, NOT declaring success."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "state": {
+                        "type": "object",
+                        "description": "AutocodingState dict from autocoding_init or autocoding_advance",
+                    },
+                },
+                "required": ["state"],
+            },
+        ),
+        Tool(
+            name="coach_prompt",
+            description=(
+                "Generate the validation prompt for the coach agent in autocoding. "
+                "The coach verifies implementation against requirements, ignoring player's self-assessment."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "state": {
+                        "type": "object",
+                        "description": "AutocodingState dict from player phase",
+                    },
+                },
+                "required": ["state"],
+            },
+        ),
+        Tool(
+            name="autocoding_advance",
+            description=(
+                "Advance autocoding state after coach review. "
+                "Updates turn count, records feedback, and determines next phase."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "state": {
+                        "type": "object",
+                        "description": "AutocodingState dict from coach phase",
+                    },
+                    "coach_feedback": {
+                        "type": "string",
+                        "description": "The coach's feedback text (compliance checklist and actions needed)",
+                    },
+                    "approved": {
+                        "type": "boolean",
+                        "description": "Whether the coach approved the implementation (look for 'COACH APPROVED')",
+                    },
+                    "compliance_score": {
+                        "type": "number",
+                        "description": "Optional compliance score (0-1) based on checklist items satisfied",
+                    },
+                },
+                "required": ["state", "coach_feedback", "approved"],
+            },
+        ),
+        Tool(
+            name="autocoding_single_shot",
+            description=(
+                "Single comprehensive prompt for self-directed autocoding. "
+                "Combines player and coach roles with iterative implementation and self-verification."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "requirements": {
+                        "type": "string",
+                        "description": "The requirements document (source of truth)",
+                    },
+                    "max_turns": {
+                        "type": "integer",
+                        "description": "Maximum iterations to attempt (default: 10)",
+                        "default": 10,
+                    },
+                },
+                "required": ["requirements"],
+            },
+        ),
+        Tool(
+            name="autocoding_save",
+            description=(
+                "Save an autocoding session to a JSON file. "
+                "Use this to persist session state for later resumption."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "state": {
+                        "type": "object",
+                        "description": "AutocodingState dict to save",
+                    },
+                    "filepath": {
+                        "type": "string",
+                        "description": "Path to save the session JSON file",
+                    },
+                },
+                "required": ["state", "filepath"],
+            },
+        ),
+        Tool(
+            name="autocoding_load",
+            description=(
+                "Load an autocoding session from a JSON file. "
+                "Use this to resume a previously saved session."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "filepath": {
+                        "type": "string",
+                        "description": "Path to the session JSON file to load",
+                    },
+                },
+                "required": ["filepath"],
             },
         ),
     ]
@@ -430,6 +587,254 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
 
 **Instructions:** {prompt_obj.instructions}
 **Expected Format:** {prompt_obj.expected_format}"""
+
+        return ([TextContent(type="text", text=response)], structured)
+
+    # === AUTOCODING TOOL HANDLERS ===
+
+    elif name == "autocoding_init":
+        await _send_progress("Initializing autocoding session...", 1.0, 2.0)
+
+        requirements = arguments["requirements"]
+        max_turns = arguments.get("max_turns", 10)
+        approval_threshold = arguments.get("approval_threshold", 0.9)
+
+        state = AutocodingState.create(
+            requirements=requirements,
+            max_turns=max_turns,
+            approval_threshold=approval_threshold,
+        )
+
+        await _send_progress("Session initialized", 2.0, 2.0)
+
+        structured = state.to_dict()
+        response = f"""# AUTOCODING SESSION INITIALIZED
+
+**Session ID:** {state.session_id[:8]}...
+**Max Turns:** {max_turns}
+**Approval Threshold:** {approval_threshold:.0%}
+
+The session is ready. Next step: call `player_prompt` with the returned state.
+
+**Workflow:**
+1. Call `player_prompt` with state -> Execute returned prompt
+2. Call `coach_prompt` with state -> Execute returned prompt
+3. Call `autocoding_advance` with coach feedback
+4. Repeat until COACH APPROVED or timeout"""
+
+        return ([TextContent(type="text", text=response)], structured)
+
+    elif name == "player_prompt":
+        await _send_progress("Generating player prompt...", 1.0, 1.0)
+
+        state_dict = arguments["state"]
+        state = AutocodingState.from_dict(state_dict)
+
+        if state.phase != "player":
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Error: Expected player phase, got {state.phase}")],
+                structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "player"},
+                isError=True,
+            )
+
+        autocoding = PromptDrivenAutocoding()
+        prompt_obj = autocoding.generate_player_prompt(
+            requirements=state.requirements,
+            coach_feedback=state.last_coach_feedback,
+            turn_number=state.current_turn + 1,
+            max_turns=state.max_turns,
+        )
+
+        # Advance state to coach phase for next call
+        new_state = state.advance_to_coach()
+
+        structured = {
+            **prompt_obj.to_dict(),
+            "state": new_state.to_dict(),
+        }
+
+        response = f"""# PLAYER PROMPT (Turn {state.current_turn + 1}/{state.max_turns})
+
+{prompt_obj.prompt}
+
+---
+**Instructions:** {prompt_obj.instructions}
+**Next Step:** After executing this prompt, call `coach_prompt` with the updated state."""
+
+        return ([TextContent(type="text", text=response)], structured)
+
+    elif name == "coach_prompt":
+        await _send_progress("Generating coach prompt...", 1.0, 1.0)
+
+        state_dict = arguments["state"]
+        state = AutocodingState.from_dict(state_dict)
+
+        if state.phase != "coach":
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Error: Expected coach phase, got {state.phase}")],
+                structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "coach"},
+                isError=True,
+            )
+
+        autocoding = PromptDrivenAutocoding()
+        prompt_obj = autocoding.generate_coach_prompt(
+            requirements=state.requirements,
+            turn_number=state.current_turn + 1,
+            max_turns=state.max_turns,
+        )
+
+        structured = {
+            **prompt_obj.to_dict(),
+            "state": state.to_dict(),
+        }
+
+        response = f"""# COACH PROMPT (Turn {state.current_turn + 1}/{state.max_turns})
+
+{prompt_obj.prompt}
+
+---
+**Instructions:** {prompt_obj.instructions}
+**Next Step:** After executing this prompt, call `autocoding_advance` with the coach's feedback."""
+
+        return ([TextContent(type="text", text=response)], structured)
+
+    elif name == "autocoding_advance":
+        await _send_progress("Advancing autocoding state...", 1.0, 2.0)
+
+        state_dict = arguments["state"]
+        coach_feedback = arguments["coach_feedback"]
+        approved = arguments["approved"]
+        compliance_score = arguments.get("compliance_score")
+
+        state = AutocodingState.from_dict(state_dict)
+
+        if state.phase != "coach":
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Error: Expected coach phase, got {state.phase}")],
+                structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "coach"},
+                isError=True,
+            )
+
+        new_state = state.advance_turn(
+            coach_feedback=coach_feedback,
+            approved=approved,
+            compliance_score=compliance_score,
+        )
+
+        await _send_progress("State advanced", 2.0, 2.0)
+
+        structured = new_state.to_dict()
+
+        if new_state.status == "approved":
+            response = f"""# AUTOCODING COMPLETE - APPROVED
+
+**Session:** {new_state.session_id[:8]}...
+**Turns Used:** {new_state.current_turn}/{new_state.max_turns}
+**Final Status:** APPROVED
+
+The implementation has been verified by the coach and meets all requirements."""
+
+        elif new_state.status == "timeout":
+            response = f"""# AUTOCODING COMPLETE - TIMEOUT
+
+**Session:** {new_state.session_id[:8]}...
+**Turns Used:** {new_state.current_turn}/{new_state.max_turns}
+**Final Status:** TIMEOUT
+
+Maximum turns reached without approval. Review the turn history for progress made."""
+
+        else:
+            response = f"""# AUTOCODING - CONTINUING
+
+**Session:** {new_state.session_id[:8]}...
+**Turn:** {new_state.current_turn + 1}/{new_state.max_turns}
+**Status:** {new_state.status}
+
+**Next Step:** Call `player_prompt` with the updated state to continue implementation."""
+
+        return ([TextContent(type="text", text=response)], structured)
+
+    elif name == "autocoding_single_shot":
+        await _send_progress("Generating single-shot autocoding prompt...", 1.0, 1.0)
+
+        requirements = arguments["requirements"]
+        max_turns = arguments.get("max_turns", 10)
+
+        autocoding = PromptDrivenAutocoding()
+        prompt_obj = autocoding.generate_single_shot_prompt(
+            requirements=requirements,
+            max_turns=max_turns,
+        )
+
+        structured = {
+            **prompt_obj.to_dict(),
+            "requirements": requirements,
+            "max_turns": max_turns,
+        }
+
+        response = f"""# SINGLE-SHOT AUTOCODING PROMPT
+
+{prompt_obj.prompt}
+
+---
+**Instructions:** {prompt_obj.instructions}
+**Expected Format:** {prompt_obj.expected_format}"""
+
+        return ([TextContent(type="text", text=response)], structured)
+
+    elif name == "autocoding_save":
+        state_dict = arguments["state"]
+        filepath = arguments["filepath"]
+
+        state = AutocodingState.from_dict(state_dict)
+        save_session(state, filepath)
+
+        structured = {
+            "session_id": state.session_id,
+            "filepath": filepath,
+            "saved": True,
+        }
+        response = f"""# SESSION SAVED
+
+**Session ID:** {state.session_id[:8]}...
+**Saved to:** {filepath}
+**Phase:** {state.phase}
+**Turn:** {state.current_turn + 1}/{state.max_turns}
+
+Session saved successfully. Use `autocoding_load` with the filepath to restore."""
+
+        return ([TextContent(type="text", text=response)], structured)
+
+    elif name == "autocoding_load":
+        filepath = arguments["filepath"]
+
+        try:
+            state = load_session(filepath)
+        except FileNotFoundError:
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Error: Session file not found: {filepath}")],
+                structuredContent={"error": f"File not found: {filepath}"},
+                isError=True,
+            )
+        except json.JSONDecodeError as e:
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Error: Invalid JSON in session file: {e}")],
+                structuredContent={"error": f"Invalid JSON: {str(e)}"},
+                isError=True,
+            )
+
+        structured = state.to_dict()
+        response = f"""# SESSION LOADED
+
+**Session ID:** {state.session_id[:8]}...
+**Loaded from:** {filepath}
+**Phase:** {state.phase}
+**Status:** {state.status}
+**Turn:** {state.current_turn + 1}/{state.max_turns}
+
+Session restored. Continue with the appropriate tool based on phase:
+- If phase is "player": call `player_prompt`
+- If phase is "coach": call `coach_prompt`"""
 
         return ([TextContent(type="text", text=response)], structured)
 

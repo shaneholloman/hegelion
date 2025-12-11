@@ -18,8 +18,10 @@ from .core.core import (
 from .core.models import HegelionResult
 from .training.datasets import export_training_data, to_dpo_dataset, to_instruction_tuning_dataset
 from .core.agent import HegelionAgent
+from .core.autocoding_state import AutocodingState
+from .core.prompt_autocoding import AutocodingPrompt, PromptDrivenAutocoding
 
-__version__ = "0.3.2"
+__version__ = "0.4.0"
 __author__ = "Hegelion Contributors"
 
 __all__ = [
@@ -36,4 +38,8 @@ __all__ = [
     "to_dpo_dataset",
     "to_instruction_tuning_dataset",
     "export_training_data",
+    # Autocoding (g3-style coach-player loop)
+    "AutocodingState",
+    "AutocodingPrompt",
+    "PromptDrivenAutocoding",
 ]
