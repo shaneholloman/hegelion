@@ -53,8 +53,6 @@ Each `prompt` entry contains:
 - `instructions`: how the LLM should respond
 - `expected_format`: e.g., `CONTRADICTION:` / `EVIDENCE:` pairs
 
-The FastAPI service under `extensions/gemini/server` exposes HTTP endpoints (`/dialectical_workflow`, `/dialectical_single_shot`, `/thesis_prompt`, etc.) that simply return this data—ideal for Gemini Extensions or other marketplaces where only HTTP tools are allowed.
-
 ### Sequential Thinking (single prompt)
 
 `create_single_shot_dialectic_prompt` returns a monolithic prompt that instructs the LLM to run Thesis → Antithesis → Synthesis by itself and format the result into:
@@ -68,30 +66,8 @@ The FastAPI service under `extensions/gemini/server` exposes HTTP endpoints (`/d
 ...
 ```
 
-## Python Agent (Optional, requires provider keys)
-
-For teams that want Hegelion to run the loop itself, use the Python agent:
-
-```python
-from hegelion.core.agent import HegelionAgent
-
-agent = HegelionAgent(goal="Ship safely", personas="council", iterations=2)
-step = agent.act_sync("Tests are flaky after enabling caching")
-print(step.action)
-```
-
-CLI + MCP:
-
-```bash
-python -m hegelion.scripts.hegelion_agent_cli "CI fails on Python 3.12" --goal "Fix CI" --coding --iterations 2
-```
-
-`hegelion_agent_act` (MCP tool) accepts `{ observation, goal?, personas?, iterations?, use_search?, debug? }` and returns `{ action, result }`.
-
 ## Why the Protocol Works
 
 - **Adversarial Antithesis:** explicit instructions to attack hallucinations.
 - **Structured Output:** prompts require `CONTRADICTION` / `EVIDENCE` fields and synthesis predictions.
 - **Optional Council & Judge:** multi-perspective critiques plus a scoring phase catch gaps before action.
-
-Whether you use the prompt server or the Python agent, the structure is identical—only the executor changes.

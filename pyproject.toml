@@ -23,28 +23,12 @@ classifiers = [
 
 dependencies = [
     "mcp>=1.21.1",
-    "openai>=1.0.0",
-    "anthropic>=0.40.0",
-    "google-generativeai>=0.8.3",
-    "httpx>=0.25.0",
-    "jsonschema>=4.22.0",
-    "sentence-transformers>=2.2.0",
-    "numpy>=1.24.0",
-    "scikit-learn>=1.2.0",
-    "datasets>=4.4.1",
-    "psutil>=5.9.0",
-    "rich>=13.0.0",
+    "anyio>=4.0.0",
     # Phase 2 dependencies
-    "duckduckgo-search>=6.0.0",
-    "instructor>=1.0.0",
-    "pydantic>=2.0.0"
-
+    
 ]
 
 [project.optional-dependencies]
-search = [
-    "tavily-python>=0.3.0"
-]
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
@@ -55,18 +39,10 @@ dev = [
     "build>=1.0.0",
     "twine>=5.0.0"
 ]
-monitoring = [
-    "psutil>=5.9.0"
-]
 
 [project.scripts]
-hegelion = "hegelion.scripts.hegelion_cli:main"
-hegelion-bench = "hegelion.scripts.hegelion_bench:main"
-hegelion-eval = "hegelion.scripts.hegelion_eval:main"
 hegelion-server = "hegelion.mcp.server:main"
 hegelion-setup-mcp = "hegelion.scripts.mcp_setup:main"
-hegelion-agent = "hegelion.scripts.hegelion_agent_cli:main"
-hegelion-dataset = "hegelion.scripts.hegelion_dataset:main"
 
 [project.urls]
 Homepage = "https://github.com/Hmbown/Hegelion"
@@ -82,14 +58,10 @@ build-backend = "setuptools.build_meta"
 packages = [
     "hegelion",
     "hegelion.core",
-    "hegelion.examples_data",
     "hegelion.mcp",
     "hegelion.scripts",
-    "hegelion.training"
+    
 ]
-
-[tool.setuptools.package-data]
-"hegelion.examples_data" = ["*.jsonl"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
