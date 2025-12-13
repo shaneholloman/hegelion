@@ -7,7 +7,6 @@ from hegelion.mcp.server import call_tool, list_tools
 
 @pytest.mark.asyncio
 class TestPromptMCPServer:
-
     async def test_list_tools(self):
         """Test that all prompt tools are listed."""
         tools = await list_tools()
@@ -103,7 +102,9 @@ class TestPromptMCPServer:
     async def test_autocoding_loop_transitions_and_schema(self):
         """Verify init -> player_prompt -> coach_prompt -> advance transitions and schema keys."""
         requirements = "- [ ] Add auth\n- [ ] Add tests\n"
-        _, init_state = await call_tool("autocoding_init", {"requirements": requirements, "max_turns": 2})
+        _, init_state = await call_tool(
+            "autocoding_init", {"requirements": requirements, "max_turns": 2}
+        )
 
         assert init_state["schema_version"] == 1
         assert init_state["phase"] == "player"
