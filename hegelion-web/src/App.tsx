@@ -16,7 +16,7 @@ function App() {
         <section className="container mx-auto px-4 py-24 md:py-32 grid grid-cols-1 md:grid-cols-2 gap-12 items-center border-b border-foreground">
           <div className="space-y-6">
             <div className="inline-block border border-foreground px-3 py-1 font-mono text-xs uppercase tracking-wider">
-              v0.4.0 — Now with Autocoding
+              v0.4.1 — Schema Versioning & Better Errors
             </div>
             <h1 className="font-serif text-6xl md:text-8xl leading-[0.9] tracking-tight">
               The Truth <br /> is the Whole.
@@ -115,7 +115,7 @@ function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
                 <div className="inline-block border border-background px-3 py-1 font-mono text-xs uppercase tracking-wider">
-                  New in v0.4.0
+                  New in v0.4.1
                 </div>
                 <h2 className="font-serif text-5xl md:text-6xl leading-none">
                   Player-Coach Loop.
