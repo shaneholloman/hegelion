@@ -25,6 +25,8 @@ from hegelion.core.prompt_autocoding import PromptDrivenAutocoding
 
 app = Server("hegelion-server")
 
+MCP_SCHEMA_VERSION = 1
+
 # Compatibility: older anyio versions expose create_memory_object_stream as a plain function
 # which cannot be subscripted (newer typing style uses subscripting). Patch a lightweight
 # wrapper so the MCP server session setup does not crash when subscripting is attempted.
@@ -247,7 +249,8 @@ async def list_tools() -> list[Tool]:
             name="player_prompt",
             description=(
                 "Generate the implementation prompt for the player agent in autocoding. "
-                "The player focuses on implementing requirements, NOT declaring success."
+                "The player focuses on implementing requirements, NOT declaring success. "
+                "Returns an updated state advanced to coach phase for the next call."
             ),
             inputSchema={
                 "type": "object",
@@ -264,7 +267,8 @@ async def list_tools() -> list[Tool]:
             name="coach_prompt",
             description=(
                 "Generate the validation prompt for the coach agent in autocoding. "
-                "The coach verifies implementation against requirements, ignoring player's self-assessment."
+                "The coach verifies implementation against requirements, ignoring player's self-assessment. "
+                "Requires state.phase=='coach'."
             ),
             inputSchema={
                 "type": "object",
@@ -401,6 +405,58 @@ async def _send_progress(message: str, progress: float, total: float = 3.0) -> N
         pass
 
 
+def _state_error(tool_name: str, message: str, *, error: str) -> CallToolResult:
+    return CallToolResult(
+        content=[TextContent(type="text", text=message)],
+        structuredContent={
+            "schema_version": MCP_SCHEMA_VERSION,
+            "tool": tool_name,
+            "error": error,
+        },
+        isError=True,
+    )
+
+
+def _phase_error(tool_name: str, *, expected: str, received: str, hint: str) -> CallToolResult:
+    return CallToolResult(
+        content=[
+            TextContent(
+                type="text",
+                text=(
+                    f"Error: Invalid phase for {tool_name}. "
+                    f"Expected '{expected}', got '{received}'.\n\nHint: {hint}"
+                ),
+            )
+        ],
+        structuredContent={
+            "schema_version": MCP_SCHEMA_VERSION,
+            "tool": tool_name,
+            "error": f"Invalid phase: {received}",
+            "expected": expected,
+            "received": received,
+            "hint": hint,
+        },
+        isError=True,
+    )
+
+
+def _parse_autocoding_state(tool_name: str, state_dict: Any) -> AutocodingState | CallToolResult:
+    if not isinstance(state_dict, dict):
+        return _state_error(
+            tool_name,
+            "Error: Invalid autocoding state. Expected an object/dict.",
+            error="Invalid autocoding state: expected object",
+        )
+    try:
+        return AutocodingState.from_dict(state_dict)
+    except (KeyError, TypeError, ValueError) as e:
+        return _state_error(
+            tool_name,
+            f"Error: Invalid autocoding state: {e}",
+            error=f"Invalid autocoding state: {e}",
+        )
+
+
 @app.call_tool()
 async def call_tool(name: str, arguments: Dict[str, Any]):
     """Execute dialectical reasoning tools."""
@@ -426,6 +482,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             )
             await _send_progress("━━━ Prompt ready ━━━", 3.0)
             structured = {
+                "schema_version": MCP_SCHEMA_VERSION,
                 "query": query,
                 "format": "single_prompt",
                 "use_search": use_search,
@@ -444,6 +501,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
                 use_council=use_council,
                 use_judge=use_judge,
             )
+            workflow["schema_version"] = MCP_SCHEMA_VERSION
             workflow.setdefault("instructions", {})
             workflow["instructions"]["response_style"] = response_style
             workflow["instructions"]["response_style_note"] = _response_style_summary(
@@ -475,6 +533,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         )
 
         structured = {
+            "schema_version": MCP_SCHEMA_VERSION,
             "query": query,
             "use_search": use_search,
             "use_council": use_council,
@@ -496,6 +555,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         prompt_obj = dialectic.generate_thesis_prompt(query)
 
         structured = {
+            "schema_version": MCP_SCHEMA_VERSION,
             "phase": prompt_obj.phase,
             "prompt": prompt_obj.prompt,
             "instructions": prompt_obj.instructions,
@@ -534,6 +594,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
                 response_parts.append("")
                 structured_prompts.append(
                     {
+                        "schema_version": MCP_SCHEMA_VERSION,
                         "phase": prompt_obj.phase,
                         "prompt": prompt_obj.prompt,
                         "instructions": prompt_obj.instructions,
@@ -541,11 +602,16 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
                     }
                 )
 
-            structured = {"prompts": structured_prompts, "phase": "antithesis_council"}
+            structured = {
+                "schema_version": MCP_SCHEMA_VERSION,
+                "prompts": structured_prompts,
+                "phase": "antithesis_council",
+            }
             response = "\n".join(response_parts)
         else:
             prompt_obj = dialectic.generate_antithesis_prompt(query, thesis, use_search)
             structured = {
+                "schema_version": MCP_SCHEMA_VERSION,
                 "phase": prompt_obj.phase,
                 "prompt": prompt_obj.prompt,
                 "instructions": prompt_obj.instructions,
@@ -572,6 +638,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         prompt_obj = dialectic.generate_synthesis_prompt(query, thesis, antithesis)
 
         structured = {
+            "schema_version": MCP_SCHEMA_VERSION,
             "phase": prompt_obj.phase,
             "prompt": prompt_obj.prompt,
             "instructions": prompt_obj.instructions,
@@ -624,18 +691,17 @@ The session is ready. Next step: call `player_prompt` with the returned state.
     elif name == "player_prompt":
         await _send_progress("Generating player prompt...", 1.0, 1.0)
 
-        state_dict = arguments["state"]
-        state = AutocodingState.from_dict(state_dict)
+        parsed_state = _parse_autocoding_state(name, arguments.get("state"))
+        if isinstance(parsed_state, CallToolResult):
+            return parsed_state
+        state = parsed_state
 
         if state.phase != "player":
-            return CallToolResult(
-                content=[
-                    TextContent(
-                        type="text", text=f"Error: Expected player phase, got {state.phase}"
-                    )
-                ],
-                structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "player"},
-                isError=True,
+            return _phase_error(
+                name,
+                expected="player",
+                received=state.phase,
+                hint="If you just called autocoding_init or autocoding_advance, pass that returned state into player_prompt.",
             )
 
         autocoding = PromptDrivenAutocoding()
@@ -650,7 +716,10 @@ The session is ready. Next step: call `player_prompt` with the returned state.
         new_state = state.advance_to_coach()
 
         structured = {
+            "schema_version": MCP_SCHEMA_VERSION,
             **prompt_obj.to_dict(),
+            "current_phase": "player",
+            "next_phase": new_state.phase,
             "state": new_state.to_dict(),
         }
 
@@ -667,16 +736,17 @@ The session is ready. Next step: call `player_prompt` with the returned state.
     elif name == "coach_prompt":
         await _send_progress("Generating coach prompt...", 1.0, 1.0)
 
-        state_dict = arguments["state"]
-        state = AutocodingState.from_dict(state_dict)
+        parsed_state = _parse_autocoding_state(name, arguments.get("state"))
+        if isinstance(parsed_state, CallToolResult):
+            return parsed_state
+        state = parsed_state
 
         if state.phase != "coach":
-            return CallToolResult(
-                content=[
-                    TextContent(type="text", text=f"Error: Expected coach phase, got {state.phase}")
-                ],
-                structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "coach"},
-                isError=True,
+            return _phase_error(
+                name,
+                expected="coach",
+                received=state.phase,
+                hint="Call player_prompt first; then pass the returned state (state.phase should be 'coach') into coach_prompt.",
             )
 
         autocoding = PromptDrivenAutocoding()
@@ -687,7 +757,10 @@ The session is ready. Next step: call `player_prompt` with the returned state.
         )
 
         structured = {
+            "schema_version": MCP_SCHEMA_VERSION,
             **prompt_obj.to_dict(),
+            "current_phase": "coach",
+            "next_phase": state.phase,
             "state": state.to_dict(),
         }
 
@@ -709,15 +782,17 @@ The session is ready. Next step: call `player_prompt` with the returned state.
         approved = arguments["approved"]
         compliance_score = arguments.get("compliance_score")
 
-        state = AutocodingState.from_dict(state_dict)
+        parsed_state = _parse_autocoding_state(name, state_dict)
+        if isinstance(parsed_state, CallToolResult):
+            return parsed_state
+        state = parsed_state
 
         if state.phase != "coach":
-            return CallToolResult(
-                content=[
-                    TextContent(type="text", text=f"Error: Expected coach phase, got {state.phase}")
-                ],
-                structuredContent={"error": f"Invalid phase: {state.phase}", "expected": "coach"},
-                isError=True,
+            return _phase_error(
+                name,
+                expected="coach",
+                received=state.phase,
+                hint="Call coach_prompt first and pass its returned state into autocoding_advance.",
             )
 
         new_state = state.advance_turn(
@@ -772,6 +847,7 @@ Maximum turns reached without approval. Review the turn history for progress mad
         )
 
         structured = {
+            "schema_version": MCP_SCHEMA_VERSION,
             **prompt_obj.to_dict(),
             "requirements": requirements,
             "max_turns": max_turns,
@@ -795,6 +871,7 @@ Maximum turns reached without approval. Review the turn history for progress mad
         save_session(state, filepath)
 
         structured = {
+            "schema_version": MCP_SCHEMA_VERSION,
             "session_id": state.session_id,
             "filepath": filepath,
             "saved": True,
@@ -820,7 +897,10 @@ Session saved successfully. Use `autocoding_load` with the filepath to restore."
                 content=[
                     TextContent(type="text", text=f"Error: Session file not found: {filepath}")
                 ],
-                structuredContent={"error": f"File not found: {filepath}"},
+                structuredContent={
+                    "schema_version": MCP_SCHEMA_VERSION,
+                    "error": f"File not found: {filepath}",
+                },
                 isError=True,
             )
         except json.JSONDecodeError as e:
@@ -828,7 +908,10 @@ Session saved successfully. Use `autocoding_load` with the filepath to restore."
                 content=[
                     TextContent(type="text", text=f"Error: Invalid JSON in session file: {e}")
                 ],
-                structuredContent={"error": f"Invalid JSON: {str(e)}"},
+                structuredContent={
+                    "schema_version": MCP_SCHEMA_VERSION,
+                    "error": f"Invalid JSON: {str(e)}",
+                },
                 isError=True,
             )
 
@@ -850,7 +933,10 @@ Session restored. Continue with the appropriate tool based on phase:
     else:
         return CallToolResult(
             content=[TextContent(type="text", text=f"Unknown tool: {name}")],
-            structuredContent={"error": f"Unknown tool: {name}"},
+            structuredContent={
+                "schema_version": MCP_SCHEMA_VERSION,
+                "error": f"Unknown tool: {name}",
+            },
             isError=True,
         )
 

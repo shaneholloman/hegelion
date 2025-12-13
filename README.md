@@ -89,6 +89,8 @@ You: Call autocoding_advance and continue
 [Loop until COACH APPROVED]
 ```
 
+**State passing note:** `player_prompt` returns a player prompt plus an updated `state` advanced to `phase: "coach"` for the next call. For clarity, prompt outputs include `current_phase` (prompt phase) and `next_phase` (returned state's phase). All structured outputs include `schema_version` for client stability.
+
 ### MCP Tools
 
 | Tool | Purpose |
@@ -225,6 +227,13 @@ Issues and PRs welcome. For significant changes, open a discussion first.
 ---
 
 ## Recent Changes
+
+### v0.4.1 (December 2025)
+
+- **Schema versioning**: All structured outputs include `schema_version` for client stability
+- **Phase clarity**: `player_prompt` and `coach_prompt` now include `current_phase` and `next_phase` fields
+- **Improved error handling**: Invalid phase transitions return clear errors with `expected`, `received`, and `hint` fields
+- **State validation**: Malformed state inputs return structured error responses instead of exceptions
 
 ### v0.4.0 (December 2025)
 

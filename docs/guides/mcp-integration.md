@@ -230,6 +230,12 @@ Player-coach loop for verified code implementations:
 | `autocoding_save` | Save session to file |
 | `autocoding_load` | Resume saved session |
 
+**State passing + schema:**
+- Tool outputs include `schema_version` for client-side stability.
+- `autocoding_init` returns an `AutocodingState` with `phase: "player"`.
+- `player_prompt` returns the player prompt plus a `state` already advanced to `phase: "coach"` for the next call; it also includes `current_phase` and `next_phase` to remove ambiguity.
+- `coach_prompt` requires `state.phase: "coach"` and returns the coach prompt with the same `state` (still `phase: "coach"`) for `autocoding_advance`.
+
 **Example:**
 ```
 Use autocoding_init with these requirements:

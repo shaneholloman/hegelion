@@ -1,6 +1,7 @@
 """Tests for model-agnostic MCP server."""
 
 import pytest
+from mcp.types import CallToolResult
 from hegelion.mcp.server import call_tool, list_tools
 
 
@@ -98,3 +99,98 @@ class TestPromptMCPServer:
 
         assert "JSON" in contents[0].text
         assert structured["response_style"] == "json"
+
+    async def test_autocoding_loop_transitions_and_schema(self):
+        """Verify init -> player_prompt -> coach_prompt -> advance transitions and schema keys."""
+        requirements = "- [ ] Add auth\n- [ ] Add tests\n"
+        _, init_state = await call_tool("autocoding_init", {"requirements": requirements, "max_turns": 2})
+
+        assert init_state["schema_version"] == 1
+        assert init_state["phase"] == "player"
+        assert init_state["status"] == "active"
+
+        _, player_struct = await call_tool("player_prompt", {"state": init_state})
+
+        expected_player_keys = {
+            "schema_version",
+            "phase",
+            "prompt",
+            "instructions",
+            "expected_format",
+            "requirements_embedded",
+            "current_phase",
+            "next_phase",
+            "state",
+        }
+        assert expected_player_keys.issubset(player_struct.keys())
+        assert player_struct["schema_version"] == 1
+        assert player_struct["phase"] == "player"
+        assert player_struct["current_phase"] == "player"
+        assert player_struct["next_phase"] == "coach"
+        assert player_struct["state"]["phase"] == "coach"
+
+        _, coach_struct = await call_tool("coach_prompt", {"state": player_struct["state"]})
+
+        expected_coach_keys = {
+            "schema_version",
+            "phase",
+            "prompt",
+            "instructions",
+            "expected_format",
+            "requirements_embedded",
+            "current_phase",
+            "next_phase",
+            "state",
+        }
+        assert expected_coach_keys.issubset(coach_struct.keys())
+        assert coach_struct["schema_version"] == 1
+        assert coach_struct["phase"] == "coach"
+        assert coach_struct["current_phase"] == "coach"
+        assert coach_struct["next_phase"] == "coach"
+        assert coach_struct["state"]["phase"] == "coach"
+
+        _, advanced_state = await call_tool(
+            "autocoding_advance",
+            {
+                "state": coach_struct["state"],
+                "coach_feedback": "Not approved; add missing tests.",
+                "approved": False,
+            },
+        )
+
+        assert advanced_state["schema_version"] == 1
+        assert advanced_state["phase"] == "player"
+        assert advanced_state["status"] == "active"
+        assert advanced_state["current_turn"] == 1
+
+    async def test_autocoding_invalid_transitions_have_clear_errors(self):
+        """Invalid transitions should fail with expected/received phase and a hint."""
+        requirements = "- [ ] Test\n"
+        _, init_state = await call_tool("autocoding_init", {"requirements": requirements})
+
+        # coach_prompt expects coach, but we have player.
+        result = await call_tool("coach_prompt", {"state": init_state})
+        assert isinstance(result, CallToolResult)
+        assert result.isError is True
+        assert result.structuredContent["expected"] == "coach"
+        assert result.structuredContent["received"] == "player"
+        assert "hint" in result.structuredContent
+
+        # player_prompt expects player, but the state returned from player_prompt is coach.
+        _, player_struct = await call_tool("player_prompt", {"state": init_state})
+        result = await call_tool("player_prompt", {"state": player_struct["state"]})
+        assert isinstance(result, CallToolResult)
+        assert result.isError is True
+        assert result.structuredContent["expected"] == "player"
+        assert result.structuredContent["received"] == "coach"
+        assert "hint" in result.structuredContent
+
+        # autocoding_advance expects coach.
+        result = await call_tool(
+            "autocoding_advance",
+            {"state": init_state, "coach_feedback": "nope", "approved": False},
+        )
+        assert isinstance(result, CallToolResult)
+        assert result.isError is True
+        assert result.structuredContent["expected"] == "coach"
+        assert result.structuredContent["received"] == "player"

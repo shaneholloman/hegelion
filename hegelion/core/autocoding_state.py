@@ -90,6 +90,7 @@ class AutocodingState:
             Dictionary representation of the state.
         """
         return {
+            "schema_version": 1,
             "session_id": self.session_id,
             "requirements": self.requirements,
             "current_turn": self.current_turn,
