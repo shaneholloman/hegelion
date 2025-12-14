@@ -91,12 +91,26 @@ website/dist/
 hegelion-web/dist/
 hegelion-web/node_modules/
 
+# MCP-only cleanup (non-user-facing subprojects)
+benchmarks/
+hegelion-data/
+hegelion-web/
+hegelion-mcp-node/
+extensions/
+examples/
+scripts/
+
+# MCP-only cleanup (internal configs)
+.internal/
+.claude/
+.cursor/
+.gemini/
+
+# MCP-only cleanup (training code)
+hegelion/training/
+
 # Process ID files
 *.pid
 *_pid.txt
 
 # Benchmarks
-benchmarks/data/
-benchmarks/results/
-!benchmarks/results/EXAMPLE_EVALUATION_P001.md
-!benchmarks/results/BENCHMARK_REPORT.md
