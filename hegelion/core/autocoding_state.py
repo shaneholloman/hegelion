@@ -266,7 +266,7 @@ def save_session(state: AutocodingState, filepath: str) -> None:
     path = Path(filepath)
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(state.to_dict(), f, indent=2)
 
 
@@ -288,7 +288,7 @@ def load_session(filepath: str) -> AutocodingState:
     if not path.exists():
         raise FileNotFoundError(f"Session file not found: {filepath}")
 
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     return AutocodingState.from_dict(data)
