@@ -16,6 +16,7 @@ Examples:
   hegelion-setup-mcp                # print JSON snippet
   hegelion-setup-mcp --write        # write to ./mcp_config.json
   hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"  # macOS Claude Desktop
+  hegelion-setup-mcp --write "%APPDATA%\\Claude\\claude_desktop_config.json"  # Windows Claude Desktop
 
 Note: After modifying the config, quit and reopen Claude Desktop for changes to take effect.
 """
@@ -91,7 +92,9 @@ def print_setup_instructions(dry_run=False):
     print("response_style options: json, sections, synthesis_only")
     print("\nCommon config paths:")
     print("  macOS Claude Desktop: ~/Library/Application Support/Claude/claude_desktop_config.json")
-    print("  Cursor:               ~/.cursor/mcp_config.json")
+    print("  Windows Claude Desktop: %APPDATA%\\Claude\\claude_desktop_config.json")
+    print("  Cursor (macOS/Linux): ~/.cursor/mcp_config.json")
+    print("  Cursor (Windows):     %APPDATA%\\Cursor\\User\\globalStorage\\mcp_config.json")
     print("  Windsurf:             ~/.codeium/windsurf/mcp_config.json")
     print("\n⚠️  Restart Required: Quit and reopen Claude Desktop after modifying the config.")
 

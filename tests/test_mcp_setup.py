@@ -65,3 +65,19 @@ def test_print_setup_instructions_mentions_py_path(
     captured = capsys.readouterr()
     assert "hegelion" in captured.out
     assert "Added PYTHONPATH" in captured.out
+
+
+def test_print_setup_instructions_shows_windows_paths(
+    monkeypatch: pytest.MonkeyPatch, capsys, tmp_path
+):
+    """Test that Windows config paths are displayed in instructions."""
+    monkeypatch.setattr(mcp_setup, "get_python_path", lambda: "/bin/python")
+    monkeypatch.setattr(mcp_setup, "is_installed_in_site_packages", lambda: True)
+    monkeypatch.setattr(mcp_setup, "get_project_root", lambda: tmp_path)
+
+    mcp_setup.print_setup_instructions()
+
+    captured = capsys.readouterr()
+    assert "Windows Claude Desktop" in captured.out
+    assert "%APPDATA%" in captured.out
+    assert "Cursor (Windows)" in captured.out

@@ -404,3 +404,27 @@ class TestSessionPersistence:
         assert loaded.turn_history[0]["feedback"] == "Needs work"
         assert loaded.last_coach_feedback == "Needs work"
         assert loaded.quality_scores == [0.5]
+
+    def test_save_and_load_session_with_unicode(self, tmp_path):
+        """Test saving and loading session with Unicode content (Windows compatibility)."""
+        requirements = """## Requirements
+- [ ] Build a REST API with émojis 🚀
+- [ ] Add äöü special characters
+- [ ] Support 日本語 Japanese text
+- [ ] Handle → arrows and • bullets"""
+        state = AutocodingState.create(requirements=requirements)
+        state = state.advance_to_coach()
+        state = state.advance_turn(
+            coach_feedback="Missing émoji support 🎉",
+            approved=False,
+            compliance_score=0.6,
+        )
+
+        filepath = tmp_path / "unicode_session.json"
+        save_session(state, str(filepath))
+
+        loaded = load_session(str(filepath))
+        assert loaded.requirements == requirements
+        assert "émojis 🚀" in loaded.requirements
+        assert "日本語" in loaded.requirements
+        assert "Missing émoji support 🎉" in loaded.last_coach_feedback
