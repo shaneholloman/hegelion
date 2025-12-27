@@ -75,7 +75,9 @@ class PromptDrivenDialectic:
     def __init__(self):
         self.conversation_state = {}
 
-    def generate_thesis_prompt(self, query: str, response_style: str = "sections") -> DialecticalPrompt:
+    def generate_thesis_prompt(
+        self, query: str, response_style: str = "sections"
+    ) -> DialecticalPrompt:
         """Generate a prompt for the thesis phase."""
         output_instructions = ""
         expected_format = "Free-form text thesis response"
@@ -184,9 +186,7 @@ Generate your ANTITHESIS critique now.""",
             if response_style == "json":
                 output_instructions, expected_format = _json_output_instructions(phase)
                 output_instructions = f"\n\n{output_instructions}"
-                contradiction_instruction = (
-                    "Capture each issue in the JSON contradictions array with description and evidence."
-                )
+                contradiction_instruction = "Capture each issue in the JSON contradictions array with description and evidence."
             else:
                 contradiction_instruction = """For each issue you identify, use this format:
 CONTRADICTION: [brief description]
@@ -238,9 +238,7 @@ IDENTIFIED CONTRADICTIONS:
         if response_style == "json":
             output_instructions, expected_format = _json_output_instructions("synthesis")
             output_instructions = f"\n\n{output_instructions}"
-            research_instruction = (
-                "If the synthesis suggests new research, include it in the research_proposals array."
-            )
+            research_instruction = "If the synthesis suggests new research, include it in the research_proposals array."
         else:
             research_instruction = """If the synthesis suggests new research, use this format:
 RESEARCH_PROPOSAL: [brief description]
@@ -288,9 +286,7 @@ Generate your SYNTHESIS now.""",
     ) -> DialecticalPrompt:
         """Generate a prompt for quality evaluation."""
         output_instructions = ""
-        expected_format = (
-            "Structured response with SCORE:, CRITIQUE_VALIDITY:, REASONING:, STRENGTHS:, IMPROVEMENTS:"
-        )
+        expected_format = "Structured response with SCORE:, CRITIQUE_VALIDITY:, REASONING:, STRENGTHS:, IMPROVEMENTS:"
         if response_style == "json":
             output_instructions, expected_format = _json_output_instructions("judge")
             output_instructions = f"\n\n{output_instructions}"
