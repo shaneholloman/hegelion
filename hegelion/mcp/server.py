@@ -1174,17 +1174,15 @@ The session is ready. Next step: call `player_prompt` with the returned state.
         coach_feedback = _require_str_arg(name, arguments, "coach_feedback")
         if isinstance(coach_feedback, CallToolResult):
             return coach_feedback
-        if "approved" not in arguments:
+        approved = arguments.get("approved")
+        if not isinstance(approved, bool):
             return _arg_error(
                 name,
                 "Error: 'approved' is required and must be a boolean.",
                 error="Invalid argument: approved",
                 expected="boolean",
-                received=arguments.get("approved"),
+                received=approved,
             )
-        approved = _get_optional_bool(name, arguments, "approved", False)
-        if isinstance(approved, CallToolResult):
-            return approved
         compliance_score = arguments.get("compliance_score")
         if compliance_score is not None:
             compliance_score = _get_optional_number(
