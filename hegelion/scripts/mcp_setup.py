@@ -10,7 +10,8 @@ import hegelion
 USAGE_NOTE = """
 Hegelion MCP setup
 ------------------
-Use this helper to generate the MCP snippet for Cursor / Claude Desktop.
+Use this helper to generate the MCP snippet for MCP hosts like Cursor, Claude Desktop,
+VS Code + Copilot, Windsurf, or Gemini CLI.
 
 Examples:
   hegelion-setup-mcp                # print JSON snippet
@@ -18,7 +19,7 @@ Examples:
   hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"  # macOS Claude Desktop
   hegelion-setup-mcp --write "%APPDATA%\\Claude\\claude_desktop_config.json"  # Windows Claude Desktop
 
-Note: After modifying the config, quit and reopen Claude Desktop for changes to take effect.
+Note: After modifying the config, restart your MCP host for changes to take effect.
 """
 
 
@@ -80,23 +81,25 @@ def print_setup_instructions(dry_run=False):
     print("\n" + "=" * 60)
     print("MCP CONFIGURATION SNIPPET")
     print("=" * 60)
-    print("Copy the snippet below into your 'Global MCP Settings' (Cursor)")
-    print("or your MCP configuration file:")
+    print("Copy the snippet below into your MCP configuration file for your host:")
     print("-" * 60)
     print(json_output)
     print("-" * 60)
 
     print(
-        "Tools available: dialectical_workflow, dialectical_single_shot, thesis_prompt, antithesis_prompt, synthesis_prompt"
+        "Tools available: dialectical_* (workflow/single_shot/thesis/antithesis/synthesis) "
+        "and autocoding_* (init/workflow/player/coach/advance/single_shot/save/load)"
     )
-    print("response_style options: json, sections, synthesis_only")
+    print("response_style options: json, sections, synthesis_only, conversational, bullet_points")
     print("\nCommon config paths:")
     print("  macOS Claude Desktop: ~/Library/Application Support/Claude/claude_desktop_config.json")
     print("  Windows Claude Desktop: %APPDATA%\\Claude\\claude_desktop_config.json")
+    print("  Claude Code:          ~/.claude.json")
     print("  Cursor (macOS/Linux): ~/.cursor/mcp_config.json")
     print("  Cursor (Windows):     %APPDATA%\\Cursor\\User\\globalStorage\\mcp_config.json")
+    print("  VS Code + Copilot:    .vscode/mcp.json")
     print("  Windsurf:             ~/.codeium/windsurf/mcp_config.json")
-    print("\n⚠️  Restart Required: Quit and reopen Claude Desktop after modifying the config.")
+    print("\n⚠️  Restart Required: Restart your MCP host after modifying the config.")
 
     if not is_installed:
         print(f"\nNOTE: Detected source installation at {project_root}")

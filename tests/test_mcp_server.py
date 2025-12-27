@@ -17,6 +17,7 @@ class TestPromptMCPServer:
         assert "thesis_prompt" in tool_names
         assert "antithesis_prompt" in tool_names
         assert "synthesis_prompt" in tool_names
+        assert "autocoding_workflow" in tool_names
 
     async def test_dialectical_workflow_tool(self):
         """Test dialectical workflow tool execution."""
@@ -98,6 +99,19 @@ class TestPromptMCPServer:
 
         assert "JSON" in contents[0].text
         assert structured["response_style"] == "json"
+
+    async def test_autocoding_workflow_tool(self):
+        """Ensure autocoding_workflow returns structured steps."""
+        requirements = "- [ ] Add auth\n- [ ] Add tests\n"
+        contents, workflow = await call_tool(
+            "autocoding_workflow", {"requirements": requirements, "max_turns": 3}
+        )
+
+        assert len(contents) == 2
+        assert workflow["schema_version"] == 1
+        assert workflow["workflow_type"] == "dialectical_autocoding"
+        assert workflow["max_turns"] == 3
+        assert len(workflow["steps"]) >= 3
 
     async def test_autocoding_loop_transitions_and_schema(self):
         """Verify init -> player_prompt -> coach_prompt -> advance transitions and schema keys."""

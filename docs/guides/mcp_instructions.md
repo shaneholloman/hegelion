@@ -1,6 +1,6 @@
 # Hegelion MCP Instructions for Agents
 
-If you are an AI agent (like Claude, Gemini, or a Cursor agent) connected to the Hegelion MCP server, follow these instructions to use the tools effectively.
+If you are an AI agent (like Claude, ChatGPT/Codex, Gemini, or a Cursor agent) connected to the Hegelion MCP server, follow these instructions to use the tools effectively.
 
 ## Core Capability
 
@@ -40,7 +40,7 @@ For most cases, use `dialectical_single_shot`. It returns a single comprehensive
 **Response styles:**
 - `"sections"` - Full Thesis/Antithesis/Synthesis sections (default)
 - `"synthesis_only"` - Just the final resolution
-- `"json"` - Structured JSON with all fields (good for programmatic use)
+- `"json"` - Structured JSON with all fields (recommended for programmatic agents like Codex/ChatGPT)
 
 **Then execute the returned prompt.** The prompt contains instructions for you to perform the dialectical reasoning.
 
@@ -80,3 +80,10 @@ Both tools support optional enhancements:
 - `use_search: true` - Adds instructions to use search tools for real-world grounding
 - `use_council: true` - Enables multi-perspective critique (Logician, Empiricist, Ethicist)
 - `use_judge: true` - Adds a quality evaluation step (workflow only)
+
+## Autocoding Tools (Implementation Loops)
+
+Use these when you want a player/coach loop for coding tasks:
+- `autocoding_init` → `player_prompt` → `coach_prompt` → `autocoding_advance`
+- `autocoding_workflow` for a structured step-by-step recipe
+- `autocoding_single_shot` for a single prompt that alternates roles internally

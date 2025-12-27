@@ -157,3 +157,11 @@ class TestWorkflowHelpers:
         assert "SYNTHESIS" in prompt
         assert "search tools" in prompt
         assert "THE LOGICIAN" in prompt
+
+    def test_single_shot_json_prompt_is_consistent(self):
+        """JSON style should avoid conflicting text-only formats."""
+        prompt = create_single_shot_dialectic_prompt("test query", response_style="json")
+
+        assert "Return ONLY a JSON object" in prompt
+        assert "CONTRADICTION:" not in prompt
+        assert "RESEARCH_PROPOSAL:" not in prompt
