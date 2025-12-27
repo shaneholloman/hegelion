@@ -2,7 +2,7 @@
 
 This version works with whatever LLM is calling the MCP server,
 rather than making its own API calls. Perfect for Cursor, Claude Desktop,
-VS Code, or any MCP-compatible environment.
+ChatGPT/Codex, VS Code, or any MCP-compatible environment.
 """
 
 from __future__ import annotations
@@ -21,11 +21,109 @@ from hegelion.core.prompt_dialectic import (
     create_single_shot_dialectic_prompt,
 )
 from hegelion.core.autocoding_state import AutocodingState, save_session, load_session
-from hegelion.core.prompt_autocoding import PromptDrivenAutocoding
+from hegelion.core.prompt_autocoding import PromptDrivenAutocoding, create_autocoding_workflow
 
 app = Server("hegelion-server")
 
 MCP_SCHEMA_VERSION = 1
+RESPONSE_STYLES = {"sections", "synthesis_only", "json", "conversational", "bullet_points"}
+WORKFLOW_FORMATS = {"workflow", "single_prompt"}
+
+DIALECTIC_RESULT_SCHEMA = {
+    "type": "object",
+    "required": ["query", "thesis", "antithesis", "synthesis"],
+    "properties": {
+        "query": {"type": "string"},
+        "thesis": {"type": "string"},
+        "antithesis": {"type": "string"},
+        "synthesis": {"type": "string"},
+        "contradictions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["description", "evidence"],
+                "properties": {
+                    "description": {"type": "string"},
+                    "evidence": {"type": "string"},
+                },
+            },
+        },
+        "research_proposals": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["proposal", "testable_prediction"],
+                "properties": {
+                    "proposal": {"type": "string"},
+                    "testable_prediction": {"type": "string"},
+                },
+            },
+        },
+    },
+}
+
+DIALECTIC_PHASE_SCHEMAS = {
+    "thesis": {
+        "type": "object",
+        "required": ["phase", "thesis"],
+        "properties": {
+            "phase": {"type": "string"},
+            "thesis": {"type": "string"},
+            "assumptions": {"type": "array", "items": {"type": "string"}},
+            "uncertainties": {"type": "array", "items": {"type": "string"}},
+        },
+    },
+    "antithesis": {
+        "type": "object",
+        "required": ["phase", "antithesis", "contradictions"],
+        "properties": {
+            "phase": {"type": "string"},
+            "antithesis": {"type": "string"},
+            "contradictions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["description", "evidence"],
+                    "properties": {
+                        "description": {"type": "string"},
+                        "evidence": {"type": "string"},
+                    },
+                },
+            },
+        },
+    },
+    "synthesis": {
+        "type": "object",
+        "required": ["phase", "synthesis"],
+        "properties": {
+            "phase": {"type": "string"},
+            "synthesis": {"type": "string"},
+            "research_proposals": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["proposal", "testable_prediction"],
+                    "properties": {
+                        "proposal": {"type": "string"},
+                        "testable_prediction": {"type": "string"},
+                    },
+                },
+            },
+        },
+    },
+    "judge": {
+        "type": "object",
+        "required": ["phase", "score", "critique_validity"],
+        "properties": {
+            "phase": {"type": "string"},
+            "score": {"type": "number"},
+            "critique_validity": {"type": "boolean"},
+            "reasoning": {"type": "string"},
+            "strengths": {"type": "string"},
+            "improvements": {"type": "string"},
+        },
+    },
+}
 
 # Compatibility: older anyio versions expose create_memory_object_stream as a plain function
 # which cannot be subscripted (newer typing style uses subscripting). Patch a lightweight
@@ -46,6 +144,7 @@ if not hasattr(anyio.create_memory_object_stream, "__getitem__"):
 @app.list_tools()
 async def list_tools() -> list[Tool]:
     """Return dialectical reasoning tools that work with any LLM."""
+    response_style_enum = ["sections", "synthesis_only", "json", "conversational", "bullet_points"]
     tools = [
         Tool(
             name="dialectical_workflow",
@@ -85,13 +184,7 @@ async def list_tools() -> list[Tool]:
                     },
                     "response_style": {
                         "type": "string",
-                        "enum": [
-                            "sections",
-                            "synthesis_only",
-                            "json",
-                            "conversational",
-                            "bullet_points",
-                        ],
+                        "enum": response_style_enum,
                         "description": (
                             "Shape of the final output you want from the LLM: full thesis/antithesis/synthesis sections,"
                             " synthesis-only, or JSON with all fields."
@@ -127,13 +220,7 @@ async def list_tools() -> list[Tool]:
                     },
                     "response_style": {
                         "type": "string",
-                        "enum": [
-                            "sections",
-                            "synthesis_only",
-                            "json",
-                            "conversational",
-                            "bullet_points",
-                        ],
+                        "enum": response_style_enum,
                         "description": (
                             "Format you want the model to return: full sections, synthesis-only, or JSON with thesis/antithesis/synthesis."
                         ),
@@ -155,7 +242,13 @@ async def list_tools() -> list[Tool]:
                     "query": {
                         "type": "string",
                         "description": "The question or topic to analyze dialectically",
-                    }
+                    },
+                    "response_style": {
+                        "type": "string",
+                        "enum": response_style_enum,
+                        "description": "Optional response formatting guidance for the thesis output",
+                        "default": "sections",
+                    },
                 },
                 "required": ["query"],
             },
@@ -187,6 +280,12 @@ async def list_tools() -> list[Tool]:
                         "description": "Use council-based multi-perspective critique",
                         "default": False,
                     },
+                    "response_style": {
+                        "type": "string",
+                        "enum": response_style_enum,
+                        "description": "Optional response formatting guidance for the antithesis output",
+                        "default": "sections",
+                    },
                 },
                 "required": ["query", "thesis"],
             },
@@ -211,6 +310,12 @@ async def list_tools() -> list[Tool]:
                     "antithesis": {
                         "type": "string",
                         "description": "The antithesis critique output",
+                    },
+                    "response_style": {
+                        "type": "string",
+                        "enum": response_style_enum,
+                        "description": "Optional response formatting guidance for the synthesis output",
+                        "default": "sections",
                     },
                 },
                 "required": ["query", "thesis", "antithesis"],
@@ -240,6 +345,28 @@ async def list_tools() -> list[Tool]:
                         "type": "number",
                         "description": "Minimum compliance score for approval (0-1, default: 0.9)",
                         "default": 0.9,
+                    },
+                },
+                "required": ["requirements"],
+            },
+        ),
+        Tool(
+            name="autocoding_workflow",
+            description=(
+                "Return a structured autocoding workflow (player/coach loop) for orchestration. "
+                "Useful for agents that want a step-by-step recipe before running the tools."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "requirements": {
+                        "type": "string",
+                        "description": "The requirements document (source of truth)",
+                    },
+                    "max_turns": {
+                        "type": "integer",
+                        "description": "Maximum turns before timeout (default: 10)",
+                        "default": 10,
                     },
                 },
                 "required": ["requirements"],
@@ -417,6 +544,30 @@ def _state_error(tool_name: str, message: str, *, error: str) -> CallToolResult:
     )
 
 
+def _arg_error(
+    tool_name: str,
+    message: str,
+    *,
+    error: str,
+    expected: Any | None = None,
+    received: Any | None = None,
+) -> CallToolResult:
+    structured = {
+        "schema_version": MCP_SCHEMA_VERSION,
+        "tool": tool_name,
+        "error": error,
+    }
+    if expected is not None:
+        structured["expected"] = expected
+    if received is not None:
+        structured["received"] = received
+    return CallToolResult(
+        content=[TextContent(type="text", text=message)],
+        structuredContent=structured,
+        isError=True,
+    )
+
+
 def _phase_error(tool_name: str, *, expected: str, received: str, hint: str) -> CallToolResult:
     return CallToolResult(
         content=[
@@ -438,6 +589,125 @@ def _phase_error(tool_name: str, *, expected: str, received: str, hint: str) -> 
         },
         isError=True,
     )
+
+
+def _require_str_arg(tool_name: str, arguments: Dict[str, Any], key: str) -> str | CallToolResult:
+    value = arguments.get(key)
+    if not isinstance(value, str) or not value.strip():
+        return _arg_error(
+            tool_name,
+            f"Error: '{key}' must be a non-empty string.",
+            error=f"Invalid argument: {key}",
+            expected="non-empty string",
+            received=value,
+        )
+    return value
+
+
+def _get_enum_arg(
+    tool_name: str,
+    arguments: Dict[str, Any],
+    key: str,
+    allowed: set[str],
+    default: str,
+) -> str | CallToolResult:
+    value = arguments.get(key, default)
+    if value not in allowed:
+        return _arg_error(
+            tool_name,
+            f"Error: '{key}' must be one of {sorted(allowed)}.",
+            error=f"Invalid argument: {key}",
+            expected=sorted(allowed),
+            received=value,
+        )
+    return value
+
+
+def _get_optional_bool(
+    tool_name: str, arguments: Dict[str, Any], key: str, default: bool
+) -> bool | CallToolResult:
+    if key not in arguments:
+        return default
+    value = arguments.get(key)
+    if isinstance(value, bool):
+        return value
+    return _arg_error(
+        tool_name,
+        f"Error: '{key}' must be a boolean.",
+        error=f"Invalid argument: {key}",
+        expected="boolean",
+        received=value,
+    )
+
+
+def _get_optional_int(
+    tool_name: str, arguments: Dict[str, Any], key: str, default: int, *, min_value: int
+) -> int | CallToolResult:
+    if key not in arguments:
+        return default
+    value = arguments.get(key)
+    if isinstance(value, bool) or not isinstance(value, int):
+        return _arg_error(
+            tool_name,
+            f"Error: '{key}' must be an integer.",
+            error=f"Invalid argument: {key}",
+            expected="integer",
+            received=value,
+        )
+    if value < min_value:
+        return _arg_error(
+            tool_name,
+            f"Error: '{key}' must be >= {min_value}.",
+            error=f"Invalid argument: {key}",
+            expected=f">={min_value}",
+            received=value,
+        )
+    return value
+
+
+def _get_optional_number(
+    tool_name: str,
+    arguments: Dict[str, Any],
+    key: str,
+    default: float,
+    *,
+    min_value: float,
+    max_value: float,
+) -> float | CallToolResult:
+    if key not in arguments:
+        return default
+    value = arguments.get(key)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return _arg_error(
+            tool_name,
+            f"Error: '{key}' must be a number.",
+            error=f"Invalid argument: {key}",
+            expected="number",
+            received=value,
+        )
+    if not min_value <= float(value) <= max_value:
+        return _arg_error(
+            tool_name,
+            f"Error: '{key}' must be between {min_value} and {max_value}.",
+            error=f"Invalid argument: {key}",
+            expected=f"{min_value}..{max_value}",
+            received=value,
+        )
+    return float(value)
+
+
+def _response_schema_for_style(response_style: str) -> dict | None:
+    if response_style != "json":
+        return None
+    return DIALECTIC_RESULT_SCHEMA
+
+
+def _phase_schema_for_style(response_style: str, phase: str) -> dict | None:
+    if response_style != "json":
+        return None
+    if phase.startswith("council_"):
+        phase = "antithesis"
+    return DIALECTIC_PHASE_SCHEMAS.get(phase)
 
 
 def _parse_autocoding_state(tool_name: str, state_dict: Any) -> AutocodingState | CallToolResult:
@@ -462,12 +732,26 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
     """Execute dialectical reasoning tools."""
 
     if name == "dialectical_workflow":
-        query = arguments["query"]
-        use_search = arguments.get("use_search", False)
-        use_council = arguments.get("use_council", False)
-        use_judge = arguments.get("use_judge", False)
-        format_type = arguments.get("format", "workflow")
-        response_style = arguments.get("response_style", "sections")
+        query = _require_str_arg(name, arguments, "query")
+        if isinstance(query, CallToolResult):
+            return query
+        use_search = _get_optional_bool(name, arguments, "use_search", False)
+        if isinstance(use_search, CallToolResult):
+            return use_search
+        use_council = _get_optional_bool(name, arguments, "use_council", False)
+        if isinstance(use_council, CallToolResult):
+            return use_council
+        use_judge = _get_optional_bool(name, arguments, "use_judge", False)
+        if isinstance(use_judge, CallToolResult):
+            return use_judge
+        format_type = _get_enum_arg(name, arguments, "format", WORKFLOW_FORMATS, "workflow")
+        if isinstance(format_type, CallToolResult):
+            return format_type
+        response_style = _get_enum_arg(
+            name, arguments, "response_style", RESPONSE_STYLES, "sections"
+        )
+        if isinstance(response_style, CallToolResult):
+            return response_style
 
         # Send progress notification
         await _send_progress("━━━ Preparing dialectical workflow ━━━", 1.0)
@@ -490,6 +774,9 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
                 "response_style": response_style,
                 "prompt": prompt,
             }
+            response_schema = _response_schema_for_style(response_style)
+            if response_schema:
+                structured["response_schema"] = response_schema
             return ([TextContent(type="text", text=prompt)], structured)
         else:
             await _send_progress("━━━ THESIS prompt ready ━━━", 1.0)
@@ -500,6 +787,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
                 use_search=use_search,
                 use_council=use_council,
                 use_judge=use_judge,
+                response_style=response_style,
             )
             workflow["schema_version"] = MCP_SCHEMA_VERSION
             workflow.setdefault("instructions", {})
@@ -507,6 +795,10 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             workflow["instructions"]["response_style_note"] = _response_style_summary(
                 response_style
             )
+            response_schema = _response_schema_for_style(response_style)
+            if response_schema:
+                workflow["instructions"]["response_schema"] = response_schema
+                workflow["instructions"]["phase_schemas"] = DIALECTIC_PHASE_SCHEMAS
 
             serialized = json.dumps(workflow, indent=2)
             summary = (
@@ -520,11 +812,20 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             return (contents, workflow)
 
     elif name == "dialectical_single_shot":
-        query = arguments["query"]
-        use_search = arguments.get("use_search", False)
-        use_council = arguments.get("use_council", False)
-
-        response_style = arguments.get("response_style", "sections")
+        query = _require_str_arg(name, arguments, "query")
+        if isinstance(query, CallToolResult):
+            return query
+        use_search = _get_optional_bool(name, arguments, "use_search", False)
+        if isinstance(use_search, CallToolResult):
+            return use_search
+        use_council = _get_optional_bool(name, arguments, "use_council", False)
+        if isinstance(use_council, CallToolResult):
+            return use_council
+        response_style = _get_enum_arg(
+            name, arguments, "response_style", RESPONSE_STYLES, "sections"
+        )
+        if isinstance(response_style, CallToolResult):
+            return response_style
         prompt = create_single_shot_dialectic_prompt(
             query=query,
             use_search=use_search,
@@ -540,6 +841,9 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             "response_style": response_style,
             "prompt": prompt,
         }
+        response_schema = _response_schema_for_style(response_style)
+        if response_schema:
+            structured["response_schema"] = response_schema
         note = _response_style_summary(response_style)
         contents = [
             TextContent(type="text", text=f"{note}\n\n{prompt}"),
@@ -550,9 +854,16 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         await _send_progress("━━━ THESIS ━━━ Generating prompt...", 1.0, 1.0)
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
-        query = arguments["query"]
+        query = _require_str_arg(name, arguments, "query")
+        if isinstance(query, CallToolResult):
+            return query
+        response_style = _get_enum_arg(
+            name, arguments, "response_style", RESPONSE_STYLES, "sections"
+        )
+        if isinstance(response_style, CallToolResult):
+            return response_style
         dialectic = PromptDrivenDialectic()
-        prompt_obj = dialectic.generate_thesis_prompt(query)
+        prompt_obj = dialectic.generate_thesis_prompt(query, response_style=response_style)
 
         structured = {
             "schema_version": MCP_SCHEMA_VERSION,
@@ -560,7 +871,11 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             "prompt": prompt_obj.prompt,
             "instructions": prompt_obj.instructions,
             "expected_format": prompt_obj.expected_format,
+            "response_style": response_style,
         }
+        response_schema = _phase_schema_for_style(response_style, prompt_obj.phase)
+        if response_schema:
+            structured["response_schema"] = response_schema
 
         response = f"""# THESIS PROMPT
 
@@ -575,15 +890,30 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         await _send_progress("━━━ ANTITHESIS ━━━ Generating prompt...", 1.0, 1.0)
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
-        query = arguments["query"]
-        thesis = arguments["thesis"]
-        use_search = arguments.get("use_search", False)
-        use_council = arguments.get("use_council", False)
+        query = _require_str_arg(name, arguments, "query")
+        if isinstance(query, CallToolResult):
+            return query
+        thesis = _require_str_arg(name, arguments, "thesis")
+        if isinstance(thesis, CallToolResult):
+            return thesis
+        use_search = _get_optional_bool(name, arguments, "use_search", False)
+        if isinstance(use_search, CallToolResult):
+            return use_search
+        use_council = _get_optional_bool(name, arguments, "use_council", False)
+        if isinstance(use_council, CallToolResult):
+            return use_council
+        response_style = _get_enum_arg(
+            name, arguments, "response_style", RESPONSE_STYLES, "sections"
+        )
+        if isinstance(response_style, CallToolResult):
+            return response_style
 
         dialectic = PromptDrivenDialectic()
 
         if use_council:
-            council_prompts = dialectic.generate_council_prompts(query, thesis)
+            council_prompts = dialectic.generate_council_prompts(
+                query, thesis, response_style=response_style
+            )
             response_parts = ["# COUNCIL ANTITHESIS PROMPTS\n"]
             structured_prompts = []
 
@@ -599,24 +929,35 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
                         "prompt": prompt_obj.prompt,
                         "instructions": prompt_obj.instructions,
                         "expected_format": prompt_obj.expected_format,
+                        "response_style": response_style,
                     }
                 )
+                response_schema = _phase_schema_for_style(response_style, prompt_obj.phase)
+                if response_schema:
+                    structured_prompts[-1]["response_schema"] = response_schema
 
             structured = {
                 "schema_version": MCP_SCHEMA_VERSION,
                 "prompts": structured_prompts,
                 "phase": "antithesis_council",
+                "response_style": response_style,
             }
             response = "\n".join(response_parts)
         else:
-            prompt_obj = dialectic.generate_antithesis_prompt(query, thesis, use_search)
+            prompt_obj = dialectic.generate_antithesis_prompt(
+                query, thesis, use_search, response_style=response_style
+            )
             structured = {
                 "schema_version": MCP_SCHEMA_VERSION,
                 "phase": prompt_obj.phase,
                 "prompt": prompt_obj.prompt,
                 "instructions": prompt_obj.instructions,
                 "expected_format": prompt_obj.expected_format,
+                "response_style": response_style,
             }
+            response_schema = _phase_schema_for_style(response_style, prompt_obj.phase)
+            if response_schema:
+                structured["response_schema"] = response_schema
             response = f"""# ANTITHESIS PROMPT
 
 {prompt_obj.prompt}
@@ -630,12 +971,25 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         await _send_progress("━━━ SYNTHESIS ━━━ Generating prompt...", 1.0, 1.0)
         from hegelion.core.prompt_dialectic import PromptDrivenDialectic
 
-        query = arguments["query"]
-        thesis = arguments["thesis"]
-        antithesis = arguments["antithesis"]
+        query = _require_str_arg(name, arguments, "query")
+        if isinstance(query, CallToolResult):
+            return query
+        thesis = _require_str_arg(name, arguments, "thesis")
+        if isinstance(thesis, CallToolResult):
+            return thesis
+        antithesis = _require_str_arg(name, arguments, "antithesis")
+        if isinstance(antithesis, CallToolResult):
+            return antithesis
+        response_style = _get_enum_arg(
+            name, arguments, "response_style", RESPONSE_STYLES, "sections"
+        )
+        if isinstance(response_style, CallToolResult):
+            return response_style
 
         dialectic = PromptDrivenDialectic()
-        prompt_obj = dialectic.generate_synthesis_prompt(query, thesis, antithesis)
+        prompt_obj = dialectic.generate_synthesis_prompt(
+            query, thesis, antithesis, response_style=response_style
+        )
 
         structured = {
             "schema_version": MCP_SCHEMA_VERSION,
@@ -643,7 +997,11 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             "prompt": prompt_obj.prompt,
             "instructions": prompt_obj.instructions,
             "expected_format": prompt_obj.expected_format,
+            "response_style": response_style,
         }
+        response_schema = _phase_schema_for_style(response_style, prompt_obj.phase)
+        if response_schema:
+            structured["response_schema"] = response_schema
 
         response = f"""# SYNTHESIS PROMPT
 
@@ -659,9 +1017,22 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
     elif name == "autocoding_init":
         await _send_progress("Initializing autocoding session...", 1.0, 2.0)
 
-        requirements = arguments["requirements"]
-        max_turns = arguments.get("max_turns", 10)
-        approval_threshold = arguments.get("approval_threshold", 0.9)
+        requirements = _require_str_arg(name, arguments, "requirements")
+        if isinstance(requirements, CallToolResult):
+            return requirements
+        max_turns = _get_optional_int(name, arguments, "max_turns", 10, min_value=1)
+        if isinstance(max_turns, CallToolResult):
+            return max_turns
+        approval_threshold = _get_optional_number(
+            name,
+            arguments,
+            "approval_threshold",
+            0.9,
+            min_value=0.0,
+            max_value=1.0,
+        )
+        if isinstance(approval_threshold, CallToolResult):
+            return approval_threshold
 
         state = AutocodingState.create(
             requirements=requirements,
@@ -687,6 +1058,28 @@ The session is ready. Next step: call `player_prompt` with the returned state.
 4. Repeat until COACH APPROVED or timeout"""
 
         return ([TextContent(type="text", text=response)], structured)
+
+    elif name == "autocoding_workflow":
+        requirements = _require_str_arg(name, arguments, "requirements")
+        if isinstance(requirements, CallToolResult):
+            return requirements
+        max_turns = _get_optional_int(name, arguments, "max_turns", 10, min_value=1)
+        if isinstance(max_turns, CallToolResult):
+            return max_turns
+
+        workflow = create_autocoding_workflow(requirements=requirements, max_turns=max_turns)
+        workflow["schema_version"] = MCP_SCHEMA_VERSION
+
+        serialized = json.dumps(workflow, indent=2)
+        summary = (
+            "Hegelion autocoding workflow ready. Agents should read the structuredContent JSON "
+            f"for step sequencing (max_turns={max_turns})."
+        )
+        contents = [
+            TextContent(type="text", text=summary),
+            TextContent(type="text", text=serialized),
+        ]
+        return (contents, workflow)
 
     elif name == "player_prompt":
         await _send_progress("Generating player prompt...", 1.0, 1.0)
@@ -777,10 +1170,31 @@ The session is ready. Next step: call `player_prompt` with the returned state.
     elif name == "autocoding_advance":
         await _send_progress("Advancing autocoding state...", 1.0, 2.0)
 
-        state_dict = arguments["state"]
-        coach_feedback = arguments["coach_feedback"]
-        approved = arguments["approved"]
+        state_dict = arguments.get("state")
+        coach_feedback = _require_str_arg(name, arguments, "coach_feedback")
+        if isinstance(coach_feedback, CallToolResult):
+            return coach_feedback
+        approved = arguments.get("approved")
+        if not isinstance(approved, bool):
+            return _arg_error(
+                name,
+                "Error: 'approved' is required and must be a boolean.",
+                error="Invalid argument: approved",
+                expected="boolean",
+                received=approved,
+            )
         compliance_score = arguments.get("compliance_score")
+        if compliance_score is not None:
+            compliance_score = _get_optional_number(
+                name,
+                arguments,
+                "compliance_score",
+                0.0,
+                min_value=0.0,
+                max_value=1.0,
+            )
+            if isinstance(compliance_score, CallToolResult):
+                return compliance_score
 
         parsed_state = _parse_autocoding_state(name, state_dict)
         if isinstance(parsed_state, CallToolResult):
@@ -837,8 +1251,12 @@ Maximum turns reached without approval. Review the turn history for progress mad
     elif name == "autocoding_single_shot":
         await _send_progress("Generating single-shot autocoding prompt...", 1.0, 1.0)
 
-        requirements = arguments["requirements"]
-        max_turns = arguments.get("max_turns", 10)
+        requirements = _require_str_arg(name, arguments, "requirements")
+        if isinstance(requirements, CallToolResult):
+            return requirements
+        max_turns = _get_optional_int(name, arguments, "max_turns", 10, min_value=1)
+        if isinstance(max_turns, CallToolResult):
+            return max_turns
 
         autocoding = PromptDrivenAutocoding()
         prompt_obj = autocoding.generate_single_shot_prompt(
@@ -864,10 +1282,15 @@ Maximum turns reached without approval. Review the turn history for progress mad
         return ([TextContent(type="text", text=response)], structured)
 
     elif name == "autocoding_save":
-        state_dict = arguments["state"]
-        filepath = arguments["filepath"]
+        state_dict = arguments.get("state")
+        filepath = _require_str_arg(name, arguments, "filepath")
+        if isinstance(filepath, CallToolResult):
+            return filepath
 
-        state = AutocodingState.from_dict(state_dict)
+        parsed_state = _parse_autocoding_state(name, state_dict)
+        if isinstance(parsed_state, CallToolResult):
+            return parsed_state
+        state = parsed_state
         save_session(state, filepath)
 
         structured = {
@@ -888,7 +1311,9 @@ Session saved successfully. Use `autocoding_load` with the filepath to restore."
         return ([TextContent(type="text", text=response)], structured)
 
     elif name == "autocoding_load":
-        filepath = arguments["filepath"]
+        filepath = _require_str_arg(name, arguments, "filepath")
+        if isinstance(filepath, CallToolResult):
+            return filepath
 
         try:
             state = load_session(filepath)

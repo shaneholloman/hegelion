@@ -2,7 +2,7 @@
 
 This module provides a way to run dialectical reasoning without making external API calls.
 Instead, it returns structured prompts that guide the calling LLM through the process.
-Perfect for Cursor, Claude Desktop, or any MCP-compatible environment.
+Perfect for Cursor, Claude Desktop, ChatGPT/Codex, or any MCP-compatible environment.
 """
 
 from __future__ import annotations
@@ -21,14 +21,68 @@ class DialecticalPrompt:
     expected_format: str
 
 
+def _json_output_instructions(phase: str) -> tuple[str, str]:
+    """Return JSON-only output instructions and expected format for a given phase."""
+    if phase == "thesis":
+        schema = """{
+  "phase": "thesis",
+  "thesis": "...",
+  "assumptions": ["..."],
+  "uncertainties": ["..."]
+}"""
+        expected = "JSON object with phase, thesis, assumptions, uncertainties"
+    elif phase == "antithesis" or phase.startswith("council_"):
+        schema = f"""{{
+  "phase": "{phase}",
+  "antithesis": "...",
+  "contradictions": [
+    {{"description": "...", "evidence": "..."}}
+  ]
+}}"""
+        expected = "JSON object with phase, antithesis, contradictions"
+    elif phase == "synthesis":
+        schema = """{
+  "phase": "synthesis",
+  "synthesis": "...",
+  "research_proposals": [
+    {"proposal": "...", "testable_prediction": "..."}
+  ]
+}"""
+        expected = "JSON object with phase, synthesis, research_proposals"
+    elif phase == "judge":
+        schema = """{
+  "phase": "judge",
+  "score": 0,
+  "critique_validity": true,
+  "reasoning": "...",
+  "strengths": "...",
+  "improvements": "..."
+}"""
+        expected = "JSON object with score, critique_validity, reasoning, strengths, improvements"
+    else:
+        return "", ""
+
+    instructions = f"""OUTPUT FORMAT (JSON ONLY):
+Return ONLY a JSON object with this shape:
+{schema}
+No markdown, no commentary outside the JSON."""
+    return instructions, expected
+
+
 class PromptDrivenDialectic:
     """Orchestrates dialectical reasoning using prompts instead of API calls."""
 
     def __init__(self):
         self.conversation_state = {}
 
-    def generate_thesis_prompt(self, query: str) -> DialecticalPrompt:
+    def generate_thesis_prompt(self, query: str, response_style: str = "sections") -> DialecticalPrompt:
         """Generate a prompt for the thesis phase."""
+        output_instructions = ""
+        expected_format = "Free-form text thesis response"
+        if response_style == "json":
+            output_instructions, expected_format = _json_output_instructions("thesis")
+            output_instructions = f"\n\n{output_instructions}"
+
         return DialecticalPrompt(
             phase="thesis",
             prompt=f"""You are in the THESIS phase of Hegelian dialectical reasoning.
@@ -40,15 +94,20 @@ Your task:
 2. Consider multiple perspectives and build a strong foundational argument
 3. Be thorough but clear in your reasoning
 4. Acknowledge uncertainty where appropriate
-5. Think step by step, then present a polished thesis
+5. Think carefully before responding, then present a polished thesis
+{output_instructions}
 
 Generate your THESIS response now.""",
             instructions="Respond with a clear, well-structured thesis that establishes your initial position on the query.",
-            expected_format="Free-form text thesis response",
+            expected_format=expected_format,
         )
 
     def generate_antithesis_prompt(
-        self, query: str, thesis: str, use_search_context: bool = False
+        self,
+        query: str,
+        thesis: str,
+        use_search_context: bool = False,
+        response_style: str = "sections",
     ) -> DialecticalPrompt:
         """Generate a prompt for the antithesis phase."""
 
@@ -56,6 +115,19 @@ Generate your THESIS response now.""",
         if use_search_context:
             search_instruction = """
 IMPORTANT: Before critiquing, use available search tools to find current information about this topic. Ground your critique in real-world evidence and recent developments."""
+
+        output_instructions = ""
+        expected_format = "Text with embedded CONTRADICTION: and EVIDENCE: sections"
+        if response_style == "json":
+            output_instructions, expected_format = _json_output_instructions("antithesis")
+            output_instructions = f"\n\n{output_instructions}"
+            contradiction_instruction = (
+                "Capture each issue in the JSON contradictions array with description and evidence."
+            )
+        else:
+            contradiction_instruction = """For each significant problem you identify, use this EXACT format:
+CONTRADICTION: [brief description]
+EVIDENCE: [detailed explanation of why this is problematic]"""
 
         return DialecticalPrompt(
             phase="antithesis",
@@ -73,16 +145,17 @@ Your task as the critical voice:
 4. Find edge cases or scenarios where the thesis breaks down
 5. Be adversarial but intellectually honest
 
-For each significant problem you identify, use this EXACT format:
-CONTRADICTION: [brief description]
-EVIDENCE: [detailed explanation of why this is problematic]
+{contradiction_instruction}
+{output_instructions}
 
 Generate your ANTITHESIS critique now.""",
             instructions="Respond with a rigorous critique that identifies specific contradictions and weaknesses in the thesis.",
-            expected_format="Text with embedded CONTRADICTION: and EVIDENCE: sections",
+            expected_format=expected_format,
         )
 
-    def generate_council_prompts(self, query: str, thesis: str) -> List[DialecticalPrompt]:
+    def generate_council_prompts(
+        self, query: str, thesis: str, response_style: str = "sections"
+    ) -> List[DialecticalPrompt]:
         """Generate prompts for multi-perspective council critique."""
 
         council_members = [
@@ -105,8 +178,22 @@ Generate your ANTITHESIS critique now.""",
 
         prompts = []
         for member in council_members:
+            output_instructions = ""
+            expected_format = "Text with embedded CONTRADICTION: and EVIDENCE: sections"
+            phase = f"council_{member['name'].lower().replace(' ', '_')}"
+            if response_style == "json":
+                output_instructions, expected_format = _json_output_instructions(phase)
+                output_instructions = f"\n\n{output_instructions}"
+                contradiction_instruction = (
+                    "Capture each issue in the JSON contradictions array with description and evidence."
+                )
+            else:
+                contradiction_instruction = """For each issue you identify, use this format:
+CONTRADICTION: [brief description]
+EVIDENCE: [detailed explanation from your expert perspective]"""
+
             prompt = DialecticalPrompt(
-                phase=f"council_{member['name'].lower().replace(' ', '_')}",
+                phase=phase,
                 prompt=f"""You are {member['name'].upper()}, an expert in {member['expertise']}.
 
 ORIGINAL QUERY: {query}
@@ -118,13 +205,12 @@ Focus specifically on: {member['focus']}
 
 Examine the thesis from your specialized perspective and identify problems within your domain.
 
-For each issue you identify, use this format:
-CONTRADICTION: [brief description]
-EVIDENCE: [detailed explanation from your expert perspective]
+{contradiction_instruction}
+{output_instructions}
 
 Generate your specialized critique now.""",
                 instructions=f"Respond as {member['name']} with critiques specific to {member['expertise']}",
-                expected_format="Text with embedded CONTRADICTION: and EVIDENCE: sections",
+                expected_format=expected_format,
             )
             prompts.append(prompt)
 
@@ -136,6 +222,7 @@ Generate your specialized critique now.""",
         thesis: str,
         antithesis: str,
         contradictions: Optional[List[str]] = None,
+        response_style: str = "sections",
     ) -> DialecticalPrompt:
         """Generate a prompt for the synthesis phase."""
 
@@ -145,6 +232,19 @@ Generate your specialized critique now.""",
 
 IDENTIFIED CONTRADICTIONS:
 {chr(10).join(f"- {contradiction}" for contradiction in contradictions)}"""
+
+        output_instructions = ""
+        expected_format = "Text with optional RESEARCH_PROPOSAL: and TESTABLE_PREDICTION: sections"
+        if response_style == "json":
+            output_instructions, expected_format = _json_output_instructions("synthesis")
+            output_instructions = f"\n\n{output_instructions}"
+            research_instruction = (
+                "If the synthesis suggests new research, include it in the research_proposals array."
+            )
+        else:
+            research_instruction = """If the synthesis suggests new research, use this format:
+RESEARCH_PROPOSAL: [brief description]
+TESTABLE_PREDICTION: [specific falsifiable claim]"""
 
         return DialecticalPrompt(
             phase="synthesis",
@@ -170,19 +270,38 @@ Requirements for a valid SYNTHESIS:
 - Must offer a genuinely novel perspective
 - Should be more sophisticated than either original position
 
-If the synthesis suggests new research, use this format:
-RESEARCH_PROPOSAL: [brief description]
-TESTABLE_PREDICTION: [specific falsifiable claim]
+{research_instruction}
+{output_instructions}
 
 Generate your SYNTHESIS now.""",
             instructions="Respond with a synthesis that transcends both positions and offers novel insights",
-            expected_format="Text with optional RESEARCH_PROPOSAL: and TESTABLE_PREDICTION: sections",
+            expected_format=expected_format,
         )
 
     def generate_judge_prompt(
-        self, query: str, thesis: str, antithesis: str, synthesis: str
+        self,
+        query: str,
+        thesis: str,
+        antithesis: str,
+        synthesis: str,
+        response_style: str = "sections",
     ) -> DialecticalPrompt:
         """Generate a prompt for quality evaluation."""
+        output_instructions = ""
+        expected_format = (
+            "Structured response with SCORE:, CRITIQUE_VALIDITY:, REASONING:, STRENGTHS:, IMPROVEMENTS:"
+        )
+        if response_style == "json":
+            output_instructions, expected_format = _json_output_instructions("judge")
+            output_instructions = f"\n\n{output_instructions}"
+            format_instruction = ""
+        else:
+            format_instruction = """Respond with EXACTLY this format:
+SCORE: [integer 0-10]
+CRITIQUE_VALIDITY: [true/false]
+REASONING: [detailed explanation]
+STRENGTHS: [specific areas of excellence]
+IMPROVEMENTS: [specific areas needing work]"""
 
         return DialecticalPrompt(
             phase="judge",
@@ -207,14 +326,9 @@ Score criteria:
 - 8-9: Excellent, sophisticated analysis with minimal flaws
 - 10: Outstanding, exemplary dialectical reasoning
 
-Respond with EXACTLY this format:
-SCORE: [integer 0-10]
-CRITIQUE_VALIDITY: [true/false]
-REASONING: [detailed explanation]
-STRENGTHS: [specific areas of excellence]
-IMPROVEMENTS: [specific areas needing work]""",
+{format_instruction}{output_instructions}""",
             instructions="Evaluate the dialectical quality and provide structured feedback",
-            expected_format="Structured response with SCORE:, CRITIQUE_VALIDITY:, REASONING:, STRENGTHS:, IMPROVEMENTS:",
+            expected_format=expected_format,
         )
 
 
@@ -223,6 +337,7 @@ def create_dialectical_workflow(
     use_search: bool = False,
     use_council: bool = False,
     use_judge: bool = False,
+    response_style: str = "sections",
 ) -> Dict[str, Any]:
     """Create a complete dialectical workflow as structured prompts.
 
@@ -237,13 +352,17 @@ def create_dialectical_workflow(
         {
             "step": 1,
             "name": "Generate Thesis",
-            "prompt": dialectic.generate_thesis_prompt(query).__dict__,
+            "prompt": dialectic.generate_thesis_prompt(
+                query, response_style=response_style
+            ).__dict__,
         }
     )
 
     # Step 2: Antithesis (standard or council-based)
     if use_council:
-        council_prompts = dialectic.generate_council_prompts(query, "{{thesis_from_step_1}}")
+        council_prompts = dialectic.generate_council_prompts(
+            query, "{{thesis_from_step_1}}", response_style=response_style
+        )
         antithesis_refs = []
         for i, council_prompt in enumerate(council_prompts):
             step_num = 2 + i
@@ -266,7 +385,10 @@ def create_dialectical_workflow(
                 "step": 2,
                 "name": "Generate Antithesis",
                 "prompt": dialectic.generate_antithesis_prompt(
-                    query, "{{thesis_from_step_1}}", use_search
+                    query,
+                    "{{thesis_from_step_1}}",
+                    use_search,
+                    response_style=response_style,
                 ).__dict__,
             }
         )
@@ -279,7 +401,10 @@ def create_dialectical_workflow(
             "step": antithesis_step,
             "name": "Generate Synthesis",
             "prompt": dialectic.generate_synthesis_prompt(
-                query, "{{thesis_from_step_1}}", antithesis_output_ref
+                query,
+                "{{thesis_from_step_1}}",
+                antithesis_output_ref,
+                response_style=response_style,
             ).__dict__,
         }
     )
@@ -295,6 +420,7 @@ def create_dialectical_workflow(
                     "{{thesis_from_step_1}}",
                     antithesis_output_ref,
                     f"{{synthesis_from_step_{antithesis_step}}}",
+                    response_style=response_style,
                 ).__dict__,
             }
         )
@@ -334,7 +460,21 @@ For the ANTITHESIS phase, adopt three distinct critical perspectives:
 - THE ETHICIST: Focus on ethical implications and societal impact
 
 Generate critiques from each perspective, then synthesize them."""
+
+    antithesis_format_instruction = """For each problem, use:
+CONTRADICTION: [description]
+EVIDENCE: [explanation]"""
+    research_instruction = """If the synthesis suggests new research, use this format:
+RESEARCH_PROPOSAL: [description]  
+TESTABLE_PREDICTION: [falsifiable claim]"""
+    output_visibility_note = ""
     if response_style == "json":
+        antithesis_format_instruction = (
+            "Capture contradictions as JSON objects with description and evidence."
+        )
+        research_instruction = (
+            "If the synthesis suggests new research, include it in the research_proposals array."
+        )
         output_instructions = f"""Return ONLY a JSON object with this shape:
 {{
   "query": "{query}",
@@ -350,6 +490,15 @@ Generate critiques from each perspective, then synthesize them."""
 }}
 No markdown, no commentary outside the JSON."""
     elif response_style == "synthesis_only":
+        antithesis_format_instruction = (
+            "Identify contradictions and evidence during antithesis (keep these internal)."
+        )
+        research_instruction = (
+            "If research directions emerge, weave them into the synthesis without labels."
+        )
+        output_visibility_note = (
+            "Perform the thesis and antithesis internally; only output the synthesis."
+        )
         output_instructions = """Return ONLY the SYNTHESIS as 2-3 tight paragraphs. Do not include thesis, antithesis, headings, or lists."""
     elif response_style == "conversational":
         output_instructions = """Adopt a natural, conversational tone. Present the dialectical analysis as if you are a thoughtful colleague explaining your reasoning.
@@ -391,6 +540,7 @@ Keep it brief and scannable."""
 
     return f"""You will now perform Hegelian dialectical reasoning on the following query using a three-phase process: THESIS → ANTITHESIS → SYNTHESIS.
 {search_instruction}
+{output_visibility_note}
 
 QUERY: {query}
 
@@ -400,14 +550,12 @@ Execute the following phases:
 Generate a comprehensive initial position on the query. Be thorough, well-reasoned, and consider multiple perspectives while establishing your foundational argument.
 
 **PHASE 2 - ANTITHESIS:**{council_instruction}
-Critically examine your thesis. Find contradictions, logical gaps, unexamined assumptions, and alternative framings. For each problem, use:
-CONTRADICTION: [description]
-EVIDENCE: [explanation]
+Critically examine your thesis. Find contradictions, logical gaps, unexamined assumptions, and alternative framings.
+{antithesis_format_instruction}
 
 **PHASE 3 - SYNTHESIS:**
 Transcend both thesis and antithesis with a novel perspective that resolves the contradictions. Make predictions neither position would make alone. Include research proposals if appropriate:
-RESEARCH_PROPOSAL: [description]  
-TESTABLE_PREDICTION: [falsifiable claim]
+{research_instruction}
 
 {output_instructions}
 
