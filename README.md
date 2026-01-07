@@ -207,7 +207,13 @@ For MCP integration (works with any MCP-enabled editor):
 # Claude Desktop (macOS)
 hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
-# Then restart Claude Desktop
+# Claude Desktop (Windows)
+hegelion-setup-mcp --write "%APPDATA%\\Claude\\claude_desktop_config.json"
+
+# Claude Desktop (Linux)
+hegelion-setup-mcp --write "$HOME/.config/Claude/claude_desktop_config.json"
+
+# Then restart your MCP host
 ```
 
 Manual config (any MCP host):
@@ -224,6 +230,7 @@ Manual config (any MCP host):
 ```
 
 If you run from source (not site-packages), set `PYTHONPATH` to the repo root. The `hegelion-setup-mcp` command writes this automatically.
+If your host expects a full command path, use `python -m hegelion.mcp.server` instead of `hegelion-server`.
 
 **Supported editors:** Claude Desktop, Claude Code, Cursor, VS Code + GitHub Copilot, Windsurf, Google Antigravity, Gemini CLI
 
