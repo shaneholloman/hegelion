@@ -36,8 +36,8 @@ class AutocodingState:
     """
 
     session_id: str
-    session_name: Optional[str] = None
     requirements: str
+    session_name: Optional[str] = None
     current_turn: int = 0
     max_turns: int = 10
     phase: str = "init"
