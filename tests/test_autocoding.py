@@ -38,17 +38,23 @@ class TestAutocodingState:
             requirements="test",
             max_turns=5,
             approval_threshold=0.8,
+            session_name="auth-feature",
         )
 
         assert state.max_turns == 5
         assert state.approval_threshold == 0.8
+        assert state.session_name == "auth-feature"
 
     def test_to_dict_serialization(self):
         """Test serialization to dictionary."""
-        state = AutocodingState.create(requirements="test requirements")
+        state = AutocodingState.create(
+            requirements="test requirements",
+            session_name="release-123",
+        )
         state_dict = state.to_dict()
 
         assert state_dict["session_id"] == state.session_id
+        assert state_dict["session_name"] == "release-123"
         assert state_dict["requirements"] == "test requirements"
         assert state_dict["current_turn"] == 0
         assert state_dict["phase"] == "player"
@@ -56,11 +62,15 @@ class TestAutocodingState:
 
     def test_from_dict_deserialization(self):
         """Test deserialization from dictionary."""
-        original = AutocodingState.create(requirements="test")
+        original = AutocodingState.create(
+            requirements="test",
+            session_name="test-session",
+        )
         state_dict = original.to_dict()
         restored = AutocodingState.from_dict(state_dict)
 
         assert restored.session_id == original.session_id
+        assert restored.session_name == "test-session"
         assert restored.requirements == original.requirements
         assert restored.phase == original.phase
 

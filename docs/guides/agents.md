@@ -42,7 +42,7 @@ This returns JSON like:
   "instructions": {
     "execution_mode": "sequential",
     "variable_substitution": "Replace {{thesis_from_step_1}} with the actual output",
-    "final_output": "Combine all steps into a HegelionResult"
+    "final_output": "Combine all outputs into a final response"
   }
 }
 ```

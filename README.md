@@ -4,6 +4,8 @@
 
 Hegelion applies dialectical reasoning to LLMs: forcing models to argue with themselves before reaching conclusions. This produces better reasoning for questions and better code for implementations.
 
+Hegelion is prompt-driven by default: it generates prompts for your editor or LLM to execute, with no API keys required.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg) [![PyPI version](https://img.shields.io/pypi/v/hegelion.svg)](https://pypi.org/project/hegelion/)
 
 ---
@@ -64,9 +66,12 @@ REQUIREMENTS (Source of Truth)
 
 The coach catches issues by re-reading requirements and actually running tests—not by trusting what the player says it did.
 
-### Quick Start
+### Quick Start (Autocoding)
 
 In Claude Code, Cursor, or any MCP-enabled editor:
+
+Tip: if your editor exposes MCP tools as slash commands, use `/hegelion` (tool `hegelion`)
+as the branded autocoding entrypoint.
 
 ```
 You: Use autocoding_init with these requirements:
@@ -95,6 +100,7 @@ You: Call autocoding_advance and continue
 
 | Tool | Purpose |
 |------|---------|
+| `hegelion` | Brand-first autocoding entrypoint (`mode`: `init`, `workflow`, `single_shot`) |
 | `autocoding_init` | Start session with requirements checklist |
 | `player_prompt` | Generate implementation prompt |
 | `coach_prompt` | Generate verification prompt |
@@ -150,7 +156,7 @@ When the model must commit to a thesis, then genuinely attack it in a separate c
 This 4-level framework emerged from actually arguing with itself—not from asking for "thesis/antithesis/synthesis" in one prompt.
 </details>
 
-### Quick Start
+### Quick Start (Dialectical)
 
 ```bash
 pip install hegelion
@@ -159,23 +165,23 @@ pip install hegelion
 hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 ```
 
-Or use the Python API:
+Or use the prompt-driven Python API (you run the prompt with your LLM of choice):
 
 ```python
-import asyncio
-from hegelion import run_dialectic
+from hegelion.core.prompt_dialectic import create_single_shot_dialectic_prompt
 
-async def main():
-    result = await run_dialectic("Is AI conscious?")
-    print(result.synthesis)
-
-asyncio.run(main())
+prompt = create_single_shot_dialectic_prompt(
+    "Is AI conscious?",
+    use_council=True,
+    response_style="sections",
+)
+print(prompt)
 ```
 
-Or CLI:
+Health check (lists tools + generates a sample prompt):
 
 ```bash
-hegelion --stream "Is consciousness fundamental or emergent?"
+hegelion-server --self-test
 ```
 
 ### Feature Toggles
@@ -213,8 +219,8 @@ See [MCP Integration Guide](docs/guides/mcp-integration.md) for setup instructio
 ## Documentation
 
 - **[MCP Integration](docs/guides/mcp-integration.md)** — Setup for Claude Desktop, Cursor, VS Code + Copilot, Windsurf, Antigravity, Gemini CLI
-- **[Python API](docs/guides/python-api.md)** — Full API reference
-- **[CLI Reference](docs/guides/cli-reference.md)** — Command-line usage
+- **[Python API](docs/guides/python-api.md)** — Prompt-driven API reference
+- **[CLI Reference](docs/guides/cli-reference.md)** — MCP server and setup commands
 - **[Configuration](docs/getting-started/configuration.md)** — Backends and feature toggles
 - **[Technical Specification](docs/HEGELION_SPEC.md)** — Output schemas, phase specs
 

@@ -222,6 +222,7 @@ Player-coach loop for verified code implementations:
 
 | Tool | Purpose |
 |------|---------|
+| `hegelion` | Brand-first entrypoint (`mode`: `init`, `workflow`, `single_shot`) |
 | `autocoding_init` | Start session with requirements checklist |
 | `player_prompt` | Generate implementation prompt |
 | `coach_prompt` | Generate verification prompt |
@@ -358,7 +359,7 @@ After setup, ask in your editor:
 
 You should see:
 - **Dialectical:** `dialectical_workflow`, `dialectical_single_shot`, `thesis_prompt`, `antithesis_prompt`, `synthesis_prompt`
-- **Autocoding:** `autocoding_init`, `player_prompt`, `coach_prompt`, `autocoding_advance`, `autocoding_single_shot`, `autocoding_save`, `autocoding_load`
+- **Autocoding:** `hegelion`, `autocoding_init`, `player_prompt`, `coach_prompt`, `autocoding_advance`, `autocoding_single_shot`, `autocoding_save`, `autocoding_load`
 
 ## Getting Help
 

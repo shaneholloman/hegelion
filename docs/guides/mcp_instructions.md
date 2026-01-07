@@ -84,6 +84,7 @@ Both tools support optional enhancements:
 ## Autocoding Tools (Implementation Loops)
 
 Use these when you want a player/coach loop for coding tasks:
+- `hegelion` as a branded entrypoint (`mode`: `init`, `workflow`, `single_shot`)
 - `autocoding_init` → `player_prompt` → `coach_prompt` → `autocoding_advance`
 - `autocoding_workflow` for a structured step-by-step recipe
 - `autocoding_single_shot` for a single prompt that alternates roles internally

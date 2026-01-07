@@ -129,19 +129,18 @@ uv run pre-commit install
 
 Hegelion's codebase is organized into several key modules:
 
--   `hegelion/core.py`: The main public API (`run_dialectic`, `run_benchmark`).
--   `hegelion/engine.py`: The core logic for the Thesis → Antithesis → Synthesis loop.
--   `hegelion/backends.py`: Abstractions for interacting with different LLM providers.
--   `hegelion/prompts.py`: The prompt templates for each phase of the dialectic.
--   `hegelion/models.py`: Pydantic models for data structures like `HegelionResult`.
--   `hegelion/parsing.py`: Functions for extracting structured data (contradictions, research proposals) from model outputs.
--   `hegelion/scripts/hegelion_cli.py`: The implementation of the `hegelion` and `hegelion-bench` command-line tools.
+-   `hegelion/core/prompt_dialectic.py`: Prompt-driven dialectical reasoning helpers.
+-   `hegelion/core/prompt_autocoding.py`: Prompt-driven autocoding (player/coach) helpers.
+-   `hegelion/core/autocoding_state.py`: Autocoding session state machine and persistence.
+-   `hegelion/mcp/server.py`: MCP server implementation and tool schemas.
+-   `hegelion/scripts/mcp_setup.py`: MCP config helper (`hegelion-setup-mcp`).
+-   `hegelion-mcp-node/`: Node/TypeScript MCP server for non-Python hosts.
 
 ---
 
 ## Coding Guidelines
 
--   **Style:** Follow PEP 8. Our line length is 88 characters, enforced by `black`.
+-   **Style:** Follow PEP 8. Our line length is 100 characters, enforced by `black`.
 -   **Typing:** Use type hints for all function signatures.
 -   **Docstrings:** Write Google-style docstrings for all public modules, classes, and functions.
 -   **Tests:** Use `pytest` for testing. Test files should be placed in the `tests/` directory and mirror the structure of the `hegelion/` directory.

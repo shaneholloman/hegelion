@@ -17,6 +17,7 @@ class TestPromptMCPServer:
         assert "thesis_prompt" in tool_names
         assert "antithesis_prompt" in tool_names
         assert "synthesis_prompt" in tool_names
+        assert "hegelion" in tool_names
         assert "autocoding_workflow" in tool_names
 
     async def test_dialectical_workflow_tool(self):
@@ -113,14 +114,31 @@ class TestPromptMCPServer:
         assert workflow["max_turns"] == 3
         assert len(workflow["steps"]) >= 3
 
+    async def test_hegelion_autocoding_entrypoint_workflow(self):
+        """Ensure hegelion entrypoint can return autocoding workflow."""
+        requirements = "- [ ] Add auth\n- [ ] Add tests\n"
+        contents, workflow = await call_tool(
+            "hegelion",
+            {"requirements": requirements, "mode": "workflow", "max_turns": 2},
+        )
+
+        assert len(contents) == 2
+        assert workflow["schema_version"] == 1
+        assert workflow["workflow_type"] == "dialectical_autocoding"
+        assert workflow["entrypoint"] == "hegelion"
+        assert workflow["mode"] == "workflow"
+        assert workflow["max_turns"] == 2
+
     async def test_autocoding_loop_transitions_and_schema(self):
         """Verify init -> player_prompt -> coach_prompt -> advance transitions and schema keys."""
         requirements = "- [ ] Add auth\n- [ ] Add tests\n"
         _, init_state = await call_tool(
-            "autocoding_init", {"requirements": requirements, "max_turns": 2}
+            "autocoding_init",
+            {"requirements": requirements, "max_turns": 2, "session_name": "auth-loop"},
         )
 
         assert init_state["schema_version"] == 1
+        assert init_state["session_name"] == "auth-loop"
         assert init_state["phase"] == "player"
         assert init_state["status"] == "active"
 

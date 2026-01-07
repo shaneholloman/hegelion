@@ -23,6 +23,7 @@ class AutocodingState:
 
     Attributes:
         session_id: Unique identifier for this autocoding session.
+        session_name: Optional human-readable session label.
         requirements: The requirements document (source of truth).
         current_turn: Current turn number (0-indexed).
         max_turns: Maximum turns before timeout.
@@ -35,6 +36,7 @@ class AutocodingState:
     """
 
     session_id: str
+    session_name: Optional[str] = None
     requirements: str
     current_turn: int = 0
     max_turns: int = 10
@@ -63,6 +65,7 @@ class AutocodingState:
         requirements: str,
         max_turns: int = 10,
         approval_threshold: float = 0.9,
+        session_name: Optional[str] = None,
     ) -> "AutocodingState":
         """Create a new autocoding session.
 
@@ -70,12 +73,14 @@ class AutocodingState:
             requirements: The requirements document (source of truth).
             max_turns: Maximum turns before timeout.
             approval_threshold: Minimum score threshold for approval.
+            session_name: Optional human-readable session label.
 
         Returns:
             A new AutocodingState ready for the first player turn.
         """
         return cls(
             session_id=str(uuid.uuid4()),
+            session_name=session_name,
             requirements=requirements,
             max_turns=max_turns,
             approval_threshold=approval_threshold,
@@ -92,6 +97,7 @@ class AutocodingState:
         return {
             "schema_version": 1,
             "session_id": self.session_id,
+            "session_name": self.session_name,
             "requirements": self.requirements,
             "current_turn": self.current_turn,
             "max_turns": self.max_turns,
@@ -115,6 +121,7 @@ class AutocodingState:
         """
         return cls(
             session_id=data["session_id"],
+            session_name=data.get("session_name"),
             requirements=data["requirements"],
             current_turn=data.get("current_turn", 0),
             max_turns=data.get("max_turns", 10),
@@ -142,6 +149,7 @@ class AutocodingState:
 
         return AutocodingState(
             session_id=self.session_id,
+            session_name=self.session_name,
             requirements=self.requirements,
             current_turn=self.current_turn,
             max_turns=self.max_turns,
@@ -201,6 +209,7 @@ class AutocodingState:
 
         return AutocodingState(
             session_id=self.session_id,
+            session_name=self.session_name,
             requirements=self.requirements,
             current_turn=new_turn,
             max_turns=self.max_turns,
@@ -246,9 +255,13 @@ class AutocodingState:
         """
         avg_score = self.average_score()
         score_str = f"{avg_score:.1%}" if avg_score is not None else "N/A"
+        if self.session_name:
+            session_label = f"{self.session_name} ({self.session_id[:8]}...)"
+        else:
+            session_label = f"{self.session_id[:8]}..."
 
         return (
-            f"Session: {self.session_id[:8]}...\n"
+            f"Session: {session_label}\n"
             f"Turn: {self.current_turn + 1}/{self.max_turns}\n"
             f"Phase: {self.phase}\n"
             f"Status: {self.status}\n"

@@ -28,6 +28,7 @@ app = Server("hegelion-server")
 MCP_SCHEMA_VERSION = 1
 RESPONSE_STYLES = {"sections", "synthesis_only", "json", "conversational", "bullet_points"}
 WORKFLOW_FORMATS = {"workflow", "single_prompt"}
+AUTOCODING_SKILL_MODES = {"init", "workflow", "single_shot"}
 
 DIALECTIC_RESULT_SCHEMA = {
     "type": "object",
@@ -323,6 +324,44 @@ async def list_tools() -> list[Tool]:
         ),
         # === AUTOCODING TOOLS (based on g3 paper) ===
         Tool(
+            name="hegelion",
+            description=(
+                "Brand-first autocoding entrypoint. "
+                "Use mode=workflow for a step-by-step recipe, mode=single_shot for a single prompt, "
+                "or mode=init to create a session state."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "requirements": {
+                        "type": "string",
+                        "description": "The requirements document (source of truth). Should be structured as a checklist.",
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": sorted(AUTOCODING_SKILL_MODES),
+                        "description": "Autocoding entrypoint mode",
+                        "default": "workflow",
+                    },
+                    "max_turns": {
+                        "type": "integer",
+                        "description": "Maximum turns before timeout (default: 10)",
+                        "default": 10,
+                    },
+                    "approval_threshold": {
+                        "type": "number",
+                        "description": "Minimum compliance score for approval (0-1, default: 0.9)",
+                        "default": 0.9,
+                    },
+                    "session_name": {
+                        "type": "string",
+                        "description": "Optional human-readable session name (e.g., 'auth-feature')",
+                    },
+                },
+                "required": ["requirements"],
+            },
+        ),
+        Tool(
             name="autocoding_init",
             description=(
                 "Initialize a dialectical autocoding session with requirements. "
@@ -345,6 +384,10 @@ async def list_tools() -> list[Tool]:
                         "type": "number",
                         "description": "Minimum compliance score for approval (0-1, default: 0.9)",
                         "default": 0.9,
+                    },
+                    "session_name": {
+                        "type": "string",
+                        "description": "Optional human-readable session name (e.g., 'auth-feature')",
                     },
                 },
                 "required": ["requirements"],
@@ -696,6 +739,26 @@ def _get_optional_number(
     return float(value)
 
 
+def _get_optional_str(
+    tool_name: str,
+    arguments: Dict[str, Any],
+    key: str,
+    default: str | None = None,
+) -> str | None | CallToolResult:
+    if key not in arguments:
+        return default
+    value = arguments.get(key)
+    if not isinstance(value, str) or not value.strip():
+        return _arg_error(
+            tool_name,
+            f"Error: '{key}' must be a non-empty string.",
+            error=f"Invalid argument: {key}",
+            expected="non-empty string",
+            received=value,
+        )
+    return value
+
+
 def _response_schema_for_style(response_style: str) -> dict | None:
     if response_style != "json":
         return None
@@ -1014,6 +1077,105 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
 
     # === AUTOCODING TOOL HANDLERS ===
 
+    elif name == "hegelion":
+        await _send_progress("Preparing Hegelion autocoding entrypoint...", 1.0, 2.0)
+
+        requirements = _require_str_arg(name, arguments, "requirements")
+        if isinstance(requirements, CallToolResult):
+            return requirements
+        mode = _get_enum_arg(name, arguments, "mode", AUTOCODING_SKILL_MODES, "workflow")
+        if isinstance(mode, CallToolResult):
+            return mode
+        max_turns = _get_optional_int(name, arguments, "max_turns", 10, min_value=1)
+        if isinstance(max_turns, CallToolResult):
+            return max_turns
+        approval_threshold = _get_optional_number(
+            name,
+            arguments,
+            "approval_threshold",
+            0.9,
+            min_value=0.0,
+            max_value=1.0,
+        )
+        if isinstance(approval_threshold, CallToolResult):
+            return approval_threshold
+        session_name = _get_optional_str(name, arguments, "session_name", None)
+        if isinstance(session_name, CallToolResult):
+            return session_name
+
+        if mode == "init":
+            state = AutocodingState.create(
+                requirements=requirements,
+                max_turns=max_turns,
+                approval_threshold=approval_threshold,
+                session_name=session_name,
+            )
+
+            await _send_progress("Autocoding session initialized", 2.0, 2.0)
+
+            structured = {
+                **state.to_dict(),
+                "entrypoint": "hegelion",
+                "mode": mode,
+            }
+            if state.session_name:
+                session_label = f"{state.session_name} ({state.session_id[:8]}...)"
+            else:
+                session_label = f"{state.session_id[:8]}..."
+            response = f"""# HEGELION AUTOCODING SESSION INITIALIZED
+
+**Session:** {session_label}
+**Max Turns:** {max_turns}
+**Approval Threshold:** {approval_threshold:.0%}
+
+Next step: call `player_prompt` with the returned state."""
+
+            return ([TextContent(type="text", text=response)], structured)
+
+        if mode == "workflow":
+            workflow = create_autocoding_workflow(requirements=requirements, max_turns=max_turns)
+            workflow["schema_version"] = MCP_SCHEMA_VERSION
+            workflow["entrypoint"] = "hegelion"
+            workflow["mode"] = mode
+
+            serialized = json.dumps(workflow, indent=2)
+            summary = (
+                "Hegelion autocoding workflow ready. Agents should read the structuredContent JSON "
+                f"(mode='{mode}')."
+            )
+            contents: List[TextContent] = [
+                TextContent(type="text", text=summary),
+                TextContent(type="text", text=serialized),
+            ]
+            return (contents, workflow)
+
+        await _send_progress("Generating single-shot autocoding prompt...", 2.0, 2.0)
+
+        autocoding = PromptDrivenAutocoding()
+        prompt_obj = autocoding.generate_single_shot_prompt(
+            requirements=requirements,
+            max_turns=max_turns,
+        )
+
+        structured = {
+            "schema_version": MCP_SCHEMA_VERSION,
+            **prompt_obj.to_dict(),
+            "requirements": requirements,
+            "max_turns": max_turns,
+            "entrypoint": "hegelion",
+            "mode": mode,
+        }
+
+        response = f"""# HEGELION SINGLE-SHOT AUTOCODING PROMPT
+
+{prompt_obj.prompt}
+
+---
+**Instructions:** {prompt_obj.instructions}
+**Expected Format:** {prompt_obj.expected_format}"""
+
+        return ([TextContent(type="text", text=response)], structured)
+
     elif name == "autocoding_init":
         await _send_progress("Initializing autocoding session...", 1.0, 2.0)
 
@@ -1033,19 +1195,27 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         )
         if isinstance(approval_threshold, CallToolResult):
             return approval_threshold
+        session_name = _get_optional_str(name, arguments, "session_name", None)
+        if isinstance(session_name, CallToolResult):
+            return session_name
 
         state = AutocodingState.create(
             requirements=requirements,
             max_turns=max_turns,
             approval_threshold=approval_threshold,
+            session_name=session_name,
         )
 
         await _send_progress("Session initialized", 2.0, 2.0)
 
         structured = state.to_dict()
+        if state.session_name:
+            session_label = f"{state.session_name} ({state.session_id[:8]}...)"
+        else:
+            session_label = f"{state.session_id[:8]}..."
         response = f"""# AUTOCODING SESSION INITIALIZED
 
-**Session ID:** {state.session_id[:8]}...
+**Session:** {session_label}
 **Max Turns:** {max_turns}
 **Approval Threshold:** {approval_threshold:.0%}
 
