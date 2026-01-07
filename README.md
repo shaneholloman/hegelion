@@ -210,6 +210,21 @@ hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desk
 # Then restart Claude Desktop
 ```
 
+Manual config (any MCP host):
+
+```json
+{
+  "mcpServers": {
+    "hegelion": {
+      "command": "python",
+      "args": ["-m", "hegelion.mcp.server"]
+    }
+  }
+}
+```
+
+If you run from source (not site-packages), set `PYTHONPATH` to the repo root. The `hegelion-setup-mcp` command writes this automatically.
+
 **Supported editors:** Claude Desktop, Claude Code, Cursor, VS Code + GitHub Copilot, Windsurf, Google Antigravity, Gemini CLI
 
 See [MCP Integration Guide](docs/guides/mcp-integration.md) for setup instructions.
