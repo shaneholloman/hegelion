@@ -38,6 +38,15 @@ Write directly to a config file:
 hegelion-setup-mcp --write ./mcp_config.json
 ```
 
+Write directly to a known host config path:
+
+```bash
+hegelion-setup-mcp --host claude-desktop
+hegelion-setup-mcp --host cursor
+hegelion-setup-mcp --host vscode
+hegelion-setup-mcp --host windsurf
+```
+
 Example for Claude Desktop (macOS):
 
 ```bash

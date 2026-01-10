@@ -31,11 +31,22 @@ pip install -e .
 |-------------|-----------------|-------|
 | Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) | [Auto](#claude-desktop) or [Manual](#claude-desktop-1) |
 | Claude Code | `~/.claude.json` | [CLI](#claude-code) |
-| Cursor | `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project) | [Manual](#cursor) |
-| VS Code + Copilot | `.vscode/mcp.json` | [Manual](#vs-code--github-copilot) |
-| Windsurf | `~/.codeium/windsurf/mcp_config.json` | [Manual](#windsurf) |
+| Cursor | `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project) | [Auto](#cursor) or [Manual](#cursor) |
+| VS Code + Copilot | `.vscode/mcp.json` | [Auto](#vs-code--github-copilot) or [Manual](#vs-code--github-copilot) |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | [Auto](#windsurf) or [Manual](#windsurf) |
 | Google Antigravity | MCP Store → Manage → `mcp_config.json` | [Manual](#google-antigravity) |
 | Gemini CLI | Extension install | [CLI](#gemini-cli) |
+
+## Quick Start
+
+If you use Claude Desktop, Cursor, VS Code, or Windsurf, run the host shortcut:
+
+```bash
+hegelion-setup-mcp --host claude-desktop
+hegelion-setup-mcp --host cursor
+hegelion-setup-mcp --host vscode
+hegelion-setup-mcp --host windsurf
+```
 
 ## Setup by Environment
 
@@ -44,6 +55,9 @@ pip install -e .
 **Auto-config (recommended):**
 
 ```bash
+# Shortcut (auto-detects OS)
+hegelion-setup-mcp --host claude-desktop
+
 # macOS
 hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
@@ -94,6 +108,12 @@ exit  # Then reopen terminal
 
 Cursor supports MCP with up to 40 tools. Config can be global or project-specific.
 
+**Auto-config shortcut:**
+
+```bash
+hegelion-setup-mcp --host cursor
+```
+
 **Option 1: Global config** (all projects)
 
 Create or edit `~/.cursor/mcp.json`:
@@ -127,6 +147,12 @@ VS Code 1.99+ supports MCP natively with GitHub Copilot. MCP is generally availa
 
 > **Note:** For Copilot Business/Enterprise, the "MCP servers in Copilot" policy must be enabled by your org admin.
 
+**Auto-config shortcut:**
+
+```bash
+hegelion-setup-mcp --host vscode
+```
+
 Create `.vscode/mcp.json` in your project:
 
 ```json
@@ -147,6 +173,12 @@ For more details, see [VS Code MCP documentation](https://code.visualstudio.com/
 ### Windsurf
 
 Windsurf (Codeium's IDE) supports MCP through its Cascade AI assistant.
+
+**Auto-config shortcut:**
+
+```bash
+hegelion-setup-mcp --host windsurf
+```
 
 1. Open **Windsurf Settings** (Cmd+Shift+P → "Open Windsurf Settings")
 2. Go to the **Cascade** section

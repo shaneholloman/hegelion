@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 
@@ -81,3 +82,18 @@ def test_print_setup_instructions_shows_windows_paths(
     assert "Windows Claude Desktop" in captured.out
     assert "%APPDATA%" in captured.out
     assert "Cursor (Windows)" in captured.out
+
+
+def test_resolve_host_path_vscode():
+    assert mcp_setup.resolve_host_path("vscode", platform="darwin") == Path(".vscode/mcp.json")
+
+
+def test_resolve_host_path_cursor_windows():
+    env = {"APPDATA": "C:\\Users\\Test\\AppData\\Roaming"}
+    expected = Path(env["APPDATA"]) / "Cursor" / "User" / "globalStorage" / "mcp.json"
+    assert mcp_setup.resolve_host_path("cursor", platform="win32", env=env) == expected
+
+
+def test_resolve_host_path_claude_desktop_darwin():
+    expected = Path("~/Library/Application Support/Claude/claude_desktop_config.json")
+    assert mcp_setup.resolve_host_path("claude", platform="darwin") == expected

@@ -161,6 +161,9 @@ This 4-level framework emerged from actually arguing with itself—not from aski
 ```bash
 pip install hegelion
 
+# MCP setup (auto-detects OS)
+hegelion-setup-mcp --host claude-desktop
+
 # MCP setup for Claude Desktop (macOS)
 hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 ```
@@ -204,6 +207,12 @@ pip install hegelion
 For MCP integration (works with any MCP-enabled editor):
 
 ```bash
+# Shortcuts
+hegelion-setup-mcp --host claude-desktop
+hegelion-setup-mcp --host cursor
+hegelion-setup-mcp --host vscode
+hegelion-setup-mcp --host windsurf
+
 # Claude Desktop (macOS)
 hegelion-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
@@ -214,6 +223,13 @@ hegelion-setup-mcp --write "%APPDATA%\\Claude\\claude_desktop_config.json"
 hegelion-setup-mcp --write "$HOME/.config/Claude/claude_desktop_config.json"
 
 # Then restart your MCP host
+```
+
+Claude Code skill (no MCP):
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R skills/hegelion-prompts ~/.claude/skills/
 ```
 
 Manual config (any MCP host):
@@ -242,6 +258,7 @@ See [MCP Integration Guide](docs/guides/mcp-integration.md) for setup instructio
 
 - **[MCP Integration](docs/guides/mcp-integration.md)** — Setup for Claude Desktop, Cursor, VS Code + Copilot, Windsurf, Antigravity, Gemini CLI
 - **[Python API](docs/guides/python-api.md)** — Prompt-driven API reference
+- **[Codex Skill](docs/guides/codex-skill.md)** — Use Hegelion prompts without MCP in Codex/agent workflows
 - **[CLI Reference](docs/guides/cli-reference.md)** — MCP server and setup commands
 - **[Configuration](docs/getting-started/configuration.md)** — Backends and feature toggles
 - **[Technical Specification](docs/HEGELION_SPEC.md)** — Output schemas, phase specs
