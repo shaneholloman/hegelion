@@ -274,6 +274,12 @@ Issues and PRs welcome. For significant changes, open a discussion first.
 
 ## Recent Changes
 
+### v0.4.2 (January 2025)
+
+- **Unified `/hegelion` command**: Single entry point for dialectical and autocoding workflows
+- **Host shortcuts**: `hegelion-setup-mcp --host claude-desktop|cursor|vscode|windsurf`
+- **Code quality**: Formatted with black, ruff checks passing
+
 ### v0.4.1 (December 2025)
 
 - **Schema versioning**: All structured outputs include `schema_version` for client stability

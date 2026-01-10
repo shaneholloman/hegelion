@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.4.2 – Unified /hegelion Command (January 2025)
+
+### Added
+- **`/hegelion` command**: Single entry point for both dialectical and autocoding workflows
+- **Host shortcuts**: `hegelion-setup-mcp --host claude-desktop|cursor|vscode|windsurf`
+
+### Changed
+- Consolidated separate autocoding command and skill into unified `/hegelion`
+- Code formatted with black
+
+## 0.4.1 – Schema Versioning (December 2025)
+
+### Added
+- **Schema versioning**: All structured outputs include `schema_version`
+- **Phase clarity**: `player_prompt` and `coach_prompt` include `current_phase` and `next_phase`
+- **Error handling**: Invalid transitions return structured errors with `expected`, `received`, `hint`
+
+## 0.4.0 – Autocoding System (December 2025)
+
+### Added
+- **Player-Coach loop**: Dialectical autocoding based on Block AI's g3 agent research
+- **MCP tools**: `autocoding_init`, `player_prompt`, `coach_prompt`, `autocoding_advance`
+- **Session persistence**: `autocoding_save` / `autocoding_load`
+- **Single-shot mode**: `autocoding_single_shot` for simpler tasks
+- **Brand entrypoint**: `hegelion` tool with `mode` parameter
+
 ## 0.3.2 – MCP Server Simplification
 
 ### Removed
