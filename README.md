@@ -225,11 +225,12 @@ hegelion-setup-mcp --write "$HOME/.config/Claude/claude_desktop_config.json"
 # Then restart your MCP host
 ```
 
-Claude Code skill (no MCP):
+Claude Code (no MCP setup needed):
 
 ```bash
-mkdir -p ~/.claude/skills
-cp -R skills/hegelion-prompts ~/.claude/skills/
+# Use /hegelion command directly in any Hegelion repo clone
+# Or add MCP server for tool access
+claude mcp add hegelion python -- -m hegelion.mcp.server
 ```
 
 Manual config (any MCP host):
@@ -258,7 +259,6 @@ See [MCP Integration Guide](docs/guides/mcp-integration.md) for setup instructio
 
 - **[MCP Integration](docs/guides/mcp-integration.md)** — Setup for Claude Desktop, Cursor, VS Code + Copilot, Windsurf, Antigravity, Gemini CLI
 - **[Python API](docs/guides/python-api.md)** — Prompt-driven API reference
-- **[Codex Skill](docs/guides/codex-skill.md)** — Use Hegelion prompts without MCP in Codex/agent workflows
 - **[CLI Reference](docs/guides/cli-reference.md)** — MCP server and setup commands
 - **[Configuration](docs/getting-started/configuration.md)** — Backends and feature toggles
 - **[Technical Specification](docs/HEGELION_SPEC.md)** — Output schemas, phase specs
