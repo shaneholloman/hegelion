@@ -39,7 +39,9 @@ def test_write_config_merges(tmp_path):
     assert set(payload["mcpServers"].keys()) == {"hegelion", "other"}
 
 
-def test_is_installed_in_site_packages_detects_site(monkeypatch: pytest.MonkeyPatch, tmp_path):
+def test_is_installed_in_site_packages_detects_site(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+):
     fake_site = tmp_path / "site-packages"
     fake_site.mkdir()
     fake_pkg = fake_site / "hegelion"
@@ -85,7 +87,9 @@ def test_print_setup_instructions_shows_windows_paths(
 
 
 def test_resolve_host_path_vscode():
-    assert mcp_setup.resolve_host_path("vscode", platform="darwin") == Path(".vscode/mcp.json")
+    assert mcp_setup.resolve_host_path("vscode", platform="darwin") == Path(
+        ".vscode/mcp.json"
+    )
 
 
 def test_resolve_host_path_cursor_windows():

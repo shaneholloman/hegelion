@@ -81,7 +81,8 @@ class TestResponseStyles:
         assert "## THESIS" in prompt
 
     @pytest.mark.parametrize(
-        "style", ["conversational", "bullet_points", "json", "sections", "synthesis_only"]
+        "style",
+        ["conversational", "bullet_points", "json", "sections", "synthesis_only"],
     )
     def test_all_styles_include_core_content(self, style):
         """Test that all styles include the core query content."""

@@ -45,7 +45,9 @@ class TestPromptDrivenDialectic:
         query = "Is AI conscious?"
         thesis = "AI mimics consciousness."
 
-        prompt = dialectic.generate_antithesis_prompt(query, thesis, use_search_context=True)
+        prompt = dialectic.generate_antithesis_prompt(
+            query, thesis, use_search_context=True
+        )
 
         assert "search tools" in prompt.prompt
         assert "recent developments" in prompt.prompt
@@ -84,7 +86,9 @@ class TestPromptDrivenDialectic:
     def test_generate_synthesis_with_contradictions(self, dialectic):
         """Test synthesis prompt with explicit contradictions."""
         contradictions = ["C1", "C2"]
-        prompt = dialectic.generate_synthesis_prompt("Q", "T", "A", contradictions=contradictions)
+        prompt = dialectic.generate_synthesis_prompt(
+            "Q", "T", "A", contradictions=contradictions
+        )
 
         assert "C1" in prompt.prompt
         assert "C2" in prompt.prompt
@@ -160,7 +164,9 @@ class TestWorkflowHelpers:
 
     def test_single_shot_json_prompt_is_consistent(self):
         """JSON style should avoid conflicting text-only formats."""
-        prompt = create_single_shot_dialectic_prompt("test query", response_style="json")
+        prompt = create_single_shot_dialectic_prompt(
+            "test query", response_style="json"
+        )
 
         assert "Return ONLY a JSON object" in prompt
         assert "CONTRADICTION:" not in prompt

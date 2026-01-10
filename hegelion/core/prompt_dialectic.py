@@ -121,11 +121,11 @@ IMPORTANT: Before critiquing, use available search tools to find current informa
         output_instructions = ""
         expected_format = "Text with embedded CONTRADICTION: and EVIDENCE: sections"
         if response_style == "json":
-            output_instructions, expected_format = _json_output_instructions("antithesis")
-            output_instructions = f"\n\n{output_instructions}"
-            contradiction_instruction = (
-                "Capture each issue in the JSON contradictions array with description and evidence."
+            output_instructions, expected_format = _json_output_instructions(
+                "antithesis"
             )
+            output_instructions = f"\n\n{output_instructions}"
+            contradiction_instruction = "Capture each issue in the JSON contradictions array with description and evidence."
         else:
             contradiction_instruction = """For each significant problem you identify, use this EXACT format:
 CONTRADICTION: [brief description]
@@ -194,14 +194,14 @@ EVIDENCE: [detailed explanation from your expert perspective]"""
 
             prompt = DialecticalPrompt(
                 phase=phase,
-                prompt=f"""You are {member['name'].upper()}, an expert in {member['expertise']}.
+                prompt=f"""You are {member["name"].upper()}, an expert in {member["expertise"]}.
 
 ORIGINAL QUERY: {query}
 
 THESIS TO CRITIQUE: {thesis}
 
-Your expertise: {member['expertise']}
-Focus specifically on: {member['focus']}
+Your expertise: {member["expertise"]}
+Focus specifically on: {member["focus"]}
 
 Examine the thesis from your specialized perspective and identify problems within your domain.
 
@@ -234,9 +234,13 @@ IDENTIFIED CONTRADICTIONS:
 {chr(10).join(f"- {contradiction}" for contradiction in contradictions)}"""
 
         output_instructions = ""
-        expected_format = "Text with optional RESEARCH_PROPOSAL: and TESTABLE_PREDICTION: sections"
+        expected_format = (
+            "Text with optional RESEARCH_PROPOSAL: and TESTABLE_PREDICTION: sections"
+        )
         if response_style == "json":
-            output_instructions, expected_format = _json_output_instructions("synthesis")
+            output_instructions, expected_format = _json_output_instructions(
+                "synthesis"
+            )
             output_instructions = f"\n\n{output_instructions}"
             research_instruction = "If the synthesis suggests new research, include it in the research_proposals array."
         else:
@@ -468,9 +472,7 @@ TESTABLE_PREDICTION: [falsifiable claim]"""
         antithesis_format_instruction = (
             "Capture contradictions as JSON objects with description and evidence."
         )
-        research_instruction = (
-            "If the synthesis suggests new research, include it in the research_proposals array."
-        )
+        research_instruction = "If the synthesis suggests new research, include it in the research_proposals array."
         output_instructions = f"""Return ONLY a JSON object with this shape:
 {{
   "query": "{query}",
@@ -486,12 +488,8 @@ TESTABLE_PREDICTION: [falsifiable claim]"""
 }}
 No markdown, no commentary outside the JSON."""
     elif response_style == "synthesis_only":
-        antithesis_format_instruction = (
-            "Identify contradictions and evidence during antithesis (keep these internal)."
-        )
-        research_instruction = (
-            "If research directions emerge, weave them into the synthesis without labels."
-        )
+        antithesis_format_instruction = "Identify contradictions and evidence during antithesis (keep these internal)."
+        research_instruction = "If research directions emerge, weave them into the synthesis without labels."
         output_visibility_note = (
             "Perform the thesis and antithesis internally; only output the synthesis."
         )

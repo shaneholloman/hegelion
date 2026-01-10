@@ -1,74 +1,94 @@
-# Hegelion: Dialectical Reasoning & Autocoding
+# /hegelion
 
-You are using **Hegelion** - a framework for rigorous thinking through dialectical reasoning (thesis-antithesis-synthesis) and adversarial autocoding (player-coach loops).
+Apply dialectical reasoning to the task below.
 
-## Your Task
+## Task
 $ARGUMENTS
 
 ---
 
-## Choose Your Workflow
+## Quick Start
 
-### For Analysis/Reasoning Tasks
-Use **dialectical reasoning** (thesis → antithesis → synthesis):
+**Detect task type:**
+- Questions/decisions → **Dialectical** (thesis → antithesis → synthesis)
+- Code changes → **Autocoding** (player → coach verification loop)
+- Both → Do dialectical analysis first, then autocoding for implementation
 
-1. **THESIS**: Generate a comprehensive initial position
-2. **ANTITHESIS**: Critically examine for contradictions and gaps
-3. **SYNTHESIS**: Transcend both with a novel perspective
-
-If MCP tools are available, call `dialectical_single_shot` or `dialectical_workflow`.
-Otherwise, generate the prompts yourself following the pattern above.
-
-### For Implementation Tasks
-Use **player-coach autocoding**:
-
-**PLAYER MODE** (Implementer):
-1. Read requirements carefully
-2. Explore codebase for existing patterns
-3. Implement the solution
-4. Run basic tests
-5. Say: **"PLAYER DONE - switching to COACH"**
-
-**COACH MODE** (Skeptical Reviewer):
-1. Re-read requirements as a checklist
-2. For EACH requirement, verify and test:
-   - `[✓]` Implemented and tested
-   - `[✗]` Missing or broken
-3. Check edge cases and common bugs
-
-Output:
-```
-COMPLIANCE CHECK:
-- [✓/✗] Requirement 1 - notes
-- [✓/✗] Requirement 2 - notes
-
-VERDICT: [APPROVED / NEEDS WORK]
-```
-
-If NEEDS WORK: Switch back to PLAYER, fix issues, re-verify.
-If APPROVED: Summarize what was built.
-
-**Max 5 iterations** - if still failing, ask the user.
+**MCP tools available?** Use them. Otherwise, follow manual workflows below.
 
 ---
 
-## MCP Tools (if available)
+## Dialectical Reasoning
 
-| Tool | Use Case |
-|------|----------|
-| `dialectical_single_shot` | Quick analysis in one prompt |
-| `dialectical_workflow` | Step-by-step dialectical prompts |
-| `hegelion` | Unified entrypoint (auto-selects workflow) |
-| `autocoding_init` | Start player-coach session |
-| `player_prompt` | Generate player implementation prompt |
-| `coach_prompt` | Generate coach verification prompt |
-| `autocoding_advance` | Advance to next turn |
+*For: "should we...", "evaluate...", "compare...", "what's the best..."*
+
+### With MCP:
+```
+mcp__hegelion__dialectical_single_shot(
+  query="<question>",
+  response_style="synthesis_only"
+)
+```
+Execute the returned prompt.
+
+### Without MCP:
+1. **THESIS** — Strongest case for one position
+2. **ANTITHESIS** — Steel-man the opposite, find contradictions
+3. **SYNTHESIS** — Novel insight that transcends both
+
+Output: 2-3 paragraphs of synthesis only (not the thesis/antithesis).
 
 ---
 
-## Rules
+## Autocoding
 
-- **No premature success claims** - Only COACH can approve
-- **Be rigorous** - Actually run tests, don't just read code
-- **Stay in role** - Don't blend player/coach thinking
-- **Use structured output** - `response_style="json"` for parseable results
+*For: "add...", "fix...", "implement...", "refactor..."*
+
+### With MCP:
+```
+mcp__hegelion__hegelion(
+  requirements="- req 1\n- req 2",
+  mode="workflow"
+)
+```
+Follow workflow: `player_prompt` → execute → `coach_prompt` → execute → `autocoding_advance`
+
+### Without MCP:
+
+**PLAYER** (implement):
+- Parse requirements as checklist
+- Implement systematically
+- Run tests
+- Hand off: "Switching to COACH"
+
+**COACH** (verify):
+- Ignore PLAYER's claims
+- Verify each requirement independently
+- Output:
+```
+COMPLIANCE:
+- [✓] Req 1 — how verified
+- [✗] Req 2 — what's wrong
+
+VERDICT: COACH APPROVED | NEEDS WORK
+```
+
+Loop until approved (max 5 turns, then ask user).
+
+---
+
+## Advanced Options
+
+| Option | Effect | Example |
+|--------|--------|---------|
+| `use_council=true` | Multi-perspective critique (Logician, Empiricist, Ethicist) | Deeper analysis |
+| `use_search=true` | Ground in real-world evidence | Current events, facts |
+| `response_style="json"` | Structured output with schema | Programmatic use |
+
+---
+
+## Core Rules
+
+1. **COACH decides** — PLAYER never self-approves
+2. **Verify > assume** — Run code, check output
+3. **Synthesis > lists** — Insight, not enumeration

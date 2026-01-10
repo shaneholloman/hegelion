@@ -5,6 +5,7 @@
 Hegelion applies dialectical reasoning to LLMs: forcing models to argue with themselves before reaching conclusions. This produces better reasoning for questions and better code for implementations.
 
 Hegelion is prompt-driven by default: it generates prompts for your editor or LLM to execute, with no API keys required.
+Use it via MCP in editors like Claude Desktop/Cursor/VS Code, or via the Python API in your own agents.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg) [![PyPI version](https://img.shields.io/pypi/v/hegelion.svg)](https://pypi.org/project/hegelion/)
 

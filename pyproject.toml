@@ -1,14 +1,33 @@
 [project]
 name = "hegelion"
 version = "0.4.1"
-description = "Dialectical reasoning harness for LLMs (thesis → antithesis → synthesis)"
+description = "Prompt-driven dialectical reasoning and autocoding for LLMs (thesis -> antithesis -> synthesis)"
 requires-python = ">=3.10"
 readme = "README.md"
 authors = [
     { name = "Hunter Bown", email = "hunter@shannonlabs.dev" }
 ]
 license = "MIT"
-keywords = ["ai", "llm", "reasoning", "dialectical", "hegelian", "mcp", "anthropic", "openai", "claude", "gpt", "ollama", "gemini"]
+keywords = [
+    "ai",
+    "llm",
+    "reasoning",
+    "dialectical",
+    "hegelian",
+    "mcp",
+    "autocoding",
+    "prompt",
+    "agent",
+    "cursor",
+    "vscode",
+    "copilot",
+    "anthropic",
+    "openai",
+    "claude",
+    "gpt",
+    "ollama",
+    "gemini",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
