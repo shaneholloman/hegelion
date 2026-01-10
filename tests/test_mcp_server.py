@@ -162,9 +162,7 @@ class TestPromptMCPServer:
         assert player_struct["next_phase"] == "coach"
         assert player_struct["state"]["phase"] == "coach"
 
-        _, coach_struct = await call_tool(
-            "coach_prompt", {"state": player_struct["state"]}
-        )
+        _, coach_struct = await call_tool("coach_prompt", {"state": player_struct["state"]})
 
         expected_coach_keys = {
             "schema_version",
@@ -201,9 +199,7 @@ class TestPromptMCPServer:
     async def test_autocoding_invalid_transitions_have_clear_errors(self):
         """Invalid transitions should fail with expected/received phase and a hint."""
         requirements = "- [ ] Test\n"
-        _, init_state = await call_tool(
-            "autocoding_init", {"requirements": requirements}
-        )
+        _, init_state = await call_tool("autocoding_init", {"requirements": requirements})
 
         # coach_prompt expects coach, but we have player.
         result = await call_tool("coach_prompt", {"state": init_state})

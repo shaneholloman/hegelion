@@ -565,9 +565,7 @@ def _response_style_summary(style: str) -> str:
         case "json":
             return "LLM should return a JSON object with thesis/antithesis/synthesis fields."
         case "synthesis_only":
-            return (
-                "LLM should only return the synthesis (no thesis/antithesis sections)."
-            )
+            return "LLM should only return the synthesis (no thesis/antithesis sections)."
         case "conversational":
             return "LLM should return a natural, conversational response."
         case "bullet_points":
@@ -628,9 +626,7 @@ def _arg_error(
     )
 
 
-def _phase_error(
-    tool_name: str, *, expected: str, received: str, hint: str
-) -> CallToolResult:
+def _phase_error(tool_name: str, *, expected: str, received: str, hint: str) -> CallToolResult:
     return CallToolResult(
         content=[
             TextContent(
@@ -653,9 +649,7 @@ def _phase_error(
     )
 
 
-def _require_str_arg(
-    tool_name: str, arguments: Dict[str, Any], key: str
-) -> str | CallToolResult:
+def _require_str_arg(tool_name: str, arguments: Dict[str, Any], key: str) -> str | CallToolResult:
     value = arguments.get(key)
     if not isinstance(value, str) or not value.strip():
         return _arg_error(
@@ -794,9 +788,7 @@ def _phase_schema_for_style(response_style: str, phase: str) -> dict | None:
     return DIALECTIC_PHASE_SCHEMAS.get(phase)
 
 
-def _parse_autocoding_state(
-    tool_name: str, state_dict: Any
-) -> AutocodingState | CallToolResult:
+def _parse_autocoding_state(tool_name: str, state_dict: Any) -> AutocodingState | CallToolResult:
     if not isinstance(state_dict, dict):
         return _state_error(
             tool_name,
@@ -830,9 +822,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         use_judge = _get_optional_bool(name, arguments, "use_judge", False)
         if isinstance(use_judge, CallToolResult):
             return use_judge
-        format_type = _get_enum_arg(
-            name, arguments, "format", WORKFLOW_FORMATS, "workflow"
-        )
+        format_type = _get_enum_arg(name, arguments, "format", WORKFLOW_FORMATS, "workflow")
         if isinstance(format_type, CallToolResult):
             return format_type
         response_style = _get_enum_arg(
@@ -951,9 +941,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         if isinstance(response_style, CallToolResult):
             return response_style
         dialectic = PromptDrivenDialectic()
-        prompt_obj = dialectic.generate_thesis_prompt(
-            query, response_style=response_style
-        )
+        prompt_obj = dialectic.generate_thesis_prompt(query, response_style=response_style)
 
         structured = {
             "schema_version": MCP_SCHEMA_VERSION,
@@ -1008,9 +996,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
             structured_prompts = []
 
             for prompt_obj in council_prompts:
-                response_parts.append(
-                    f"## {prompt_obj.phase.replace('_', ' ').title()}"
-                )
+                response_parts.append(f"## {prompt_obj.phase.replace('_', ' ').title()}")
                 response_parts.append(prompt_obj.prompt)
                 response_parts.append(f"**Instructions:** {prompt_obj.instructions}")
                 response_parts.append("")
@@ -1024,9 +1010,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
                         "response_style": response_style,
                     }
                 )
-                response_schema = _phase_schema_for_style(
-                    response_style, prompt_obj.phase
-                )
+                response_schema = _phase_schema_for_style(response_style, prompt_obj.phase)
                 if response_schema:
                     structured_prompts[-1]["response_schema"] = response_schema
 
@@ -1114,9 +1098,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]):
         requirements = _require_str_arg(name, arguments, "requirements")
         if isinstance(requirements, CallToolResult):
             return requirements
-        mode = _get_enum_arg(
-            name, arguments, "mode", AUTOCODING_SKILL_MODES, "workflow"
-        )
+        mode = _get_enum_arg(name, arguments, "mode", AUTOCODING_SKILL_MODES, "workflow")
         if isinstance(mode, CallToolResult):
             return mode
         max_turns = _get_optional_int(name, arguments, "max_turns", 10, min_value=1)
@@ -1166,9 +1148,7 @@ Next step: call `player_prompt` with the returned state."""
             return ([TextContent(type="text", text=response)], structured)
 
         if mode == "workflow":
-            workflow = create_autocoding_workflow(
-                requirements=requirements, max_turns=max_turns
-            )
+            workflow = create_autocoding_workflow(requirements=requirements, max_turns=max_turns)
             workflow["schema_version"] = MCP_SCHEMA_VERSION
             workflow["entrypoint"] = "hegelion"
             workflow["mode"] = mode
@@ -1272,9 +1252,7 @@ The session is ready. Next step: call `player_prompt` with the returned state.
         if isinstance(max_turns, CallToolResult):
             return max_turns
 
-        workflow = create_autocoding_workflow(
-            requirements=requirements, max_turns=max_turns
-        )
+        workflow = create_autocoding_workflow(requirements=requirements, max_turns=max_turns)
         workflow["schema_version"] = MCP_SCHEMA_VERSION
 
         serialized = json.dumps(workflow, indent=2)
@@ -1527,9 +1505,7 @@ Session saved successfully. Use `autocoding_load` with the filepath to restore."
         except FileNotFoundError:
             return CallToolResult(
                 content=[
-                    TextContent(
-                        type="text", text=f"Error: Session file not found: {filepath}"
-                    )
+                    TextContent(type="text", text=f"Error: Session file not found: {filepath}")
                 ],
                 structuredContent={
                     "schema_version": MCP_SCHEMA_VERSION,
@@ -1540,9 +1516,7 @@ Session saved successfully. Use `autocoding_load` with the filepath to restore."
         except json.JSONDecodeError as e:
             return CallToolResult(
                 content=[
-                    TextContent(
-                        type="text", text=f"Error: Invalid JSON in session file: {e}"
-                    )
+                    TextContent(type="text", text=f"Error: Invalid JSON in session file: {e}")
                 ],
                 structuredContent={
                     "schema_version": MCP_SCHEMA_VERSION,

@@ -54,9 +54,7 @@ class TestMCPLocal(unittest.TestCase):
             self.assertEqual(response["id"], 1)
             self.assertIn("result", response)
             self.assertIn("serverInfo", response["result"])
-            self.assertEqual(
-                response["result"]["serverInfo"]["name"], "hegelion-server"
-            )
+            self.assertEqual(response["result"]["serverInfo"]["name"], "hegelion-server")
 
             # 2. List Tools
             list_req = {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}

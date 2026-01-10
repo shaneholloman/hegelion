@@ -53,17 +53,11 @@ class AutocodingState:
         valid_statuses = {"active", "approved", "rejected", "timeout"}
 
         if self.phase not in valid_phases:
-            raise ValueError(
-                f"Invalid phase: {self.phase}. Must be one of {valid_phases}"
-            )
+            raise ValueError(f"Invalid phase: {self.phase}. Must be one of {valid_phases}")
         if self.status not in valid_statuses:
-            raise ValueError(
-                f"Invalid status: {self.status}. Must be one of {valid_statuses}"
-            )
+            raise ValueError(f"Invalid status: {self.status}. Must be one of {valid_statuses}")
         if not 0 <= self.approval_threshold <= 1:
-            raise ValueError(
-                f"approval_threshold must be 0-1, got {self.approval_threshold}"
-            )
+            raise ValueError(f"approval_threshold must be 0-1, got {self.approval_threshold}")
 
     @classmethod
     def create(

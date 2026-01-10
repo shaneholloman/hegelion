@@ -233,9 +233,7 @@ class TestPromptDrivenAutocoding:
         assert "first turn" in prompt.prompt.lower()
         assert "DO NOT declare success" in prompt.prompt
 
-    def test_generate_player_prompt_with_feedback(
-        self, autocoding, sample_requirements
-    ):
+    def test_generate_player_prompt_with_feedback(self, autocoding, sample_requirements):
         """Test player prompt with coach feedback."""
         feedback = "Missing JWT validation middleware"
         prompt = autocoding.generate_player_prompt(
@@ -249,9 +247,7 @@ class TestPromptDrivenAutocoding:
         assert "Turn: 3/10" in prompt.prompt
         assert "PREVIOUS COACH FEEDBACK" in prompt.prompt
 
-    def test_generate_player_prompt_workspace_guidance(
-        self, autocoding, sample_requirements
-    ):
+    def test_generate_player_prompt_workspace_guidance(self, autocoding, sample_requirements):
         """Test player prompt includes workspace guidance."""
         prompt = autocoding.generate_player_prompt(
             requirements=sample_requirements,
@@ -278,9 +274,7 @@ class TestPromptDrivenAutocoding:
         assert "REQUIREMENTS COMPLIANCE" in prompt.prompt
         assert "COACH APPROVED" in prompt.prompt
 
-    def test_generate_coach_prompt_workspace_guidance(
-        self, autocoding, sample_requirements
-    ):
+    def test_generate_coach_prompt_workspace_guidance(self, autocoding, sample_requirements):
         """Test coach prompt includes workspace guidance."""
         prompt = autocoding.generate_coach_prompt(
             requirements=sample_requirements,
