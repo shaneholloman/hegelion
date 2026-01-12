@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.3 – MCP Refactor + Codex Skill (January 12, 2026)
+
+### Added
+- **Codex skill**: Added `skills/hegelion/SKILL.md` for the `/hegelion` workflow
+
+### Changed
+- Refactored MCP server into tooling, handlers, validation, and response helpers
+
 ## 0.4.2 – Unified /hegelion Command (January 2025)
 
 ### Added

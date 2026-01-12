@@ -109,6 +109,12 @@ You: Call autocoding_advance and continue
 | `autocoding_single_shot` | Combined prompt for simpler tasks |
 | `autocoding_save` / `autocoding_load` | Persist and resume sessions |
 
+### Codex Skill (optional)
+
+This repo includes a Codex skill at `skills/hegelion/SKILL.md`. Install it with your skill
+installer (for example, `install-skill-from-github.py --repo Hmbown/Hegelion --path skills/hegelion`).
+It mirrors the `/hegelion` command and uses MCP tools when available.
+
 ### Why It Works
 
 | Problem | Single Agent | Coach-Player |
@@ -274,9 +280,10 @@ Issues and PRs welcome. For significant changes, open a discussion first.
 
 ## Recent Changes
 
-### v0.4.3 (February 2025)
+### v0.4.3 (January 12, 2026)
 
 - **MCP refactor**: Split tooling, handlers, and validation to make the server easier to extend and maintain
+- **Codex skill**: Added `skills/hegelion/SKILL.md` for the `/hegelion` workflow
 
 ### v0.4.2 (January 2025)
 
