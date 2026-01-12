@@ -10,6 +10,8 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
+from hegelion.core.constants import DialecticPhase
+
 
 @dataclass
 class DialecticalPrompt:
@@ -20,10 +22,19 @@ class DialecticalPrompt:
     instructions: str
     expected_format: str
 
+    def to_dict(self) -> Dict[str, str]:
+        """Serialize prompt to dictionary."""
+        return {
+            "phase": self.phase,
+            "prompt": self.prompt,
+            "instructions": self.instructions,
+            "expected_format": self.expected_format,
+        }
+
 
 def _json_output_instructions(phase: str) -> tuple[str, str]:
     """Return JSON-only output instructions and expected format for a given phase."""
-    if phase == "thesis":
+    if phase == DialecticPhase.THESIS.value:
         schema = """{
   "phase": "thesis",
   "thesis": "...",
@@ -31,7 +42,7 @@ def _json_output_instructions(phase: str) -> tuple[str, str]:
   "uncertainties": ["..."]
 }"""
         expected = "JSON object with phase, thesis, assumptions, uncertainties"
-    elif phase == "antithesis" or phase.startswith("council_"):
+    elif phase == DialecticPhase.ANTITHESIS.value or phase.startswith("council_"):
         schema = f"""{{
   "phase": "{phase}",
   "antithesis": "...",
@@ -40,7 +51,7 @@ def _json_output_instructions(phase: str) -> tuple[str, str]:
   ]
 }}"""
         expected = "JSON object with phase, antithesis, contradictions"
-    elif phase == "synthesis":
+    elif phase == DialecticPhase.SYNTHESIS.value:
         schema = """{
   "phase": "synthesis",
   "synthesis": "...",
@@ -49,7 +60,7 @@ def _json_output_instructions(phase: str) -> tuple[str, str]:
   ]
 }"""
         expected = "JSON object with phase, synthesis, research_proposals"
-    elif phase == "judge":
+    elif phase == DialecticPhase.JUDGE.value:
         schema = """{
   "phase": "judge",
   "score": 0,
@@ -86,7 +97,7 @@ class PromptDrivenDialectic:
             output_instructions = f"\n\n{output_instructions}"
 
         return DialecticalPrompt(
-            phase="thesis",
+            phase=DialecticPhase.THESIS.value,
             prompt=f"""You are in the THESIS phase of Hegelian dialectical reasoning.
 
 QUERY: {query}
@@ -132,7 +143,7 @@ CONTRADICTION: [brief description]
 EVIDENCE: [detailed explanation of why this is problematic]"""
 
         return DialecticalPrompt(
-            phase="antithesis",
+            phase=DialecticPhase.ANTITHESIS.value,
             prompt=f"""You are in the ANTITHESIS phase of Hegelian dialectical reasoning.
 
 ORIGINAL QUERY: {query}
@@ -245,7 +256,7 @@ RESEARCH_PROPOSAL: [brief description]
 TESTABLE_PREDICTION: [specific falsifiable claim]"""
 
         return DialecticalPrompt(
-            phase="synthesis",
+            phase=DialecticPhase.SYNTHESIS.value,
             prompt=f"""You are in the SYNTHESIS phase of Hegelian dialectical reasoning.
 
 ORIGINAL QUERY: {query}
@@ -300,7 +311,7 @@ STRENGTHS: [specific areas of excellence]
 IMPROVEMENTS: [specific areas needing work]"""
 
         return DialecticalPrompt(
-            phase="judge",
+            phase=DialecticPhase.JUDGE.value,
             prompt=f"""You are the Iron Judge, evaluating dialectical reasoning quality.
 
 ORIGINAL QUERY: {query}
@@ -350,7 +361,7 @@ def create_dialectical_workflow(
             "name": "Generate Thesis",
             "prompt": dialectic.generate_thesis_prompt(
                 query, response_style=response_style
-            ).__dict__,
+            ).to_dict(),
         }
     )
 
@@ -366,7 +377,7 @@ def create_dialectical_workflow(
                 {
                     "step": step_num,
                     "name": f"Council Critique: {council_prompt.phase}",
-                    "prompt": council_prompt.__dict__,
+                    "prompt": council_prompt.to_dict(),
                 }
             )
             antithesis_refs.append(
@@ -385,7 +396,7 @@ def create_dialectical_workflow(
                     "{{thesis_from_step_1}}",
                     use_search,
                     response_style=response_style,
-                ).__dict__,
+                ).to_dict(),
             }
         )
         antithesis_step = 3
@@ -401,7 +412,7 @@ def create_dialectical_workflow(
                 "{{thesis_from_step_1}}",
                 antithesis_output_ref,
                 response_style=response_style,
-            ).__dict__,
+            ).to_dict(),
         }
     )
 
@@ -417,7 +428,7 @@ def create_dialectical_workflow(
                     antithesis_output_ref,
                     f"{{synthesis_from_step_{antithesis_step}}}",
                     response_style=response_style,
-                ).__dict__,
+                ).to_dict(),
             }
         )
 

@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+from hegelion.core.constants import AutocodingPhase
+
 
 @dataclass
 class AutocodingPrompt:
@@ -115,7 +117,7 @@ Before implementing, explore the workspace:
 Begin your implementation now. Work methodically through the requirements."""
 
         return AutocodingPrompt(
-            phase="player",
+            phase=AutocodingPhase.PLAYER.value,
             prompt=prompt,
             instructions="Implement the requirements. Do not declare success - the coach will verify.",
             expected_format="Implementation actions: code changes, test execution, file operations",
@@ -194,7 +196,7 @@ Use checkmark for satisfied requirements and X for unsatisfied ones.
 Be thorough - the player depends on your feedback to make progress."""
 
         return AutocodingPrompt(
-            phase="coach",
+            phase=AutocodingPhase.COACH.value,
             prompt=prompt,
             instructions="Verify implementation against requirements. Ignore player's self-assessment.",
             expected_format="Compliance checklist with checkmarks/X, actions needed, and COACH APPROVED or summary",
@@ -337,13 +339,13 @@ def create_autocoding_workflow(
 
     # Include sample prompts for reference
     workflow["sample_prompts"] = {
-        "player": autocoding.generate_player_prompt(
+        AutocodingPhase.PLAYER.value: autocoding.generate_player_prompt(
             requirements="{{requirements}}",
             coach_feedback=None,
             turn_number=1,
             max_turns=max_turns,
         ).to_dict(),
-        "coach": autocoding.generate_coach_prompt(
+        AutocodingPhase.COACH.value: autocoding.generate_coach_prompt(
             requirements="{{requirements}}",
             turn_number=1,
             max_turns=max_turns,

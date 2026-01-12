@@ -274,6 +274,10 @@ Issues and PRs welcome. For significant changes, open a discussion first.
 
 ## Recent Changes
 
+### v0.4.3 (February 2025)
+
+- **MCP refactor**: Split tooling, handlers, and validation to make the server easier to extend and maintain
+
 ### v0.4.2 (January 2025)
 
 - **Unified `/hegelion` command**: Single entry point for dialectical and autocoding workflows

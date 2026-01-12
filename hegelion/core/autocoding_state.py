@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from hegelion.core.constants import AutocodingPhase, AutocodingStatus
+
 
 @dataclass
 class AutocodingState:
@@ -40,8 +42,8 @@ class AutocodingState:
     session_name: Optional[str] = None
     current_turn: int = 0
     max_turns: int = 10
-    phase: str = "init"
-    status: str = "active"
+    phase: str = AutocodingPhase.INIT.value
+    status: str = AutocodingStatus.ACTIVE.value
     turn_history: List[Dict[str, Any]] = field(default_factory=list)
     last_coach_feedback: Optional[str] = None
     quality_scores: List[float] = field(default_factory=list)
@@ -49,8 +51,8 @@ class AutocodingState:
 
     def __post_init__(self) -> None:
         """Validate state after initialization."""
-        valid_phases = {"init", "player", "coach", "approved", "timeout"}
-        valid_statuses = {"active", "approved", "rejected", "timeout"}
+        valid_phases = AutocodingPhase.values()
+        valid_statuses = AutocodingStatus.values()
 
         if self.phase not in valid_phases:
             raise ValueError(f"Invalid phase: {self.phase}. Must be one of {valid_phases}")
@@ -84,8 +86,8 @@ class AutocodingState:
             requirements=requirements,
             max_turns=max_turns,
             approval_threshold=approval_threshold,
-            phase="player",  # Start with player phase
-            status="active",
+            phase=AutocodingPhase.PLAYER.value,  # Start with player phase
+            status=AutocodingStatus.ACTIVE.value,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -125,8 +127,8 @@ class AutocodingState:
             requirements=data["requirements"],
             current_turn=data.get("current_turn", 0),
             max_turns=data.get("max_turns", 10),
-            phase=data.get("phase", "init"),
-            status=data.get("status", "active"),
+            phase=data.get("phase", AutocodingPhase.INIT.value),
+            status=data.get("status", AutocodingStatus.ACTIVE.value),
             turn_history=data.get("turn_history", []),
             last_coach_feedback=data.get("last_coach_feedback"),
             quality_scores=data.get("quality_scores", []),
@@ -142,9 +144,9 @@ class AutocodingState:
         Raises:
             ValueError: If not in player phase or session not active.
         """
-        if self.phase != "player":
+        if self.phase != AutocodingPhase.PLAYER.value:
             raise ValueError(f"Cannot advance to coach from phase: {self.phase}")
-        if self.status != "active":
+        if self.status != AutocodingStatus.ACTIVE.value:
             raise ValueError(f"Cannot advance: session status is {self.status}")
 
         return AutocodingState(
@@ -153,8 +155,8 @@ class AutocodingState:
             requirements=self.requirements,
             current_turn=self.current_turn,
             max_turns=self.max_turns,
-            phase="coach",
-            status="active",
+            phase=AutocodingPhase.COACH.value,
+            status=AutocodingStatus.ACTIVE.value,
             turn_history=self.turn_history.copy(),
             last_coach_feedback=self.last_coach_feedback,
             quality_scores=self.quality_scores.copy(),
@@ -177,7 +179,7 @@ class AutocodingState:
         Returns:
             New state with updated turn, feedback, and status.
         """
-        if self.phase != "coach":
+        if self.phase != AutocodingPhase.COACH.value:
             raise ValueError(f"Cannot advance turn from phase: {self.phase}")
 
         new_turn = self.current_turn + 1
@@ -198,14 +200,14 @@ class AutocodingState:
 
         # Determine next phase and status
         if approved:
-            new_phase = "approved"
-            new_status = "approved"
+            new_phase = AutocodingPhase.APPROVED.value
+            new_status = AutocodingStatus.APPROVED.value
         elif new_turn >= self.max_turns:
-            new_phase = "timeout"
-            new_status = "timeout"
+            new_phase = AutocodingPhase.TIMEOUT.value
+            new_status = AutocodingStatus.TIMEOUT.value
         else:
-            new_phase = "player"
-            new_status = "active"
+            new_phase = AutocodingPhase.PLAYER.value
+            new_status = AutocodingStatus.ACTIVE.value
 
         return AutocodingState(
             session_id=self.session_id,
@@ -227,7 +229,11 @@ class AutocodingState:
         Returns:
             True if session is no longer active.
         """
-        return self.status in {"approved", "rejected", "timeout"}
+        return self.status in {
+            AutocodingStatus.APPROVED.value,
+            AutocodingStatus.REJECTED.value,
+            AutocodingStatus.TIMEOUT.value,
+        }
 
     def turns_remaining(self) -> int:
         """Get the number of turns remaining.
