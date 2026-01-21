@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.4 – Simplified Skill & Command (January 21, 2026)
+
+### Changed
+- Condensed `/hegelion` slash command and Codex skill to minimal routing tables
+- Removed verbose manual workflows in favor of MCP-first approach
+
 ## 0.4.3 – MCP Refactor + Codex Skill (January 12, 2026)
 
 ### Added
@@ -8,7 +14,7 @@
 ### Changed
 - Refactored MCP server into tooling, handlers, validation, and response helpers
 
-## 0.4.2 – Unified /hegelion Command (January 2025)
+## 0.4.2 – Unified /hegelion Command (January 2026)
 
 ### Added
 - **`/hegelion` command**: Single entry point for both dialectical and autocoding workflows

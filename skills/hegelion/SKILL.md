@@ -1,26 +1,24 @@
 ---
 name: hegelion
-description: Apply dialectical reasoning or autocoding via Hegelion MCP tools; use for /hegelion, thesis/antithesis/synthesis, or player/coach workflows.
+description: Dialectical reasoning and autocoding via Hegelion MCP tools.
 ---
 
 # Hegelion Skill
 
-Use this skill when the user asks for Hegelion, dialectical reasoning, or autocoding with verification.
+## Routing
 
-## Workflow
+| Task type | MCP call |
+|-----------|----------|
+| Analysis/decision | `mcp__hegelion__dialectical_single_shot(query, response_style="synthesis_only")` |
+| Implementation | `mcp__hegelion__hegelion(requirements, mode="workflow")` |
 
-1) Classify the task: analysis/decision vs implementation.
-2) If MCP tools are available:
-   - Analysis: call `mcp__hegelion__dialectical_single_shot` with `response_style="synthesis_only"` (or `sections` if full output requested).
-   - Step-by-step analysis: call `mcp__hegelion__dialectical_workflow` with `format="workflow"`.
-   - Implementation: call `mcp__hegelion__hegelion` with `mode="workflow"` and follow `player_prompt` -> `coach_prompt` -> `autocoding_advance`.
-3) If MCP tools are not available, run a manual loop:
-   - THESIS -> ANTITHESIS -> SYNTHESIS for analysis.
-   - PLAYER -> COACH (with a compliance checklist and verdict) for implementation.
-4) Keep outputs concise and make verification explicit. The COACH decides when requirements are satisfied.
+## Autocoding Loop
 
-## Notes
+```
+mcp__hegelion__hegelion(requirements, mode="workflow")
+    -> player_prompt -> [implement] -> coach_prompt -> [verify] -> autocoding_advance
+           ^                                                            |
+           |________________ loop until APPROVED or max_turns __________|
+```
 
-- Never let PLAYER self-approve.
-- Prefer tests or checks when implementing changes.
-- Use `use_council=true` when the user wants multi-perspective critique.
+COACH is authoritative. Run tests. Never self-approve.
